@@ -90,8 +90,10 @@ namespace bugreport
 			String fileArgument = args[args.Length - 1];
 			Boolean isTracing = false;
 			
-			if (args[0].Equals("--trace"))
+			if (args[0].Equals("--trace")) 
+			{
 				isTracing = true;
+			}
 			
 			String[] fileNames;
 			
