@@ -1,0 +1,53 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>bugreport</RootNamespace>
+    <AssemblyName>bugreport</AssemblyName>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EC8B7F75-9D08-4BBA-9480-67785FB9C0DE}</ProjectGuid>
+    <StartArguments>simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump</StartArguments>
+    <StartWorkingDirectory>tests\simple\heap\</StartWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <Optimize>False</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <Optimize>True</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="nunit.framework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="AbstractValue.cs" />
+    <Compile Include="interpreter.cs" />
+    <Compile Include="testfileparser.cs" />
+    <Compile Include="InterpreterTests.cs" />
+    <Compile Include="BitMath.cs" />
+    <Compile Include="ModRMTests.cs" />
+    <Compile Include="ModRM.cs" />
+    <Compile Include="OpcodeHelperTests.cs" />
+    <Compile Include="OpcodeHelper.cs" />
+    <Compile Include="AbstractValueTests.cs" />
+    <Compile Include="AbstractBufferTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="testlist.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+</Project>
