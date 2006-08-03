@@ -1,0 +1,123 @@
+﻿// Copyright (c) 2006 Luis Miras
+// Licensed under GPLv3 draft 2
+// See LICENSE.txt for details.
+
+using System;
+
+namespace bugreport
+{
+	public class InvalidModRMException : ApplicationException
+	{
+		public InvalidModRMException(String message) : base(message) {}
+	}
+
+	public static class ModRM
+	{
+		
+		private static Byte getMod(Byte _modrmByte)
+		{
+			return (Byte)((_modrmByte >> 6) & 3);
+		}
+		
+		public static Byte GetRM(Byte _modrmByte)
+		{
+			return (Byte)(_modrmByte & 7);
+		}
+		public static RegisterName GetEv(Byte[] _code)
+		{
+			if (HasSIB(_code))
+				throw new InvalidOperationException("For ModRM that specifies SIB byte, usage of GetEv is invalid.");
+			
+			Byte modRM = getModRM(_code);
+			return (RegisterName)(modRM & 7);
+		}
+
+		public static RegisterName GetGv(Byte[] _code)
+		{
+			Byte modRM = getModRM(_code);
+			return (RegisterName)((modRM >> 3) & 7);
+		}
+		
+		public static Byte GetOpcodeGroupIndex(Byte[] _code)
+		{
+			Byte modRM = getModRM(_code);
+			return (Byte)((modRM >> 3) & 7);
+		}
+		
+		public static Boolean HasIndex(Byte[] _code)
+		{
+			Byte modRM = getModRM(_code);
+			Byte mod = getMod(modRM);
+			return (mod == 1 || mod == 2);
+		}
+		
+		public static Byte GetIndex(Byte[] _code)
+		{
+			if (!HasIndex(_code))
+			    throw new InvalidOperationException("For ModRM that does not specify an index, usage of GetIndex is invalid.");
+
+			UInt32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
+			Byte modRM = getModRM(_code);
+
+			if (getMod(modRM)== 1)
+			{
+				return _code[modRMIndex+1];
+			}
+			
+			if (getMod(modRM)== 2)
+			{
+				throw new InvalidModRMException(String.Format("Unsupported ModRM: 0x{0:x2}", _code[1]));
+			}
+			
+			return 0;			
+		}
+		
+		public static Boolean IsEvDereferenced(Byte[] _code)
+		{
+			Byte modRM = getModRM(_code);
+
+			return !(getMod(modRM) == 3);
+		}
+		
+		public static Boolean HasOffset(Byte[] _code)
+		{
+			if (HasSIB(_code))
+			    return false;
+
+			Byte modRM = getModRM(_code);    
+			return (GetEv(_code) == RegisterName.EBP && getMod(modRM) == 0);
+		}
+
+		public static Boolean HasSIB(Byte[] _code)
+		{
+			Byte modRM = getModRM(_code);
+			
+			return ((GetRM(modRM) == 4) && (IsEvDereferenced(_code)));
+		}
+
+		private static Byte getSIBIndex(Byte[] _code)
+		{
+			return (Byte)((getSIB(_code) >> 3) & 7);
+		}
+		
+		private static Byte getSIB(Byte[] _code)
+		{
+			return _code[OpcodeHelper.GetOpcodeLength(_code) + 1];
+		}
+		
+		public static RegisterName GetSIBBaseRegister(Byte[] _code)
+		{
+			if (!HasSIB(_code))
+			    throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetSIBBaseRegister is invalid.");
+
+			if (getSIBIndex(_code) != 0x4)
+				throw new InvalidOperationException("GetSIBBaseRegister only supports scaler of none.");
+			Byte sib = ModRM.getSIB(_code);
+			return (RegisterName)(sib & 7);
+		}
+		private static Byte getModRM(Byte[] _code)
+		{
+			return _code[OpcodeHelper.GetOpcodeLength(_code)];			
+		}
+	}
+}
