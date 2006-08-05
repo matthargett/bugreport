@@ -35,8 +35,8 @@
     <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AbstractValue.cs" />
-    <Compile Include="interpreter.cs" />
-    <Compile Include="testfileparser.cs" />
+    <Compile Include="Interpreter.cs" />
+    <Compile Include="DumpFileParser.cs" />
     <Compile Include="InterpreterTests.cs" />
     <Compile Include="BitMath.cs" />
     <Compile Include="ModRMTests.cs" />
@@ -45,6 +45,7 @@
     <Compile Include="OpcodeHelper.cs" />
     <Compile Include="AbstractValueTests.cs" />
     <Compile Include="AbstractBufferTests.cs" />
+    <Compile Include="DumpFileParserTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="testlist.txt" />
