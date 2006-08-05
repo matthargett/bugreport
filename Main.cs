@@ -21,7 +21,7 @@ namespace bugreport
 			Console.WriteLine(message);
 		}
 		
-		private static TestFileParser getParserForFilename(String _fileName)
+		private static DumpFileParser getParserForFilename(String _fileName)
 		{
 			FileStream file = null;
 			
@@ -43,7 +43,7 @@ namespace bugreport
 				Environment.Exit(1);
 			}
 			
-			return new TestFileParser(file);
+			return new DumpFileParser(file);
 		}
 			
 		
@@ -78,7 +78,7 @@ namespace bugreport
 		public static void Main(string[] args)
 		{
 			Console.WriteLine("bugreport " + VERSION);
-			TestFileParser parser;
+			DumpFileParser parser;
 			Interpreter interpreter;
 			
 			if (args.Length < 1)
