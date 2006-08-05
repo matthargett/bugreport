@@ -126,6 +126,7 @@ namespace bugreport
 					
 					try
 					{
+						// TODO: This may ignore the last instructions in the method.  Investigate + fix.
 						if (!parser.EndOfFunction)						
 						{
 							if (isTracing)
