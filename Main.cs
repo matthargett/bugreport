@@ -8,20 +8,29 @@ using System.IO;
 
 namespace bugreport
 {
-	class MainClass
+	public class MainClass
 	{
 		const String VERSION = "0.1";
+				
+		private List<String> collector = new List<String>();
 		
-		private static void onReportOOB(Object sender, NewReportEventArgs e)
+		public string[] Messages {
+			get {
+				return collector.ToArray();
+			}
+		}
+		
+		private void onReportOOB(Object sender, NewReportEventArgs e)
 		{
 			String message = String.Empty;
 			if (e.IsTainted)
 				message += "Exploitable ";
 			message += String.Format("OOB at EIP 0x{0:x4}", e.InstructionPointer);
-			Console.WriteLine(message);
-		}
-		
-		private static DumpFileParser getParserForFilename(String _fileName)
+			Console.WriteLine("Found defect: " + message);
+			collector.Add(message);
+		}		
+				
+		internal DumpFileParser getParserForFilename(String _fileName)
 		{
 			FileStream file = null;
 			
@@ -33,14 +42,7 @@ namespace bugreport
 			catch(FileNotFoundException)
 			{
 				Console.WriteLine("File not found: " + _fileName);
-				Environment.Exit(1);
-			}
-			
-			catch(Exception e)
-			{
-				Console.WriteLine("Couldn't open file due to error:");
-				Console.WriteLine(e.ToString());
-				Environment.Exit(1);
+				return null;				
 			}
 			
 			return new DumpFileParser(file);
@@ -58,9 +60,7 @@ namespace bugreport
 				AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
 				AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
 				AbstractValue[]  stackBuffer = new AbstractValue[0x200];
-				
-					
-				
+								
 				AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
 				AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 0x100);
 				modifiedBuffer[12] = argvPointerPointer;
@@ -72,11 +72,15 @@ namespace bugreport
 				linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
 				
 				return linuxMainDefaultValues;
-
 		}
 
 		public static void Main(string[] args)
-		{
+		{			
+			MainClass mc = new MainClass();
+			mc.Analyze(args);
+		}
+		
+		public void Analyze(string[] args) {
 			Console.WriteLine("bugreport " + VERSION);
 			DumpFileParser parser;
 			Interpreter interpreter;
@@ -93,7 +97,7 @@ namespace bugreport
 			if (args[0].Equals("--trace")) 
 			{
 				isTracing = true;
-			}
+			}		
 			
 			String[] fileNames;
 			
@@ -107,8 +111,11 @@ namespace bugreport
 			}
 			
 			foreach(String fileName in fileNames)
-			{
+			{							
 				parser = getParserForFilename(fileName);
+				if (null == parser) {
+					return;
+				}
 				
 				interpreter = new Interpreter(getRegistersForLinuxMain());
 				interpreter.NewReport += onReportOOB;
@@ -117,7 +124,7 @@ namespace bugreport
 				{
 					Console.WriteLine();
 					Console.WriteLine("Interpreting file: " + fileName);
-				}
+				}				
 
 				
 				while (!parser.EndOfFunction)
@@ -135,21 +142,19 @@ namespace bugreport
 								Console.WriteLine("topOfStack=" + interpreter.TopOfStack + "  " + interpreter.Registers);
 								Console.WriteLine(parser.CurrentLine);
 							}
-
 							interpreter.Run(instructionBytes);
 						}
 					}
 					catch (Exception e)
 					{
 						StreamWriter writer = new StreamWriter(Console.OpenStandardError());
-						writer.WriteLine(e.ToString());
-						
+						writer.WriteLine(e.ToString());						
 						writer.Close();
-						Environment.Exit(-1);
 					}
 				}
 			}
-			
 		}
 	} 
 }
+
+
