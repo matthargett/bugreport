@@ -63,9 +63,11 @@ namespace bugreport
 								
 				AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
 				AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 0x100);
+				
+				// linux ABI dictates **argv is ebp+12
 				modifiedBuffer[12] = argvPointerPointer;
 
-				// HACK: gcc generates code that accesses this for no good reason
+				// gcc generates code that accesses this at some optimization levels
 				modifiedBuffer[0xfc] = new AbstractValue(1); 
 				
 				AbstractValue stackPointer = new AbstractValue(modifiedBuffer);
