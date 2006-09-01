@@ -3,8 +3,8 @@
 -----bugreport supplemental note: ---------------------------------------------
 
 The following code is from "Secure Programming Educational Material",
-accessable at http://projects.cerias.purdue.edu/secprog/ (accessed on
-2006-09-01 17:24:05 UTC). This code is directly accessable at
+accessible at http://projects.cerias.purdue.edu/secprog/ (accessed on
+2006-09-01 17:24:05 UTC). This code is directly accessible at
 http://projects.cerias.purdue.edu/secprog/class2/vuln_server.c (accessed on
 2006-09-01 17:24:58 UTC).
 
