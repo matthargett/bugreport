@@ -1,4 +1,61 @@
 /* 
+
+-----bugreport supplemental note: ---------------------------------------------
+
+The following code is from "Secure Programming Educational Material",
+accessable at http://projects.cerias.purdue.edu/secprog/ (accessed on
+2006-09-01 17:24:05 UTC). This code is directly accessable at
+http://projects.cerias.purdue.edu/secprog/class2/vuln_server.c (accessed on
+2006-09-01 17:24:58 UTC).
+
+While there is no license or copyright information in vuln_server.c itself, or
+in the directory it was found in, below is a copy of the terms found at
+http://projects.cerias.purdue.edu/secprog/ (accessed on 2006-09-01 17:24:05
+UTC) which govern the way in which vuln_server.c may be used.
+
+=//=
+
+Pascal Meunier, Ph.D., M.Sc., CISSP
+Purdue University CERIAS
+
+Terms
+
+You are free to copy, distribute, display, and perform the work; and to make
+derivative works, under the following conditions.
+
+    * You must give the original author and other contributors credit.
+    * The work will be used for personal or non-commercial educational uses
+    only, and not for commercial activities and purposes.
+    * For any reuse or distribution, you must make clear to others the terms of
+    use for this work.
+    * Derivative works must retain and be subject to the same conditions, and
+    contain a note identifying the new contributor(s) and date of modification.
+    * For other uses please contact the Purdue Office of Technology
+    Commercialization. 
+
+Copyright (2004) Purdue Research Foundation. All rights reserved.
+
+Developed thanks to the support of Symantec Corporation, NSF SFS Capacity
+Building Program (Award Number 0113725) and the Purdue e-Enterprise Center
+
+Contributors:
+Jennifer Richardson, Jared Robinson, Alan Krassowski, Craig Ozancin, Tim Brown,
+Wes Higaki, Melissa Dark, Chris Clifton, Gustavo Rodriguez-Rivera.
+
+Thanks to Michael Howard for reviewing several sets of slides!
+
+CERIAS, Purdue University
+Recitation Building
+656 Oval Drive
+West Lafayette IN 47907-2039
+
+phone (800)494-4419
+fax (765)496-3181
+
+=//=
+
+-----end note------------------------------------------------------------------
+
    Description: Simple server program with intentional vulnerabilities for
    learning purposes.
   
