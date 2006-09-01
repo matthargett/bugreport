@@ -1,0 +1,48 @@
+﻿TODO.txt -- bugreport to-do list
+Dan Moniz <dnm@pobox.com> [http://pobox.com/~dnm/]
+Created: 2006-09-01 03:36:55 UTC | Updated: 2006-09-01 16:33:03 UTC
+
+
+This list is subject to change, of course, but should be kept in order of first
+to last thing(s) to do.
+
+Some tasks or group of tasks have a number, 1-3, rating the expected difficulty
+of the task, 1 being the lowest (easy) and 3 being the highest (difficult).
+These are also expected to be revised as time goes on and different tasks get
+accomplished.
+
+
+As of 2006-09-01 16:20:16 UTC
+
+- Get all tests currently in SVN to pass 
+    - simple [1]
+    - medium [3]
+    - hard [3]
+
+- Add support for ELF binary input (in addition to objdump .dump files) [2]
+
+- Print out same register/trace output with ELF binaries [2]
+
+- Get all tests currently in SVN to pass using ELF binaries
+    - simple
+    - medium
+    - hard
+
+- Get all tests currently in SVN to pass with all combinations of optimization
+options (but with -g on) on both objdump .dump files and ELF binaries [2]
+    - simple
+    - medium
+    - hard
+
+- Get all tests currently in SVN to pass with all combinations of optimization
+options *without* -g on for both objdump .dump files and ELF binaries [2]
+    - simple
+    - medium
+    - hard
+
+- Get vuln_server.c to pass (both objdump .dump file and ELF binary) with all
+combinations of optimization options (but with -g on).
+
+- Get vuln_server.c to pass (both objdump .dump file and ELF binary) with all
+combinations of optimization options *without* -g on.
+
