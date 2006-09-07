@@ -13,9 +13,9 @@ namespace bugreport
 	{
 		// TODO: This assumes that the test runner is run from the build directory.
 		private string testRoot = 
-			Directory.GetCurrentDirectory() + @"\..\..\tests\simple\heap\";			
+			Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";			
 		
-		private string testDataFile = Directory.GetCurrentDirectory() + @"\..\..\systemTestsList.txt";
+		private string testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 		
 		[Test]
 		public void GetParserFileDoesNotExist() {

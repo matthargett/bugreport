@@ -1,19 +1,10 @@
-/*
- * Created by SharpDevelop.
- * User: bsiepert
- * Date: 8/4/2006
- * Time: 8:02 PM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-
 using System;
-using NUnit.Framework;
 using System.IO;
+using NUnit.Framework;
 
-namespace bugreport
+namespace bugreport.DumpFileParserTests
 {
-	public abstract class TestFileParserFixture
+	public abstract class DumpFileParserFixture
 	{
 		protected StreamWriter writer;
 		protected DumpFileParser parser;
@@ -29,7 +20,7 @@ namespace bugreport
 	}
 	
 	[TestFixture]
-	public class WithNothingElseTests : TestFileParserFixture
+	public class WithNothingElseTests : DumpFileParserFixture
 	{
 		[SetUp]
 		public override void SetUp()
@@ -56,7 +47,7 @@ namespace bugreport
 	}
 
 	[TestFixture]
-	public class MainAfterNonMainTests : TestFileParserFixture
+	public class MainAfterNonMainTests : DumpFileParserFixture
 	{
 		[SetUp]
 		public override void SetUp()
@@ -113,7 +104,7 @@ namespace bugreport
 	}
 
 	[TestFixture]
-	public class WithNoMainTests : TestFileParserFixture
+	public class WithNoMainTests : DumpFileParserFixture
 	{
 		[SetUp]
 		public override void SetUp()
@@ -134,7 +125,7 @@ namespace bugreport
 	}
 
 	[TestFixture]
-	public class WithMainOnlyTests : TestFileParserFixture
+	public class WithMainOnlyTests : DumpFileParserFixture
 	{
 		[SetUp]
 		public override void SetUp()
