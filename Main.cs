@@ -150,13 +150,13 @@ namespace bugreport
 					catch (Exception e)
 					{
 						StreamWriter writer = new StreamWriter(Console.OpenStandardError());
-						writer.WriteLine(e.ToString());						
+						writer.WriteLine(e.ToString());
+						collector.Add(e.ToString());
 						writer.Close();
+						break;
 					}
 				}
 			}
 		}
 	} 
 }
-
-

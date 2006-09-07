@@ -161,8 +161,7 @@ namespace bugreport
 			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
 			
 			AbstractValue pointerAnd = AbstractValue.DoOperation(pointerPlus4, OperatorEffect.And, new AbstractValue(0xfffffff0));
-			Assert.AreEqual(one, pointerAnd.PointsTo[4]);
-			
+			Assert.AreEqual(one, pointerAnd.PointsTo[4]);		
 		}
 	}
 }

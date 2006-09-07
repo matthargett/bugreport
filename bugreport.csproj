@@ -46,6 +46,7 @@
     <Compile Include="AbstractValueTests.cs" />
     <Compile Include="AbstractBufferTests.cs" />
     <Compile Include="DumpFileParserTests.cs" />
+    <Compile Include="MainTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="testlist.txt" />
