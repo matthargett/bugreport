@@ -1,19 +1,23 @@
-# simple-malloc-via-immediate_gcc403-00-g.dump,
-# simple-malloc-via-immediate2_gcc403-00-g.dump,
 simple-malloc-via-immediate_gcc403-02-g.dump,
 simple-malloc-via-immediate2_gcc403-02-g.dump,
 simple-malloc-via-immediate-oob_gcc403-O2-g.dump,OOB at EIP 0x0018
 simple-malloc-via-immediate-oob2_gcc403-O2-g.dump,OOB at EIP 0x0018
 simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x0021
 simple-malloc-via-immediate-oob-heap-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x0022
-# TODO: Code returns Exploitable OOB at EIP 0x0045
-# "simple-malloc-via-immediate-oob-global-taint_gcc403-O0-g.dump, 
+simple-malloc-via-immediate-oob-global-taint_gcc403-O0-g.dump,Exploitable OOB at EIP 0x0045 
 simple-malloc-via-immediate-oob-global-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x002c
-# TODO: This test also fails.  Also, this differs from the txt file b/c the text file didn't 
-# include the "OOB at EIP" text.
-# "simple-malloc-via-immediate-stack-taint_gcc403-O0-g.dump,OOP at EIP 0x0045
+simple-malloc-via-immediate-stack-taint_gcc403-O0-g.dump,
+simple-malloc-via-immediate-stack-taint_gcc403-O2-g.dump,
+simple-malloc-via-immediate-oob-stack-taint_gcc403-O0-g.dump,Exploitable OOB at EIP 0x0040
+simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x0021
 simple-malloc-via-heap-oob_gcc403-O2-g.dump,OOB at EIP 0x002a
 simple-malloc-via-stack-calculation-oob_gcc403-O0-g.dump,OOB at EIP 0x003a
 simple-malloc-via-stack-calculation-oob_gcc403-O2-g.dump,OOB at EIP 0x0018
 simple-malloc-via-stack-calculation-oob2_gcc403-O0-g.dump,OOB at EIP 0x003a
 simple-malloc-via-stack-calculation-oob2_gcc403-O2-g.dump,OOB at EIP 0x0018
+# GetEv on SIB:
+# simple-malloc-via-stack-calculation_gcc403-O0-g.dump,
+simple-malloc-via-stack-calculation_gcc403-O2-g.dump,
+# Invalid Opcode: 05 04 01 00 00
+# simple-malloc-via-stack-calculation2_gcc403-O0-g.dump,
+simple-malloc-via-stack-calculation2_gcc403-O2-g.dump,
