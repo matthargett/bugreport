@@ -30,6 +30,7 @@ namespace bugreport
 		}
 		
 		[Test]
+		[Category("long")]
 		public void SystemTest()
 		{											
 			string[] tests = File.ReadAllLines(testDataFile);

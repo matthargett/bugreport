@@ -49,7 +49,7 @@
     <Compile Include="MainTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="testlist.txt" />
+    <Content Include="systemTestsList.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

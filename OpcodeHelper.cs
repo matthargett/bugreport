@@ -10,7 +10,7 @@ namespace bugreport
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, rAXIv, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM};
+	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -25,6 +25,8 @@ namespace bugreport
 				case 0xc3:
 				case 0x90:
 					return OpcodeEncoding.None;
+				case 0x05:
+					return OpcodeEncoding.rAxIz;
 				case 0x0f:
 					return OpcodeEncoding.GvEb;
 				case 0x53:
@@ -46,7 +48,7 @@ namespace bugreport
 				case 0xa2:
 					return OpcodeEncoding.ObAL;
 				case 0xb8:
-					return OpcodeEncoding.rAXIv;
+					return OpcodeEncoding.rAxIv;
 				case 0xa1:
 					return OpcodeEncoding.rAxOv;
 				case 0xc6:
@@ -74,6 +76,13 @@ namespace bugreport
 
 			switch(_code[0])    	
 			{
+
+				case 0x05:
+					return OperatorEffect.Add;
+					
+				case 0x29:
+					return OperatorEffect.Sub;
+				
 				case 0x83:
 				{
 					Byte rm = ModRM.GetOpcodeGroupIndex(_code);
@@ -105,8 +114,6 @@ namespace bugreport
 							return OperatorEffect.Unknown;
 					}
 				}
-				case 0x29:
-					return OperatorEffect.Sub;
 				
 				default:
 					return OperatorEffect.Assignment;
