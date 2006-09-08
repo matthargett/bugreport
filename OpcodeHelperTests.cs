@@ -50,7 +50,7 @@ namespace bugreport
 		{
 			code = new Byte[] {0xb8, 0x00, 0x00, 0x00, 0x00};
 			encoding = OpcodeHelper.GetEncoding(code);
-			Assert.AreEqual(OpcodeEncoding.rAXIv, encoding);			
+			Assert.AreEqual(OpcodeEncoding.rAxIv, encoding);			
 		}
 
 		[Test]
@@ -226,6 +226,18 @@ namespace bugreport
 
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
 			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
+			
+		}
+		
+		[Test]
+		public void rAxIz()
+		{
+			code = new Byte[] {0x05, 0x04, 0x01, 0x00, 0x00};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rAxIz, encoding);		
+
+			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
+			Assert.AreEqual(OperatorEffect.Add, operatorEffect);
 			
 		}
 

@@ -17,7 +17,6 @@ simple-malloc-via-stack-calculation-oob2_gcc403-O0-g.dump,OOB at EIP 0x003a
 simple-malloc-via-stack-calculation-oob2_gcc403-O2-g.dump,OOB at EIP 0x0018
 # GetEv on SIB:
 # simple-malloc-via-stack-calculation_gcc403-O0-g.dump,
-simple-malloc-via-stack-calculation_gcc403-O2-g.dump,
-# Invalid Opcode: 05 04 01 00 00
 # simple-malloc-via-stack-calculation2_gcc403-O0-g.dump,
+simple-malloc-via-stack-calculation_gcc403-O2-g.dump,
 simple-malloc-via-stack-calculation2_gcc403-O2-g.dump,

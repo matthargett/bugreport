@@ -174,13 +174,13 @@ namespace bugreport
 			if (_code.Length == 0)
 				throw new ArgumentException("_code", "Empty array not allowed.");
 			
-			parseOpcode(_code);
+			emulateOpcode(_code);
 			instructionPointer += (UInt32)_code.Length;
 			
 			return;
 		}
 	
-		private void parseOpcode(Byte[] _code)
+		private void emulateOpcode(Byte[] _code)
 		{
 			RegisterName ev, gv;
 			AbstractValue value;
@@ -197,10 +197,13 @@ namespace bugreport
 
 			switch (encoding)
 			{
-				case OpcodeEncoding.rAXIv:
+				
+				case OpcodeEncoding.rAxIv:
+				case OpcodeEncoding.rAxIz:
 				{
 					UInt32 immediate = BitMath.BytesToDword(_code, 1);
-					registers[RegisterName.EAX] = new AbstractValue(immediate);
+					value = registers[RegisterName.EAX];
+					registers[RegisterName.EAX] = AbstractValue.DoOperation(value, op, new AbstractValue(immediate));
 					return;
 				}
 

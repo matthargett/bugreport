@@ -172,7 +172,18 @@ namespace bugreport
 			interpreter.Run(code);
 			Assert.AreEqual(code.Length, interpreter.InstructionPointer);
 			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x0, interpreter.ReturnValue.Value);
+			Assert.AreEqual(0x0, interpreter.Registers[RegisterName.EAX].Value);
+		}
+
+		[Test]
+		public void AddEax0x1()
+		{
+			code = new Byte[] {0x05, 0x01, 0x00, 0x00, 0x00};
+			interpreter.Registers[RegisterName.EAX] = new AbstractValue(1);
+			interpreter.Run(code);
+			Assert.AreEqual(code.Length, interpreter.InstructionPointer);
+			Assert.AreEqual(oldStackSize, interpreter.StackSize);
+			Assert.AreEqual(0x2, interpreter.Registers[RegisterName.EAX].Value);
 		}
 
 		[Test]
