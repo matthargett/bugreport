@@ -35,9 +35,9 @@
     <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AbstractValue.cs" />
-    <Compile Include="Interpreter.cs" />
+    <Compile Include="X86emulator.cs" />
     <Compile Include="DumpFileParser.cs" />
-    <Compile Include="InterpreterTests.cs" />
+    <Compile Include="X86emulatorTests.cs" />
     <Compile Include="BitMath.cs" />
     <Compile Include="ModRMTests.cs" />
     <Compile Include="ModRM.cs" />

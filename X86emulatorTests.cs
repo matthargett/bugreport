@@ -8,21 +8,21 @@ using NUnit.Framework;
 namespace bugreport
 {
 	[TestFixture]
-	public class InterpreterTests
+	public class X86emulatorTests
 	{
 		Byte[] code;
-		Interpreter interpreter; 
+		X86emulator x86emulator; 
 		UInt32 oldStackSize;	
 
 		[SetUp]
 		public void SetUp()
 		{
-			interpreter = new Interpreter();
+			x86emulator = new X86emulator();
 			AbstractBuffer buffer = new AbstractBuffer(new AbstractValue[0x200]);
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.Registers[RegisterName.ESP] = pointer;
+			x86emulator.Registers[RegisterName.ESP] = pointer;
 			
-			oldStackSize = interpreter.StackSize;
+			oldStackSize = x86emulator.StackSize;
 			reportedInstructionPointer = 0xdead1337;
 		}
 		
@@ -32,35 +32,35 @@ namespace bugreport
 			AbstractValue value = new AbstractValue(1);
 			RegisterCollection registers = new RegisterCollection();
 			registers[RegisterName.EAX] = value;
-			interpreter = new Interpreter(registers);
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.EAX]);
+			x86emulator = new X86emulator(registers);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX]);
 		}
 		
 		[Test]
 		public void PushEbp()
 		{
 			code = new Byte[] {0x55};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x1, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize + 1, interpreter.StackSize);
+			Assert.AreEqual(0x1, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize + 1, x86emulator.StackSize);
 		}
 		
 		[Test]
 		public void PushEbx()
 		{
 			code = new Byte[] {0x53};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x1, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize + 1, interpreter.StackSize);
+			Assert.AreEqual(0x1, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize + 1, x86emulator.StackSize);
 		}
 
 		[Test]
 		public void DefaultValues()
 		{
-			Assert.AreEqual(0x0, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
+			Assert.AreEqual(0x0, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 		}
 
 		[Test]
@@ -69,13 +69,13 @@ namespace bugreport
 			code = new Byte[] { 0x89, 0xe5} ;
 			UInt32 value = 0x31337;
 			AbstractValue abstractValue = new AbstractValue(value);
-			interpreter.Registers[RegisterName.ESP] = abstractValue;
-			interpreter.Run(code);
+			x86emulator.Registers[RegisterName.ESP] = abstractValue;
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x2, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.ESP].Value);
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.EBP].Value);
+			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.ESP].Value);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EBP].Value);
 		}
 		
 		[Test]
@@ -84,14 +84,14 @@ namespace bugreport
 			UInt32 value = 0x31337;
 			AbstractValue[] buffer = new AbstractValue[] {new AbstractValue(value)};
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.Registers[RegisterName.EAX] = pointer;
+			x86emulator.Registers[RegisterName.EAX] = pointer;
 
 			code = new Byte[] {0x8b, 0x00} ;
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x2, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.EAX].Value);
+			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 		
 		[Test]
@@ -101,14 +101,14 @@ namespace bugreport
 			AbstractValue argv = new AbstractValue(value);
 			AbstractValue[] argvBuffer = new AbstractValue[] {argv};
 			AbstractValue argvPointer = new AbstractValue(argvBuffer);
-			interpreter.Registers[RegisterName.EAX] = argvPointer;
+			x86emulator.Registers[RegisterName.EAX] = argvPointer;
 
 			code = new Byte[] {0x8b, 0x00} ;
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x2, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.EAX].Value);
+			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 		
 		[Test]
@@ -118,14 +118,14 @@ namespace bugreport
 			buffer[12] = new AbstractValue(1);
 			
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.Registers[RegisterName.EBP] = pointer;
+			x86emulator.Registers[RegisterName.EBP] = pointer;
 
 			code = new Byte[] {0x8b, 0x45, 0xc} ;
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x3, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(1, interpreter.ReturnValue.Value);
+			Assert.AreEqual(0x3, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(1, x86emulator.ReturnValue.Value);
 		}
 		
 		[Test]
@@ -133,14 +133,14 @@ namespace bugreport
 		public void EmptyCodeArray()
 		{
 			code = new Byte[] {};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 		}
 		
 		[Test]
 		[ExpectedException(typeof(InvalidOpcodeException))]
 		public void InvalidOpcode()
 		{
-			interpreter.Run(new Byte[] {0xfe});
+			x86emulator.Run(new Byte[] {0xfe});
 		}
 		
 
@@ -148,70 +148,70 @@ namespace bugreport
 		public void Sub()
 		{	
 			code = new Byte[] {0x83, 0xec, 0x08};
-			interpreter.Registers[RegisterName.ESP] = new AbstractValue(0x0a);
-			interpreter.Run(code);
-			Assert.AreEqual(0x3, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x02, interpreter.Registers[RegisterName.ESP].Value);
+			x86emulator.Registers[RegisterName.ESP] = new AbstractValue(0x0a);
+			x86emulator.Run(code);
+			Assert.AreEqual(0x3, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(0x02, x86emulator.Registers[RegisterName.ESP].Value);
 		}
 
 		[Test]
 		public void MovPtrEsp0x10()
 		{
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
-			interpreter.Run(code);
-			Assert.AreEqual(0x7, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x10, interpreter.TopOfStack.Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(0x7, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(0x10, x86emulator.TopOfStack.Value);
 		}
 
 		[Test]
 		public void MovEax0x0()
 		{
 			code = new Byte[] {0xb8, 0x00, 0x00, 0x00, 0x00};
-			interpreter.Run(code);
-			Assert.AreEqual(code.Length, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x0, interpreter.Registers[RegisterName.EAX].Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(code.Length, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(0x0, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 
 		[Test]
 		public void AddEax0x1()
 		{
 			code = new Byte[] {0x05, 0x01, 0x00, 0x00, 0x00};
-			interpreter.Registers[RegisterName.EAX] = new AbstractValue(1);
-			interpreter.Run(code);
-			Assert.AreEqual(code.Length, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x2, interpreter.Registers[RegisterName.EAX].Value);
+			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(1);
+			x86emulator.Run(code);
+			Assert.AreEqual(code.Length, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(0x2, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 
 		[Test]
 		public void MovEax0xXXXXXXXX()
 		{
 			code = new Byte[] {0xb8, 0x37, 0x13, 0x03, 0x00};
-			interpreter.Run(code);
-			Assert.AreEqual(code.Length, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x00031337, interpreter.ReturnValue.Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(code.Length, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(0x00031337, x86emulator.ReturnValue.Value);
 		}
 
 		[Test]
 		public void MovEsp0xXXXXXXXX()
 		{
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x37, 0x13, 0x03, 0x00};
-			interpreter.Run(code);
-			Assert.AreEqual(0x7, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(0x00031337, interpreter.TopOfStack.Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(0x7, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(0x00031337, x86emulator.TopOfStack.Value);
 		}
 		
 		[Test]
 		public void ReturnValueIsAliasedToEax()
 		{
 			AbstractValue value = new AbstractValue(0x31337);
-			interpreter.ReturnValue = value;
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.EAX]);
+			x86emulator.ReturnValue = value;
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX]);
 		}
 
 		[Test]
@@ -219,21 +219,21 @@ namespace bugreport
 		{
 			//TODO: should take AbstractValue rather than UInt32
 			//TODO: need to reconcile with esp/ebp handling
-			interpreter.PushOntoStack(16);
+			x86emulator.PushOntoStack(16);
 			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
-			interpreter.Run(code);
-			Assert.AreEqual(0x5, interpreter.InstructionPointer);
-			Assert.AreEqual(oldStackSize, interpreter.StackSize);
-			Assert.AreEqual(16, interpreter.ReturnValue.PointsTo.Length);
+			x86emulator.Run(code);
+			Assert.AreEqual(0x5, x86emulator.InstructionPointer);
+			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
+			Assert.AreEqual(16, x86emulator.ReturnValue.PointsTo.Length);
 		}
 
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
 		public void MovIntoUnassignedEax()
 		{
-			Assert.IsNull(interpreter.ReturnValue);
+			Assert.IsNull(x86emulator.ReturnValue);
 			code = new Byte[] {0xc6, 0x40, 0x10, 0x00};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 		}
 		
 		UInt32 reportedInstructionPointer;
@@ -249,10 +249,10 @@ namespace bugreport
 			Byte value = 0x01, index = 0x10;
 			AbstractValue[] buffer = new AbstractValue[index];
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.ReturnValue = pointer;
+			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x40, index, value};
-			interpreter.NewReport += onReportOOB;
-			interpreter.Run(code);
+			x86emulator.NewReport += onReportOOB;
+			x86emulator.Run(code);
 			Assert.AreEqual(0, reportedInstructionPointer);			
 		}
 
@@ -262,10 +262,10 @@ namespace bugreport
 			Byte value = 0x01, index = 0xf;
 			AbstractValue[] buffer = new AbstractValue[16];
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.ReturnValue = pointer;
+			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x40, index, value};
-			interpreter.Run(code);
-			Assert.AreEqual(value, interpreter.ReturnValue.PointsTo[index].Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(value, x86emulator.ReturnValue.PointsTo[index].Value);
 		}
 		
 		[Test]
@@ -274,40 +274,40 @@ namespace bugreport
 			Byte value = 0x01;
 			AbstractValue[] buffer = new AbstractValue[16];
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.ReturnValue = pointer;
+			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x00, value};
-			interpreter.Run(code);
-			Assert.AreEqual(value, interpreter.ReturnValue.PointsTo[0].Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(value, x86emulator.ReturnValue.PointsTo[0].Value);
 		}
 		
 		[Test]
 		public void MovBytePtrEaxPlus16FromBl()
 		{ // mov    BYTE PTR [eax+16],bl
 			Byte offset = 0x10;
-			interpreter.Registers[RegisterName.EBX] = new AbstractValue(0x1);
+			x86emulator.Registers[RegisterName.EBX] = new AbstractValue(0x1);
 			AbstractValue[] buffer = new AbstractValue[offset+1];
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.ReturnValue = pointer;
+			x86emulator.ReturnValue = pointer;
 
 			code = new Byte[] {0x88, 0x58, offset};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x1, interpreter.ReturnValue.PointsTo[offset].Value);
+			Assert.AreEqual(0x1, x86emulator.ReturnValue.PointsTo[offset].Value);
 		}
 
 		[Test]
 		public void MovDwordPtrEaxPlus16FromEbx()
 		{ // mov    BYTE PTR [eax+16],bl
 			Byte offset = 0x10;
-			interpreter.Registers[RegisterName.EBX] = new AbstractValue(0x1);
+			x86emulator.Registers[RegisterName.EBX] = new AbstractValue(0x1);
 			AbstractValue[] buffer = new AbstractValue[offset+1];
 			AbstractValue pointer = new AbstractValue(buffer);
-			interpreter.Registers[RegisterName.EAX] = pointer;
+			x86emulator.Registers[RegisterName.EAX] = pointer;
 
 			code = new Byte[] {0x89, 0x58, offset};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			Assert.AreEqual(0x1, interpreter.Registers[RegisterName.EAX].PointsTo[offset].Value);
+			Assert.AreEqual(0x1, x86emulator.Registers[RegisterName.EAX].PointsTo[offset].Value);
 		}
 
 		[Test]
@@ -316,9 +316,9 @@ namespace bugreport
 			UInt32 value = 1;
 			UInt32 offset = 0x80495e0;
 			code = new Byte[] {0xa2, 0xe0, 0x95, 0x04, 0x08};
-			interpreter.Registers[RegisterName.EAX] = new AbstractValue(value);
-			interpreter.Run(code);
-			Assert.AreEqual(value, interpreter.DataSegment[offset].Value);
+			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(value);
+			x86emulator.Run(code);
+			Assert.AreEqual(value, x86emulator.DataSegment[offset].Value);
 		}
 
 		[Test]
@@ -326,10 +326,10 @@ namespace bugreport
 		{ // movzx  edx,BYTE PTR ds:0x80495e0
 			UInt32 value = 1;
 			AbstractValue abstractValue = new AbstractValue(value);
-			interpreter.DataSegment[0x80495e0] = abstractValue;
+			x86emulator.DataSegment[0x80495e0] = abstractValue;
 			code = new Byte[] {0x0f, 0xb6, 0x15, 0xe0, 0x95, 0x04, 0x08};
-			interpreter.Run(code);
-			Assert.AreEqual(value, interpreter.Registers[RegisterName.EDX].Value);
+			x86emulator.Run(code);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EDX].Value);
 			
 			
 		}
@@ -340,9 +340,9 @@ namespace bugreport
 			Byte immediate = 0x0f;
 			code = new Byte[] {0x83, 0xc0, immediate};
 			UInt32 value = 1;
-			interpreter.Registers[RegisterName.EAX] = new AbstractValue(value);
-			interpreter.Run(code);
-			Assert.AreEqual(value + immediate, interpreter.Registers[RegisterName.EAX].Value);	
+			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(value);
+			x86emulator.Run(code);
+			Assert.AreEqual(value + immediate, x86emulator.Registers[RegisterName.EAX].Value);	
 		}
 
 		[Test]
@@ -350,11 +350,11 @@ namespace bugreport
 		{ // mov    DWORD PTR [eax],0x10
 		
 			AbstractValue[] value = new AbstractValue [1];
-			interpreter.Registers[RegisterName.EAX] = new AbstractValue(value);
+			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(value);
 			code = new Byte[] {0xc7, 0x00, 0x10, 0x00, 0x00, 0x00};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			AbstractValue sixteen = interpreter.Registers[RegisterName.EAX].PointsTo[0];
+			AbstractValue sixteen = x86emulator.Registers[RegisterName.EAX].PointsTo[0];
 			Assert.AreEqual(0x10, sixteen.Value);
 			                
 		}
@@ -364,11 +364,11 @@ namespace bugreport
 		{ // mov    DWORD PTR [ebp-8],0xf
 		
 			AbstractValue[] value = new AbstractValue [0x100];
-			interpreter.Registers[RegisterName.EBP] = new AbstractValue(value);
+			x86emulator.Registers[RegisterName.EBP] = new AbstractValue(value);
 			code = new Byte[] {0xc7, 0x45, 0xf8, 0x0f, 0x00, 0x00, 0x00};
-			interpreter.Run(code);
+			x86emulator.Run(code);
 
-			AbstractValue fifteen = interpreter.Registers[RegisterName.EBP].PointsTo[0xf8];
+			AbstractValue fifteen = x86emulator.Registers[RegisterName.EBP].PointsTo[0xf8];
 			Assert.AreEqual(0xf, fifteen.Value);
 			                
 		}
@@ -377,14 +377,14 @@ namespace bugreport
 		public void MovPtrEspEax()
 		{ // mov [esp]. eax
 			Byte[] code = new Byte[] {0x89, 0x04, 0x24};
-			interpreter.Registers[RegisterName.EAX] = new AbstractValue(0x10);
+			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(0x10);
 			AbstractValue[] values = new AbstractValue[] {new AbstractValue(1)};
 			AbstractBuffer buffer = new AbstractBuffer(values);
-			interpreter.Registers[RegisterName.ESP] = new AbstractValue(buffer);
+			x86emulator.Registers[RegisterName.ESP] = new AbstractValue(buffer);
 			
-			interpreter.Run(code);
+			x86emulator.Run(code);
 			
-			AbstractBuffer espBuffer = interpreter.Registers[RegisterName.ESP].PointsTo;
+			AbstractBuffer espBuffer = x86emulator.Registers[RegisterName.ESP].PointsTo;
 			Assert.AreEqual(0x10, espBuffer[0].Value);
 		
 		}
@@ -399,10 +399,10 @@ namespace bugreport
 			AbstractValue one = new AbstractValue(1);
 			AbstractValue[] values = new AbstractValue [] {zero, one};
 			AbstractBuffer buffer = new AbstractBuffer(values);
-			interpreter.Registers[RegisterName.EAX] = new AbstractValue(buffer);
+			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(buffer);
 				
-			interpreter.Run(code);
-			Assert.AreEqual(one, interpreter.Registers[RegisterName.EDX].PointsTo[0]);
+			x86emulator.Run(code);
+			Assert.AreEqual(one, x86emulator.Registers[RegisterName.EDX].PointsTo[0]);
 		}
 	
 	

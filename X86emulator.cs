@@ -78,7 +78,7 @@ namespace bugreport
 		}
 	}
 
-	public class Interpreter
+	public class X86emulator
 	{
 		private UInt32 instructionPointer;
 		private UInt32 stackSize;
@@ -86,14 +86,14 @@ namespace bugreport
 		private Dictionary<UInt32, AbstractValue> dataSegment;
 		public event EventHandler<NewReportEventArgs> NewReport;
 		
-		public Interpreter()
+		public X86emulator()
 		{
 			dataSegment = new Dictionary<UInt32, AbstractValue>();
 			registers = new RegisterCollection();
 			stackSize = 1;
 		}
 		
-		public Interpreter(RegisterCollection _registers)
+		public X86emulator(RegisterCollection _registers)
 		{
 			dataSegment = new Dictionary<UInt32, AbstractValue>();
 			registers = _registers;
