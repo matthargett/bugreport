@@ -85,7 +85,7 @@ namespace bugreport
 		public void Analyze(string[] args) {
 			Console.WriteLine("bugreport " + VERSION);
 			DumpFileParser parser;
-			Interpreter interpreter;
+			X86emulator interpreter;
 			
 			if (args.Length < 1)
 			{
@@ -119,7 +119,7 @@ namespace bugreport
 					return;
 				}
 				
-				interpreter = new Interpreter(getRegistersForLinuxMain());
+				interpreter = new X86emulator(getRegistersForLinuxMain());
 				interpreter.NewReport += onReportOOB;
 				
 				if (isTracing)
