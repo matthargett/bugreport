@@ -7,28 +7,69 @@ using NUnit.Framework;
 
 namespace bugreport
 {
-
 	public class AbstractBuffer
 	{
 		private AbstractValue[] storage;
 		private UInt32 baseIndex = 0;
-		
+        private Int32 allocatedLength = 0;
+
 		public AbstractBuffer(AbstractValue[] _buffer)
 		{
-			storage = _buffer;	
+			storage = _buffer;
+            allocatedLength = storage.Length;
 		}
 		
 		public AbstractBuffer(AbstractBuffer _copyMe)
 		{
 			this.storage = _copyMe.storage;
 			this.BaseIndex = _copyMe.BaseIndex;
+            this.allocatedLength = _copyMe.Length;
 		}
-		
-		public static AbstractBuffer Add(AbstractBuffer _buffer, UInt32 _addValue)
+
+        private AbstractBuffer(AbstractBuffer _buffer, UInt32 _newLength)
+        {
+            // Account for element [0] of the array
+            _newLength = _newLength + 1;
+            if (_newLength >= _buffer.Length)
+            {
+                AbstractValue[] _copyTo = new AbstractValue[_newLength];
+
+                Int32 i;
+                for (i = 0; i < _buffer.Length; i++)
+                {
+                    _copyTo[i] = _buffer.storage[i];
+                }
+                for (; i < _newLength; i++)
+                {
+                    _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN);
+                    _copyTo[i].IsOOB = true;
+                }
+                this.allocatedLength = _buffer.Length;
+                this.storage = _copyTo;
+            }
+            else
+            {
+                this.storage = _buffer.storage;
+                this.BaseIndex = _buffer.BaseIndex;
+                this.allocatedLength = _buffer.Length;
+            }
+        }
+
+        public AbstractBuffer Extend(UInt32 _newLength)
+        {
+            return new AbstractBuffer(this, _newLength);
+        }
+
+        public static AbstractBuffer Add(AbstractBuffer _buffer, UInt32 _addValue)
 		{
 			AbstractBuffer result = new AbstractBuffer(_buffer);
-			result.baseIndex += _addValue;
-			return result;
+     
+            if((result.baseIndex + _addValue) >= result.allocatedLength)
+                result = _buffer.Extend(result.baseIndex + _addValue);
+
+            result.baseIndex += _addValue;
+
+            return result;
 		}
 		public static AbstractBuffer And(AbstractBuffer _buffer, UInt32 _andValue)
 		{
@@ -66,7 +107,7 @@ namespace bugreport
 		
 		public Int32 Length
 		{
-			get { return storage.Length; }
+			get { return this.allocatedLength; }
 		}
 	}
 	
@@ -76,7 +117,9 @@ namespace bugreport
 		AbstractBuffer pointsTo;
 		UInt32 storage;
 		Boolean tainted;
-		
+        Boolean isOOB;
+
+        public const UInt32 UNKNOWN = 0xb4dc0d3d;
 		
 		public AbstractValue(AbstractValue[] _willPointTo)
 		{
@@ -98,8 +141,10 @@ namespace bugreport
 		{
 			this.Value = _copyMe.Value;
 			this.IsTainted = _copyMe.IsTainted;
+            this.IsOOB = _copyMe.IsOOB;
 			this.PointsTo = _copyMe.PointsTo;
 		}
+
 		public AbstractValue(UInt32 _value)
 		{
 			storage = _value;
@@ -135,6 +180,12 @@ namespace bugreport
 
 			private set { tainted = value; }
 		}
+
+        public Boolean IsOOB
+        {
+            get { return isOOB; }
+            set { isOOB = value; }
+        }
 		
 		public UInt32 Value
 		{
@@ -152,8 +203,13 @@ namespace bugreport
 		{
 			switch(_operatorEffect)
 			{
-				case OperatorEffect.Assignment:
-					return new AbstractValue(rhs);
+                case OperatorEffect.Assignment:
+                {
+                    AbstractValue newAbstractValue = new AbstractValue(rhs);
+                    if (lhs != null && lhs.IsOOB)
+                        newAbstractValue.IsOOB = true;
+                    return newAbstractValue;
+                }
 					
 				case OperatorEffect.Add:
 				{

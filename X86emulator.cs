@@ -179,7 +179,7 @@ namespace bugreport
 			
 			return;
 		}
-	
+
 		private void emulateOpcode(Byte[] _code)
 		{
 			RegisterName ev, gv;
@@ -265,6 +265,8 @@ namespace bugreport
 						try
 						{
 							registers[ev].PointsTo[index] = AbstractValue.DoOperation(registers[ev].PointsTo[index], op, value);
+                            if (registers[ev].PointsTo[index].IsOOB)
+                                throw new System.IndexOutOfRangeException();
 						}
 						catch (IndexOutOfRangeException)
 						{
@@ -276,6 +278,8 @@ namespace bugreport
 						try
 						{
 							registers[ev] = AbstractValue.DoOperation(registers[ev], op, value);
+                            if (registers[ev].IsOOB)
+                                throw new System.IndexOutOfRangeException();
 						}
 						catch (IndexOutOfRangeException)
 						{
@@ -324,6 +328,8 @@ namespace bugreport
 						try
 						{
 							value = value.PointsTo[index];
+                            if (value.IsOOB)
+                                throw new IndexOutOfRangeException();
 						}
 						catch (IndexOutOfRangeException)
 						{
@@ -359,6 +365,8 @@ namespace bugreport
 					try 
 					{
 						Registers[gv] = AbstractValue.DoOperation(Registers[ev], OperatorEffect.Add, new AbstractValue(index));
+                        if (Registers[gv].IsOOB)
+                            throw new System.IndexOutOfRangeException();
 					}
 					catch (IndexOutOfRangeException)
 					{
@@ -401,6 +409,8 @@ namespace bugreport
 							try
 							{
 								value.PointsTo[index] = AbstractValue.DoOperation(value.PointsTo[index], op, registers[gv]);
+                                if (value.PointsTo[index].IsOOB)
+                                    throw new System.IndexOutOfRangeException();
 							}
 							catch (IndexOutOfRangeException)
 							{
