@@ -163,5 +163,20 @@ namespace bugreport
 			AbstractValue pointerAnd = AbstractValue.DoOperation(pointerPlus4, OperatorEffect.And, new AbstractValue(0xfffffff0));
 			Assert.AreEqual(one, pointerAnd.PointsTo[4]);		
 		}
-	}
+
+        [Test]
+        public void ReadBeyondEndGetsUnkownValue()
+        {
+            AbstractValue[] buffer = new AbstractValue[16];
+            AbstractValue pointer = new AbstractValue(buffer);
+
+            Assert.IsNotNull(pointer);
+            Assert.IsNotNull(pointer.PointsTo);
+            AbstractBuffer newBuffer = pointer.PointsTo.Extend(20);
+            pointer = new AbstractValue(newBuffer);
+            
+            Assert.AreEqual(AbstractValue.UNKNOWN, pointer.PointsTo[16].Value);
+            Assert.IsTrue(pointer.PointsTo[16].IsOOB);
+        }
+    }
 }

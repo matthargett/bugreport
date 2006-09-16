@@ -405,8 +405,5 @@ namespace bugreport
 			Assert.AreEqual(one, x86emulator.Registers[RegisterName.EDX].PointsTo[0]);
 		}
 	
-	
-	
-	
 	}
 }
