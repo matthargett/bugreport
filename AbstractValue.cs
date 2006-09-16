@@ -26,47 +26,33 @@ namespace bugreport
             this.allocatedLength = _copyMe.Length;
 		}
 
-        private AbstractBuffer(AbstractBuffer _buffer, UInt32 _newLength)
+        private void Extend(UInt32 _newLength)
         {
             // Account for element [0] of the array
             _newLength = _newLength + 1;
-            if (_newLength >= _buffer.Length)
+            if (_newLength >= this.Length)
             {
                 AbstractValue[] _copyTo = new AbstractValue[_newLength];
 
                 Int32 i;
-                for (i = 0; i < _buffer.Length; i++)
+                for (i = 0; i < this.storage.Length; i++)
                 {
-                    _copyTo[i] = _buffer.storage[i];
+                    _copyTo[i] = this.storage[i];
                 }
                 for (; i < _newLength; i++)
                 {
                     _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN);
                     _copyTo[i].IsOOB = true;
-                }
-                this.allocatedLength = _buffer.Length;
+                }               
                 this.storage = _copyTo;
             }
-            else
-            {
-                this.storage = _buffer.storage;
-                this.BaseIndex = _buffer.BaseIndex;
-                this.allocatedLength = _buffer.Length;
-            }
-        }
 
-        public AbstractBuffer Extend(UInt32 _newLength)
-        {
-            return new AbstractBuffer(this, _newLength);
+            return;
         }
 
         public static AbstractBuffer Add(AbstractBuffer _buffer, UInt32 _addValue)
 		{
 			AbstractBuffer result = new AbstractBuffer(_buffer);
-     
-            if((result.baseIndex + _addValue) >= result.allocatedLength)
-                result = _buffer.Extend(result.baseIndex + _addValue);
-
             result.baseIndex += _addValue;
 
             return result;
@@ -93,9 +79,32 @@ namespace bugreport
 		}
 		public AbstractValue this[Int32 index]
 		{
-			get { return storage[baseIndex + index]; }
+			get 
+            { 
+                // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
+                if(((baseIndex + index) >= this.allocatedLength) && ((baseIndex + index) >= this.storage.Length))
+                {
+                    this.Extend(baseIndex + (uint)index);
+                    return this.storage[baseIndex + index];
+                }
+                else
+                    return storage[baseIndex + index]; 
+            }
 			
-			set { storage[baseIndex + index] = value; }
+			set 
+            {
+                if ((baseIndex + index) >= this.allocatedLength)
+                    value.IsOOB = true;
+
+                if (((baseIndex + index) >= this.allocatedLength) && ((baseIndex + index) >= this.storage.Length))
+                {
+                    this.Extend(baseIndex + (uint)index);
+                    this.storage[baseIndex + index] = value;
+                    
+                }
+                else
+                    this.storage[baseIndex + index] = value; 
+            }
 		}
 		
 		public UInt32 BaseIndex
