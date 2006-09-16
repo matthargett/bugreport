@@ -149,6 +149,7 @@ namespace bugreport
             pointer = AbstractBuffer.Sub(pointer, 1);
 
             Assert.AreEqual(0x41, pointer[0].Value);
+            Assert.AreEqual(0x41, pointer[17].Value);
         }
 	}
 }
