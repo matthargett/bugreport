@@ -133,15 +133,15 @@ namespace bugreport
         }
 
         [Test]
-        public void PointerIncSetValueDecRetainsTaints()
+        public void OverflowDoesntLoseIncrement()
         {
             AbstractValue[] buffer = new AbstractValue[16];
             AbstractBuffer pointer = new AbstractBuffer(buffer);
             AbstractValue value = new AbstractValue(0x41);
-            value.AddTaint();
+            value = value.AddTaint();
 
             pointer[0] = value;
-
+            
             pointer = AbstractBuffer.Add(pointer, 1);
             
             pointer[16] = value;
@@ -149,7 +149,9 @@ namespace bugreport
             pointer = AbstractBuffer.Sub(pointer, 1);
 
             Assert.AreEqual(0x41, pointer[0].Value);
+            Assert.IsTrue(value.IsTainted);
             Assert.AreEqual(0x41, pointer[17].Value);
+            Assert.IsTrue(pointer[17].IsTainted);
         }
 	}
 }
