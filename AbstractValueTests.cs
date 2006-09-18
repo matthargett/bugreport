@@ -11,6 +11,22 @@ namespace bugreport
 	public class AbstractValueTests
 	{		
 		[Test]
+		public void DefaultIsNotInitialized() 
+		{
+			AbstractValue uninit = new AbstractValue();			
+			Assert.IsFalse(uninit.IsInitialized);
+			Assert.AreEqual(AbstractValue.UNKNOWN, uninit.Value);
+		}
+		
+		[Test]
+		public void InitializedIsInitialized() 
+		{
+			AbstractValue uninit = new AbstractValue(0xabcdef);
+			Assert.IsTrue(uninit.IsInitialized);
+			Assert.AreEqual(0xabcdef, uninit.Value);
+		}
+		
+		[Test]
 		public void AssignmentAtByteZero()
 		{
 			AbstractValue[] buffer = new AbstractValue[16];
