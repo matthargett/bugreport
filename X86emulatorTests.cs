@@ -13,7 +13,7 @@ namespace bugreport
 		Byte[] code;
 		X86emulator x86emulator; 
 		UInt32 oldStackSize;	
-
+		
 		[SetUp]
 		public void SetUp()
 		{
@@ -24,6 +24,15 @@ namespace bugreport
 			
 			oldStackSize = x86emulator.StackSize;
 			reportedInstructionPointer = 0xdead1337;
+		}
+		
+		[Test]
+		public void DefaultRegistersContainUninitializedValues() 
+		{
+			RegisterCollection collection = new RegisterCollection();			
+			foreach (RegisterName register in RegisterName.GetValues(typeof(RegisterName))) {
+				Assert.IsFalse(collection[register].IsInitialized);
+			}			
 		}
 		
 		[Test]
@@ -226,22 +235,12 @@ namespace bugreport
 			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(16, x86emulator.ReturnValue.PointsTo.Length);
 		}
-
-		[Test]
-		[ExpectedException(typeof(InvalidOperationException))]
-		public void MovIntoUnassignedEax()
-		{
-			Assert.IsNull(x86emulator.ReturnValue);
-			code = new Byte[] {0xc6, 0x40, 0x10, 0x00};
-			x86emulator.Run(code);
-		}
 		
 		UInt32 reportedInstructionPointer;
 		private void onReportOOB(Object sender, NewReportEventArgs e)
 		{
 			reportedInstructionPointer = e.InstructionPointer;
 		}
-
 
 		[Test]
 		public void MovIntoAssignedEaxOutOfBounds()
