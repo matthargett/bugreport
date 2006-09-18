@@ -48,6 +48,8 @@
     <Compile Include="AbstractBufferTests.cs" />
     <Compile Include="DumpFileParserTests.cs" />
     <Compile Include="MainTests.cs" />
+    <Compile Include="RegisterCollection.cs" />
+    <Compile Include="RegisterCollectionTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="systemTestsList.txt" />

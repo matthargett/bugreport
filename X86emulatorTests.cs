@@ -27,15 +27,6 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void DefaultRegistersContainUninitializedValues() 
-		{
-			RegisterCollection collection = new RegisterCollection();			
-			foreach (RegisterName register in RegisterName.GetValues(typeof(RegisterName))) {
-				Assert.IsFalse(collection[register].IsInitialized);
-			}			
-		}
-		
-		[Test]
 		public void InitialRegisters()
 		{
 			AbstractValue value = new AbstractValue(1);
