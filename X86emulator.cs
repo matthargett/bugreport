@@ -57,6 +57,9 @@ namespace bugreport
 		public RegisterCollection()
 		{
 			registers = new AbstractValue[8];
+			for (UInt32 i = 0; i < registers.Length; ++i) {
+				registers[i] = new AbstractValue();
+			}
 		}
 		
 		public AbstractValue this[RegisterName index]
