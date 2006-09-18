@@ -16,6 +16,10 @@ namespace bugreport
 
         public const UInt32 UNKNOWN = 0xb4dc0d3d;
 		
+        public AbstractValue() {
+        	storage = UNKNOWN;        	
+        }               
+        
 		public AbstractValue(AbstractValue[] _willPointTo)
 		{
 			if (_willPointTo.Length == 0)
@@ -80,6 +84,11 @@ namespace bugreport
         {
             get { return isOOB; }
             set { isOOB = value; }
+        }
+        
+        public Boolean IsInitialized
+        {
+        	get { return storage != UNKNOWN; }
         }
 		
 		public UInt32 Value
