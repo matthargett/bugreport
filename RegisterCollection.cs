@@ -14,7 +14,7 @@ namespace bugreport
 		{
 			registers = new AbstractValue[8];
 			for (UInt32 i = 0; i < registers.Length; ++i) {
-//				registers[i] = new AbstractValue();
+				registers[i] = new AbstractValue();
 			}
 		}
 		

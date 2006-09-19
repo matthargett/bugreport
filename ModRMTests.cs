@@ -81,7 +81,7 @@ namespace bugreport
 		}
 
 		[Test]
-		[ExpectedException(typeof(InvalidModRMException))]
+		[ExpectedException(typeof(NotImplementedException))]
 		public void EaxEbpPlusDword12()
 		{
 			Int32 index =  0x0c;

@@ -42,11 +42,6 @@ namespace bugreport
 			return message;
 		}
 	}
-	
-	public class InvalidSIBException : ApplicationException
-	{
-		public InvalidSIBException(String message) : base(message) {}
-	}
 
 	public class X86emulator
 	{
@@ -188,14 +183,14 @@ namespace bugreport
 					if (ModRM.HasSIB(_code))
 					{
 						if (_code[2] != 0x24)
-							throw new InvalidSIBException(String.Format("Only supports 0x24 at this time, got: 0x{0:x2}.", _code[2]));
+							throw new NotImplementedException(String.Format("Only supports 0x24 at this time, got: 0x{0:x2}.", _code[2]));
 						
 						TopOfStack = new AbstractValue(BitMath.BytesToDword(_code, 3));
 						return;
 					}
 					
 					if (!ModRM.IsEvDereferenced(_code))
-						throw new InvalidModRMException("EvIz currently supports only dereferenced Ev.");
+						throw new NotImplementedException("EvIz currently supports only dereferenced Ev.");
 				
 					index = 0;
 					Byte dwordOffset = 2;
