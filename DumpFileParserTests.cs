@@ -198,8 +198,7 @@ namespace bugreport.DumpFileParserTests
 			writer.Flush();
 			stream.Position = 0;
 
-			Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};
-			Byte[] result = parser.GetNextInstructionBytes();
+			parser.GetNextInstructionBytes();
 		}	
 		
 		[Test]

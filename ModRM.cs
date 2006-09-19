@@ -6,10 +6,6 @@ using System;
 
 namespace bugreport
 {
-	public class InvalidModRMException : ApplicationException
-	{
-		public InvalidModRMException(String message) : base(message) {}
-	}
 
 	public static class ModRM
 	{
@@ -66,7 +62,7 @@ namespace bugreport
 			
 			if (getMod(modRM)== 2)
 			{
-				throw new InvalidModRMException(String.Format("Unsupported ModRM: 0x{0:x2}", _code[1]));
+				throw new NotImplementedException(String.Format("Unsupported ModRM: 0x{0:x2}", _code[1]));
 			}
 			
 			return 0;			
