@@ -40,6 +40,7 @@
     <Compile Include="DumpFileParser.cs" />
     <Compile Include="X86emulatorTests.cs" />
     <Compile Include="BitMath.cs" />
+    <Compile Include="BitMathTests.cs" />
     <Compile Include="ModRMTests.cs" />
     <Compile Include="ModRM.cs" />
     <Compile Include="OpcodeHelperTests.cs" />
