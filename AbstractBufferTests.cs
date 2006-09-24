@@ -17,7 +17,7 @@ namespace bugreport
 			AbstractValue two = new AbstractValue(0x2);
 			AbstractValue three = new AbstractValue(0x3);
 			AbstractValue four = new AbstractValue(0x4);
-			AbstractValue[] avBuffer = new AbstractValue[4];
+			AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
 			
 			avBuffer[0] = one;
 			avBuffer[1] = two;
@@ -38,7 +38,7 @@ namespace bugreport
 			AbstractValue two = new AbstractValue(0x2);
 			AbstractValue three = new AbstractValue(0x3);
 			AbstractValue four = new AbstractValue(0x4);
-			AbstractValue[] avBuffer = new AbstractValue[4];
+			AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
 			
 			avBuffer[0] = one;
 			avBuffer[1] = two;
@@ -61,7 +61,7 @@ namespace bugreport
 			AbstractValue two = new AbstractValue(0x2);
 			AbstractValue three = new AbstractValue(0x3);
 			AbstractValue four = new AbstractValue(0x4);
-			AbstractValue[] avBuffer = new AbstractValue[4];
+			AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
 			
 			avBuffer[0] = one;
 			avBuffer[1] = two;
@@ -79,20 +79,21 @@ namespace bugreport
         [Test]
         public void PointerOverflowByOne()
         {
-            AbstractValue[] buffer = new AbstractValue[16];
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
             AbstractBuffer pointer = new AbstractBuffer(buffer);
 
             AbstractValue value = pointer[16];
             Assert.IsTrue(value.IsOOB);
+            Assert.IsFalse(value.IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, value.Value);
         }
 
         [Test]
         public void PointerOverflowStillRetainsOldValues()
-        {
+        {        	
             AbstractValue test1 = new AbstractValue(0x41);
             AbstractValue test2 = new AbstractValue(0x42);
-            AbstractValue[] buffer = new AbstractValue[2];
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(2);
 
             buffer[0] = test1;
             buffer[1] = test2;
@@ -100,7 +101,8 @@ namespace bugreport
             AbstractBuffer pointer = new AbstractBuffer(buffer);
 
             // Accessing pointer[2] will cause the AbstractBuffer to extend..
-            Assert.IsTrue(pointer[2].IsOOB);
+            Assert.IsTrue(pointer[2].IsOOB, " value is not out of bounds");
+            Assert.IsFalse(pointer[2].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[2].Value);
 
             // And then we make sure the in bounds values stay the same
@@ -114,17 +116,19 @@ namespace bugreport
         [Test]
         public void PointerOverflowTwiceStillRetainsOriginalValues()
         {
-            AbstractValue[] buffer = new AbstractValue[16];
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
             AbstractBuffer pointer = new AbstractBuffer(buffer);
 
             //Access beyond buffer bounds forcing buffer to expand
             Assert.IsTrue(pointer[17].IsOOB);
+            Assert.IsFalse(pointer[17].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[17].Value);
 
             pointer[17] = new AbstractValue(0x41414141);
 
             // Access beyond previously expanded bounds to force 2nd expand
             Assert.IsTrue(pointer[64].IsOOB);
+            Assert.IsFalse(pointer[64].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[64].Value);
             
             // check that value set outside of bounds is still the same as well 
@@ -135,7 +139,7 @@ namespace bugreport
         [Test]
         public void OverflowDoesntLoseIncrement()
         {
-            AbstractValue[] buffer = new AbstractValue[16];
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
             AbstractBuffer pointer = new AbstractBuffer(buffer);
             AbstractValue value = new AbstractValue(0x41);
             value = value.AddTaint();
@@ -152,6 +156,12 @@ namespace bugreport
             Assert.IsTrue(value.IsTainted);
             Assert.AreEqual(0x41, pointer[17].Value);
             Assert.IsTrue(pointer[17].IsTainted);
+        }
+        
+        [Test]
+        public void OverflowZeroSizeBuffer() {
+        	AbstractBuffer f = new AbstractBuffer(new AbstractValue[] {});        	
+        	Assert.IsFalse(f[0].IsInitialized);
         }
 	}
 }

@@ -168,7 +168,7 @@ namespace bugreport
 				{
 					UInt32 immediate = BitMath.BytesToDword(_code, 1);
 					value = registers[RegisterName.EAX];
-					registers[RegisterName.EAX] = AbstractValue.DoOperation(value, op, new AbstractValue(immediate));
+					registers[RegisterName.EAX] = value.DoOperation(op, new AbstractValue(immediate));
 					return;
 				}
 
@@ -225,11 +225,11 @@ namespace bugreport
 					if (ModRM.IsEvDereferenced(_code))
 					{
 						if (registers[ev] == null)
-							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
+							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
 						
 						try
 						{
-							registers[ev].PointsTo[index] = AbstractValue.DoOperation(registers[ev].PointsTo[index], op, value);
+							registers[ev].PointsTo[index] = registers[ev].PointsTo[index].DoOperation(op, value);
                             if (registers[ev].PointsTo[index].IsOOB)
                                 throw new System.IndexOutOfRangeException();
 						}
@@ -242,7 +242,7 @@ namespace bugreport
 					{
 						try
 						{
-							registers[ev] = AbstractValue.DoOperation(registers[ev], op, value);
+							registers[ev] = registers[ev].DoOperation(op, value);
                             if (registers[ev].IsOOB)
                                 throw new System.IndexOutOfRangeException();
 						}
@@ -258,7 +258,7 @@ namespace bugreport
 					if (_code[0] != 0xe8) //call
 						throw new InvalidOpcodeException(_code);
 
-					AbstractValue[] buffer = new AbstractValue[TopOfStack.Value]; // hardcoded malloc emulation
+					AbstractValue[] buffer = AbstractValue.GetNewBuffer(TopOfStack.Value); // hardcoded malloc emulation
 					ReturnValue = new AbstractValue(buffer);
 					return;
 
@@ -275,7 +275,7 @@ namespace bugreport
 						
 						UInt32 offset = BitMath.BytesToDword(_code, offsetBeginsAt);
 						value = dataSegment[offset];
-						registers[gv] = AbstractValue.DoOperation(registers[gv], op, value);
+						registers[gv] = registers[gv].DoOperation(op, value);
 						return;
 					}
 					
@@ -302,7 +302,7 @@ namespace bugreport
 						}
 					}
 					
-					registers[gv] = AbstractValue.DoOperation(registers[gv], op, value);
+					registers[gv] = registers[gv].DoOperation(op, value);
 					return;
 				}
 
@@ -329,7 +329,7 @@ namespace bugreport
 					
 					try 
 					{
-						Registers[gv] = AbstractValue.DoOperation(Registers[ev], OperatorEffect.Add, new AbstractValue(index));
+						Registers[gv] = Registers[ev].DoOperation(OperatorEffect.Add, new AbstractValue(index));
                         if (Registers[gv].IsOOB)
                             throw new System.IndexOutOfRangeException();
 					}
@@ -373,7 +373,7 @@ namespace bugreport
 						{
 							try
 							{
-								value.PointsTo[index] = AbstractValue.DoOperation(value.PointsTo[index], op, registers[gv]);
+								value.PointsTo[index] = value.PointsTo[index].DoOperation(op, registers[gv]);
                                 if (value.PointsTo[index].IsOOB)
                                     throw new System.IndexOutOfRangeException();
 							}
@@ -385,7 +385,7 @@ namespace bugreport
 					}
 					else
 					{
-						registers[ev] = AbstractValue.DoOperation(value, op, registers[gv]);
+						registers[ev] = value.DoOperation(op, registers[gv]);
 					}
 					return;							
 				}
@@ -398,12 +398,13 @@ namespace bugreport
 					AbstractValue byteValue = dwordValue.TruncateValueToByte();
 					
 					offset = BitMath.BytesToDword(_code, 1); // This is 1 for ObAL
-					if (dataSegment.ContainsKey(offset))
+					if (dataSegment.ContainsKey(offset)) 
 						value = dataSegment[offset];
 					else
-						value = null;
+						value = new AbstractValue();						
 					
-					dataSegment[offset] = AbstractValue.DoOperation(value, op, byteValue);
+					// XXX What did DoOperation do w/a NULL previously?
+					dataSegment[offset] = value.DoOperation(op, byteValue);
 					return;	
 				}
 				

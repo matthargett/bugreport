@@ -49,6 +49,15 @@ namespace bugreport
 			storage = _value;
 		}
 		
+		public static AbstractValue[] GetNewBuffer(uint size) {
+			AbstractValue[] buffer = new AbstractValue[size];
+			for (uint i = 0; i < size; i++) 
+			{ 
+				buffer[i] = new AbstractValue(); 
+			}
+			return buffer;			
+		}
+		
 		public AbstractValue TruncateValueToByte()
 		{
 			UInt32 byteValue = this.Value & 0xff;
@@ -103,14 +112,16 @@ namespace bugreport
 			get { return pointsTo != null; }
 		}
 		
-		public static AbstractValue DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+		public AbstractValue DoOperation(OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
+			AbstractValue lhs = this;
+			
 			switch(_operatorEffect)
 			{
                 case OperatorEffect.Assignment:
                 {
                     AbstractValue newAbstractValue = new AbstractValue(rhs);
-                    if (lhs != null && lhs.IsOOB)
+                    if (lhs.IsInitialized && lhs.IsOOB)
                         newAbstractValue.IsOOB = true;
                     return newAbstractValue;
                 }
@@ -205,7 +216,7 @@ namespace bugreport
 					}
 					else
 					{
-						pointer = null;
+						pointer = null;						
 					}
 				}
 			}
