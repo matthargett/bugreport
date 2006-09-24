@@ -114,7 +114,7 @@ namespace bugreport
 		[Test]
 		public void MovEaxEbpPlusTwelve()
 		{
-			AbstractValue[] buffer = new AbstractValue[16];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
 			buffer[12] = new AbstractValue(1);
 			
 			AbstractValue pointer = new AbstractValue(buffer);
@@ -237,7 +237,7 @@ namespace bugreport
 		public void MovIntoAssignedEaxOutOfBounds()
 		{
 			Byte value = 0x01, index = 0x10;
-			AbstractValue[] buffer = new AbstractValue[index];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(index);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x40, index, value};
@@ -250,19 +250,27 @@ namespace bugreport
 		public void MovIntoAssignedEaxInBounds()
 		{
 			Byte value = 0x01, index = 0xf;
-			AbstractValue[] buffer = new AbstractValue[16];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x40, index, value};
 			x86emulator.Run(code);
 			Assert.AreEqual(value, x86emulator.ReturnValue.PointsTo[index].Value);
+		}	
+		
+		[Test]
+		public void GetNewBufferReturnsUnallocatedValues() {
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+			for (int i = 0; i < 16; i++) {
+				Assert.IsFalse(buffer[i].IsInitialized);
+			}
 		}
 		
 		[Test]
 		public void MovBytePtrEaxInBounds()
 		{ //	mov    BYTE PTR [eax], value
 			Byte value = 0x01;
-			AbstractValue[] buffer = new AbstractValue[16];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x00, value};
@@ -275,7 +283,7 @@ namespace bugreport
 		{ // mov    BYTE PTR [eax+16],bl
 			Byte offset = 0x10;
 			x86emulator.Registers[RegisterName.EBX] = new AbstractValue(0x1);
-			AbstractValue[] buffer = new AbstractValue[offset+1];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer((uint)offset+1);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.ReturnValue = pointer;
 
@@ -290,7 +298,7 @@ namespace bugreport
 		{ // mov    BYTE PTR [eax+16],bl
 			Byte offset = 0x10;
 			x86emulator.Registers[RegisterName.EBX] = new AbstractValue(0x1);
-			AbstractValue[] buffer = new AbstractValue[offset+1];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer((uint)offset+1);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.Registers[RegisterName.EAX] = pointer;
 
@@ -339,7 +347,7 @@ namespace bugreport
 		public void MovEax0x10()
 		{ // mov    DWORD PTR [eax],0x10
 		
-			AbstractValue[] value = new AbstractValue [1];
+			AbstractValue[] value = AbstractValue.GetNewBuffer(1);
 			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(value);
 			code = new Byte[] {0xc7, 0x00, 0x10, 0x00, 0x00, 0x00};
 			x86emulator.Run(code);
@@ -353,7 +361,7 @@ namespace bugreport
 		public void MovEbpMinus8()
 		{ // mov    DWORD PTR [ebp-8],0xf
 		
-			AbstractValue[] value = new AbstractValue [0x100];
+			AbstractValue[] value = AbstractValue.GetNewBuffer(0x100);
 			x86emulator.Registers[RegisterName.EBP] = new AbstractValue(value);
 			code = new Byte[] {0xc7, 0x45, 0xf8, 0x0f, 0x00, 0x00, 0x00};
 			x86emulator.Run(code);

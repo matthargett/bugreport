@@ -59,7 +59,7 @@ namespace bugreport
 				AbstractValue argvPointer = new AbstractValue(argvBuffer);
 				AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
 				AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
-				AbstractValue[]  stackBuffer = new AbstractValue[0x200];
+				AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);				
 								
 				AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
 				AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 0x100);

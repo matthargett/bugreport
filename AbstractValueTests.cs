@@ -29,7 +29,7 @@ namespace bugreport
 		[Test]
 		public void AssignmentAtByteZero()
 		{
-			AbstractValue[] buffer = new AbstractValue[16];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
 			AbstractValue pointer = new AbstractValue(buffer);
 			pointer.PointsTo[0] = new AbstractValue(0x31337);
 			Assert.AreEqual(0x31337, pointer.PointsTo[0].Value);
@@ -38,7 +38,7 @@ namespace bugreport
 		[Test]
 		public void AssignmentAtEnd()
 		{
-			AbstractValue[] buffer = new AbstractValue[16];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
 			AbstractValue pointer = new AbstractValue(buffer);
 			pointer.PointsTo[15] = new AbstractValue(0x31337);
 			Assert.AreEqual(0x31337, pointer.PointsTo[15].Value);
@@ -73,7 +73,7 @@ namespace bugreport
 		{
 			AbstractValue one = new AbstractValue(1);
 			AbstractValue two = new AbstractValue(2).AddTaint();
-			one = AbstractValue.DoOperation(one, OperatorEffect.Assignment, two);
+			one = one.DoOperation(OperatorEffect.Assignment, two);
 			
 			Assert.AreEqual(2, one.Value);
 			Assert.IsTrue(one.IsTainted);
@@ -85,7 +85,7 @@ namespace bugreport
 		{
 			AbstractValue one = new AbstractValue(1);
 			AbstractValue two = new AbstractValue(2).AddTaint();
-			AbstractValue.DoOperation(one, OperatorEffect.Unknown, two);
+			one.DoOperation(OperatorEffect.Unknown, two);
 		}
 
 		[Test]
@@ -93,7 +93,7 @@ namespace bugreport
 		{
 			AbstractValue one = new AbstractValue(1);
 			AbstractValue two = new AbstractValue(2).AddTaint();
-			AbstractValue three = AbstractValue.DoOperation(one, OperatorEffect.Add, two);
+			AbstractValue three = one.DoOperation(OperatorEffect.Add, two);
 			
 			Assert.AreEqual(3, three.Value);
 			Assert.IsTrue(three.IsTainted);
@@ -104,7 +104,7 @@ namespace bugreport
 		{
 			AbstractValue one = new AbstractValue(1);
 			AbstractValue three = new AbstractValue(3).AddTaint();
-			AbstractValue two = AbstractValue.DoOperation(three, OperatorEffect.Sub, one);
+			AbstractValue two = three.DoOperation(OperatorEffect.Sub, one);
 			
 			Assert.AreEqual(2, two.Value);
 			Assert.IsTrue(two.IsTainted);
@@ -115,7 +115,7 @@ namespace bugreport
 		{
 			AbstractValue threeFifty = new AbstractValue(0x350).AddTaint();
 			AbstractValue ff = new AbstractValue(0xff);
-			AbstractValue fifty = AbstractValue.DoOperation(threeFifty, OperatorEffect.And, ff);
+			AbstractValue fifty = threeFifty.DoOperation(OperatorEffect.And, ff);
 			
 			Assert.AreEqual(0x50, fifty.Value);
 			Assert.IsTrue(fifty.IsTainted);
@@ -126,7 +126,7 @@ namespace bugreport
 		{
 			AbstractValue eight = new AbstractValue(0x8).AddTaint();
 			AbstractValue threeBits = new AbstractValue(0x3);
-			AbstractValue one = AbstractValue.DoOperation(eight, OperatorEffect.Shr, threeBits);
+			AbstractValue one = eight.DoOperation(OperatorEffect.Shr, threeBits);
 			
 			Assert.AreEqual(0x1, one.Value);
 			Assert.IsTrue(one.IsTainted);
@@ -137,7 +137,7 @@ namespace bugreport
 		{
 			AbstractValue one = new AbstractValue(0x1).AddTaint();
 			AbstractValue threeBits = new AbstractValue(0x3);
-			AbstractValue eight = AbstractValue.DoOperation(one, OperatorEffect.Shl, threeBits);
+			AbstractValue eight = one.DoOperation(OperatorEffect.Shl, threeBits);
 			
 			Assert.AreEqual(0x8, eight.Value);
 			Assert.IsTrue(eight.IsTainted);
@@ -146,28 +146,28 @@ namespace bugreport
 		[Test]
 		public void PointerArith()
 		{
-			AbstractValue[] buffer = new AbstractValue[0x10];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);	
 			AbstractValue one= new AbstractValue(0x1);
 			buffer[4] = one;
 			AbstractValue pointer = new AbstractValue(buffer);
 			
-			AbstractValue pointerPlus4 = AbstractValue.DoOperation(pointer, OperatorEffect.Add, new AbstractValue(0x4));
+			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
 			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
 		}
 		
 		[Test]
 		public void DoOperationForPointerAnd()
 		{
-			AbstractValue[] buffer = new AbstractValue[0x10];
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
 			AbstractValue one= new AbstractValue(0x1);
 			buffer[4] = one;
 			
 			AbstractValue pointer = new AbstractValue(buffer);
 			
-			AbstractValue pointerPlus4 = AbstractValue.DoOperation(pointer, OperatorEffect.Add, new AbstractValue(0x4));
+			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
 			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
 			
-			AbstractValue pointerAnd = AbstractValue.DoOperation(pointerPlus4, OperatorEffect.And, new AbstractValue(0xfffffff0));
+			AbstractValue pointerAnd = pointerPlus4.DoOperation(OperatorEffect.And, new AbstractValue(0xfffffff0));
 			Assert.AreEqual(one, pointerAnd.PointsTo[4]);		
 		}      
     }
