@@ -1,4 +1,4 @@
-// Copyright (c) 2006 Luis Miras
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -240,13 +240,8 @@ namespace bugreport
 					}
 					else
 					{
-						try
-						{
-							registers[ev] = registers[ev].DoOperation(op, value);
-                            if (registers[ev].IsOOB)
-                                throw new System.IndexOutOfRangeException();
-						}
-						catch (IndexOutOfRangeException)
+						registers[ev] = registers[ev].DoOperation(op, value);
+                        if (registers[ev].IsOOB)
 						{
 							ReportOOB(instructionPointer, value.IsTainted);							
 						}
@@ -255,9 +250,6 @@ namespace bugreport
 				}
 
 				case OpcodeEncoding.Jz:
-					if (_code[0] != 0xe8) //call
-						throw new InvalidOpcodeException(_code);
-
 					AbstractValue[] buffer = AbstractValue.GetNewBuffer(TopOfStack.Value); // hardcoded malloc emulation
 					ReturnValue = new AbstractValue(buffer);
 					return;
@@ -290,13 +282,8 @@ namespace bugreport
 						if (ModRM.HasIndex(_code))
 							index = ModRM.GetIndex(_code);
 						
-						try
-						{
-							value = value.PointsTo[index];
-                            if (value.IsOOB)
-                                throw new IndexOutOfRangeException();
-						}
-						catch (IndexOutOfRangeException)
+						value = value.PointsTo[index];
+                        if (value.IsOOB)
 						{
 							ReportOOB(instructionPointer, value.IsTainted);
 						}
@@ -308,6 +295,7 @@ namespace bugreport
 
 				case OpcodeEncoding.GvM:
 				{
+					// FIXME: There isn't any Ev in this encoding, so this question is confusing
 					if (!ModRM.IsEvDereferenced(_code))
 					{
 						throw new InvalidOperationException("GvM must be dereferenced");
@@ -327,13 +315,8 @@ namespace bugreport
 						index = ModRM.GetIndex(_code);
 					}
 					
-					try 
-					{
-						Registers[gv] = Registers[ev].DoOperation(OperatorEffect.Add, new AbstractValue(index));
-                        if (Registers[gv].IsOOB)
-                            throw new System.IndexOutOfRangeException();
-					}
-					catch (IndexOutOfRangeException)
+					Registers[gv] = Registers[ev].DoOperation(OperatorEffect.Add, new AbstractValue(index));
+                    if (Registers[gv].IsOOB)
 					{
 						ReportOOB(instructionPointer, Registers[ev].IsTainted);
 					}
@@ -403,7 +386,6 @@ namespace bugreport
 					else
 						value = new AbstractValue();						
 					
-					// XXX What did DoOperation do w/a NULL previously?
 					dataSegment[offset] = value.DoOperation(op, byteValue);
 					return;	
 				}

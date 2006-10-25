@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -9,7 +9,10 @@ namespace bugreport
 {
 	[TestFixture]
 	public class AbstractValueTests
-	{		
+	{	
+		AbstractValue pointer;
+		AbstractBuffer buffer;
+		
 		[Test]
 		public void DefaultIsNotInitialized() 
 		{
@@ -30,7 +33,7 @@ namespace bugreport
 		public void AssignmentAtByteZero()
 		{
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-			AbstractValue pointer = new AbstractValue(buffer);
+			pointer = new AbstractValue(buffer);
 			pointer.PointsTo[0] = new AbstractValue(0x31337);
 			Assert.AreEqual(0x31337, pointer.PointsTo[0].Value);
 		}
@@ -39,7 +42,7 @@ namespace bugreport
 		public void AssignmentAtEnd()
 		{
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-			AbstractValue pointer = new AbstractValue(buffer);
+			pointer = new AbstractValue(buffer);
 			pointer.PointsTo[15] = new AbstractValue(0x31337);
 			Assert.AreEqual(0x31337, pointer.PointsTo[15].Value);
 		}
@@ -144,12 +147,12 @@ namespace bugreport
 		}
 
 		[Test]
-		public void PointerArith()
+		public void PointerAdd()
 		{
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);	
 			AbstractValue one= new AbstractValue(0x1);
 			buffer[4] = one;
-			AbstractValue pointer = new AbstractValue(buffer);
+			pointer = new AbstractValue(buffer);
 			
 			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
 			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
@@ -162,13 +165,76 @@ namespace bugreport
 			AbstractValue one= new AbstractValue(0x1);
 			buffer[4] = one;
 			
-			AbstractValue pointer = new AbstractValue(buffer);
+			pointer = new AbstractValue(buffer);
 			
 			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
 			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
 			
 			AbstractValue pointerAnd = pointerPlus4.DoOperation(OperatorEffect.And, new AbstractValue(0xfffffff0));
 			Assert.AreEqual(one, pointerAnd.PointsTo[4]);		
-		}      
+		}
+		
+		[Test]
+		[ExpectedException(typeof(ArgumentException))]
+		public void EmptyBuffer()
+		{
+			new AbstractValue(new AbstractBuffer(new AbstractValue[] {}));
+		}
+		
+		[Test]
+		public void NoPointer()
+		{
+			AbstractValue value = new AbstractValue(2).AddTaint();
+			
+			Assert.IsNull(value.PointsTo);
+			StringAssert.Contains("0x00000002", value.ToString());
+			StringAssert.Contains("t", value.ToString());
+			
+		}
+		
+		[Test]
+		public void Pointer()
+		{	
+			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
+			pointer = new AbstractValue(buffer);
+			Assert.AreEqual(2, pointer.PointsTo[0].Value);
+			StringAssert.StartsWith("*", pointer.ToString());
+		}
+
+		[Test]
+		public void PointerPointer()
+		{	
+			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
+			pointer = new AbstractValue(buffer);
+			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer});
+			Assert.AreEqual(2, pointerPointer.PointsTo[0].PointsTo[0].Value);
+			StringAssert.StartsWith("**", pointerPointer.ToString());
+		}
+
+		[Test]
+		public void AddPointerPointer()
+		{	
+			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(1)});
+			pointer = new AbstractValue(buffer);
+			AbstractBuffer buffer2 = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
+			AbstractValue pointer2 = new AbstractValue(buffer2);
+			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer, pointer2});
+			AbstractValue addedPointerPointer = pointerPointer.DoOperation(OperatorEffect.Add, new AbstractValue(1));
+			Assert.AreEqual(2, addedPointerPointer.PointsTo[0].PointsTo[0].Value);
+			StringAssert.StartsWith("**", pointerPointer.ToString());
+		}
+
+		[Test]
+		public void PointerPointerPointer()
+		{	
+			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
+			pointer = new AbstractValue(buffer);
+			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer});
+			AbstractValue pointerPointerPointer = new AbstractValue(new AbstractValue[] {pointerPointer});
+			Assert.AreEqual(2, pointerPointerPointer.PointsTo[0].PointsTo[0].PointsTo[0].Value);
+
+			StringAssert.StartsWith("***", pointerPointerPointer.ToString());
+		}
+
     }
 }

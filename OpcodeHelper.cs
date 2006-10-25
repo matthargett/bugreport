@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -118,11 +118,6 @@ namespace bugreport
 				default:
 					return OperatorEffect.Assignment;
 			}
-		}
-		
-		private static Byte getModRM(Byte[] _code)
-		{
-			return _code[GetOpcodeLength(_code)];			
 		}
 		
 		public static Byte GetOpcodeLength(Byte[] _code)

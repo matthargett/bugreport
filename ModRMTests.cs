@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -175,5 +175,24 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.ESP, ModRM.GetSIBBaseRegister(code));
 			
 		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void HasSIBWhenNoModRMPresent()
+		{
+			code = new Byte[] { 0x00 };
+			ModRM.HasSIB(code);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void GetSIBWhenNoSIBPresent()
+		{ // mov    ebp,esp
+			code = new Byte[] { 0x89, 0xe5} ;
+			Assert.IsFalse(ModRM.HasSIB(code));
+			ModRM.GetSIBBaseRegister(code);
+		}
+		
+
 	}
 }

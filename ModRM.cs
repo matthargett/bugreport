@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -54,18 +54,19 @@ namespace bugreport
 
 			UInt32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
 			Byte modRM = getModRM(_code);
+			Byte mod = getMod(modRM);
 
-			if (getMod(modRM)== 1)
+			switch (mod)
 			{
-				return _code[modRMIndex+1];
+				case 1:
+				{
+					return _code[modRMIndex+1];
+				}
+				default:
+				{
+					throw new NotImplementedException(String.Format("Unsupported Mod: 0x{0:x2}", mod));
+				}
 			}
-			
-			if (getMod(modRM)== 2)
-			{
-				throw new NotImplementedException(String.Format("Unsupported ModRM: 0x{0:x2}", _code[1]));
-			}
-			
-			return 0;			
 		}
 		
 		public static Boolean IsEvDereferenced(Byte[] _code)
@@ -107,13 +108,19 @@ namespace bugreport
 			    throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetSIBBaseRegister is invalid.");
 
 			if (getSIBIndex(_code) != 0x4)
-				throw new InvalidOperationException("GetSIBBaseRegister only supports scaler of none.");
+				throw new NotImplementedException("GetSIBBaseRegister only supports scaler of none.");
 			Byte sib = ModRM.getSIB(_code);
 			return (RegisterName)(sib & 7);
 		}
+		
 		private static Byte getModRM(Byte[] _code)
 		{
-			return _code[OpcodeHelper.GetOpcodeLength(_code)];			
+			Int32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
+			
+			if (modRMIndex > _code.Length - 1)
+				throw new InvalidOperationException("No ModRM present: " + _code[0].ToString());
+			
+			return _code[modRMIndex];			
 		}
 	}
 }
