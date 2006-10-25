@@ -23,6 +23,4 @@ namespace bugreport
 				return result;
 		}
 	}
-	
-
 }

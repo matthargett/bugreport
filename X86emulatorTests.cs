@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -33,6 +33,17 @@ namespace bugreport
 			RegisterCollection registers = new RegisterCollection();
 			registers[RegisterName.EAX] = value;
 			x86emulator = new X86emulator(registers);
+			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX]);
+		}
+		
+		[Test]
+		public void MovFromGlobalIntoEax()
+		{
+			code = new Byte[] {0xa1, 0xe4, 0x84, 0x04, 0x08};
+			AbstractValue value = new AbstractValue(31337);
+			x86emulator.DataSegment[0x080484e4] = value;
+			x86emulator.Run(code);
+			
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX]);
 		}
 		
@@ -92,6 +103,16 @@ namespace bugreport
 			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
 			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX].Value);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void DerefRegisterWithNull()
+		{
+			// mov eax, [eax]
+			code = new Byte[] {0x8b, 0x00};
+			x86emulator.Registers[RegisterName.EAX] = null;
+			x86emulator.Run(code);
 		}
 		
 		[Test]
@@ -344,6 +365,15 @@ namespace bugreport
 		}
 
 		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void AddImmediateNullPointerDeref()
+		{ // add    [eax], 0x00
+			code = new Byte[] {0x83, 0x00, 0x00};
+			x86emulator.Registers[RegisterName.EAX] = null;
+			x86emulator.Run(code);
+		}
+
+		[Test]
 		public void MovEax0x10()
 		{ // mov    DWORD PTR [eax],0x10
 		
@@ -355,6 +385,16 @@ namespace bugreport
 			AbstractValue sixteen = x86emulator.Registers[RegisterName.EAX].PointsTo[0];
 			Assert.AreEqual(0x10, sixteen.Value);
 			                
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void SubNullPointerDeref()
+		{
+			// sub eax, [eax]
+			code = new Byte[] {0x29, 0x00};
+			x86emulator.Registers[RegisterName.EAX] = null;
+			x86emulator.Run(code);
 		}
 
 		[Test]

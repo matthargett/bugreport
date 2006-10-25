@@ -1,3 +1,7 @@
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
+// Licensed under GPLv3 draft 2
+// See LICENSE.txt for details.
+
 using System;
 using System.IO;
 using NUnit.Framework;
@@ -16,7 +20,6 @@ namespace bugreport.DumpFileParserTests
 			writer = new StreamWriter(stream);
 			parser = new DumpFileParser(stream);
 		}
-		
 	}
 	
 	[TestFixture]
@@ -35,13 +38,19 @@ namespace bugreport.DumpFileParserTests
 			String none = parser.CurrentLine;
 		}
 		
-		[Test] 
+		[Test]
 		public void EmptyLine()
 		{
 			writer.WriteLine(String.Empty);
 			writer.Flush();
 			stream.Position = 0;
 
+			Assert.IsNull(parser.GetNextInstructionBytes());
+		} 
+
+		[Test]
+		public void NoLines()
+		{
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		} 
 	}
@@ -99,7 +108,7 @@ namespace bugreport.DumpFileParserTests
 			
 			Assert.IsNull(parser.GetNextInstructionBytes());
 			Assert.IsTrue(parser.EndOfFunction);
-		} 
+		}
 
 	}
 
@@ -137,7 +146,7 @@ namespace bugreport.DumpFileParserTests
 		[Test]
 		public void HasColonButNoHex()
 		{
-			writer.WriteLine(" : ");
+			writer.WriteLine("        : ");
 			writer.Flush();
 			stream.Position = 0;
 
@@ -145,7 +154,7 @@ namespace bugreport.DumpFileParserTests
 		}
 		
 		[Test]
-		public void HasColonNothingElse()
+		public void HasColonInWrongPlace()
 		{
 			writer.WriteLine(":");
 			writer.Flush();

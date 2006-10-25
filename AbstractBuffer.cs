@@ -1,3 +1,4 @@
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -20,12 +21,12 @@ namespace bugreport
 
         public AbstractBuffer(AbstractBuffer _copyMe)
         {
-            this.storage = _copyMe.storage;
-            this.BaseIndex = _copyMe.BaseIndex;
-            this.allocatedLength = _copyMe.Length;
+            storage = _copyMe.storage;
+            BaseIndex = _copyMe.BaseIndex;
+            allocatedLength = _copyMe.Length;
         }
 
-        private void Extend(UInt32 _newLength)
+        private void extend(UInt32 _newLength)
         {
             // Account for element [0] of the array
             _newLength = _newLength + 1;
@@ -56,22 +57,24 @@ namespace bugreport
 
             return result;
         }
+        
         public static AbstractBuffer And(AbstractBuffer _buffer, UInt32 _andValue)
         {
             AbstractBuffer result = new AbstractBuffer(_buffer);
 
             if ((result.baseIndex & _andValue) < 0)
-                throw new ArgumentException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _andValue {1:x4}", result.baseIndex, _andValue));
+                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _andValue {1:x4}", result.baseIndex, _andValue));
 
             result.baseIndex &= _andValue;
             return result;
         }
+        
         public static AbstractBuffer Sub(AbstractBuffer _buffer, UInt32 _subValue)
         {
             AbstractBuffer result = new AbstractBuffer(_buffer);
 
             if (result.baseIndex < _subValue)
-                throw new ArgumentException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _subValue));
+                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _subValue));
 
             result.baseIndex -= _subValue;
             return result;
@@ -89,7 +92,7 @@ namespace bugreport
                 // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
                 if (this.IsIndexPastBounds(index))
                 {
-                    this.Extend(baseIndex + (uint)index);
+                    this.extend(baseIndex + (uint)index);
                     return this.storage[baseIndex + index];
                 }
                 else
@@ -103,7 +106,7 @@ namespace bugreport
 
                 if (this.IsIndexPastBounds(index))
                 {
-                    this.Extend(baseIndex + (uint)index);
+                    this.extend(baseIndex + (uint)index);
                     this.storage[baseIndex + index] = value;
 
                 }

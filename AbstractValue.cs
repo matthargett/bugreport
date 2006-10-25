@@ -1,4 +1,4 @@
-// Copyright (c) 2006 Luis Miras
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -70,7 +70,7 @@ namespace bugreport
 		public AbstractValue AddTaint()
 		{
 			//TODO: this doesn't do anything with PointsTo
-			AbstractValue tainted = new AbstractValue(this.Value);
+			AbstractValue tainted = new AbstractValue(this);
 			tainted.IsTainted = true;
 			return tainted;
 		}
@@ -123,6 +123,7 @@ namespace bugreport
                     AbstractValue newAbstractValue = new AbstractValue(rhs);
                     if (lhs.IsInitialized && lhs.IsOOB)
                         newAbstractValue.IsOOB = true;
+                    
                     return newAbstractValue;
                 }
 					
@@ -130,6 +131,7 @@ namespace bugreport
 				{
 					if (rhs.IsPointer)
 						throw new ArgumentException("rhs pointer not supported.");
+					
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = AbstractBuffer.Add(lhs.PointsTo, rhs.Value);
@@ -146,6 +148,7 @@ namespace bugreport
 				{
 					if (rhs.IsPointer)
 						throw new ArgumentException("rhs pointer not supported.");
+					
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = AbstractBuffer.Sub(lhs.PointsTo, rhs.Value);
@@ -161,11 +164,13 @@ namespace bugreport
 				{
 					if (rhs.IsPointer)
 						throw new ArgumentException("rhs pointer not supported.");
+					
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = AbstractBuffer.And(lhs.PointsTo, rhs.Value);
 						return new AbstractValue(newBuffer);
 					}
+					
 					UInt32 total = lhs.Value & rhs.Value;
 					AbstractValue result = new AbstractValue(total);
 					result.IsTainted = lhs.IsTainted || rhs.IsTainted;
@@ -192,6 +197,7 @@ namespace bugreport
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
 			}
 		}
+		
 		public override string ToString()
 		{
 			String result = String.Empty;
@@ -205,19 +211,15 @@ namespace bugreport
 			}
 			else
 			{
-				result += "*";
 				AbstractValue pointer = pointsTo[0];
 				while (pointer != null)
 				{
 					result += "*";
+					
 					if (pointer.PointsTo != null)
-					{
 						pointer = pointer.PointsTo[0];
-					}
 					else
-					{
-						pointer = null;						
-					}
+						pointer = null;
 				}
 			}
 			

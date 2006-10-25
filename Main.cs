@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -78,15 +78,8 @@ namespace bugreport
 
 		public static void Main(string[] args)
 		{			
-			MainClass mc = new MainClass();
-			mc.Analyze(args);
-		}
-		
-		public void Analyze(string[] args) {
 			Console.WriteLine("bugreport " + VERSION);
-			DumpFileParser parser;
-			X86emulator interpreter;
-			
+
 			if (args.Length < 1)
 			{
 				Console.WriteLine("Usage: bugreport.exe [--trace] file.test");
@@ -101,15 +94,25 @@ namespace bugreport
 				isTracing = true;
 			}		
 			
+			MainClass mc = new MainClass();
+			mc.Analyze(fileArgument, isTracing);
+			
+
+		}
+		
+		public void Analyze(String _fileArgument, Boolean _isTracing) {
+			DumpFileParser parser;
+			X86emulator interpreter;
+			
 			String[] fileNames;
 			
-			if (fileArgument.Contains("*"))
+			if (_fileArgument.Contains("*"))
 			{
-				fileNames = Directory.GetFiles(Environment.CurrentDirectory, fileArgument);
+				fileNames = Directory.GetFiles(Environment.CurrentDirectory, _fileArgument);
 			}
 			else
 			{
-				fileNames = new String[] { fileArgument };
+				fileNames = new String[] { _fileArgument };
 			}
 			
 			foreach(String fileName in fileNames)
@@ -122,7 +125,7 @@ namespace bugreport
 				interpreter = new X86emulator(getRegistersForLinuxMain());
 				interpreter.NewReport += onReportOOB;
 				
-				if (isTracing)
+				if (_isTracing)
 				{
 					Console.WriteLine();
 					Console.WriteLine("Interpreting file: " + fileName);
@@ -138,7 +141,7 @@ namespace bugreport
 						// TODO: This may ignore the last instructions in the method.  Investigate + fix.
 						if (!parser.EndOfFunction)						
 						{
-							if (isTracing)
+							if (_isTracing)
 							{
 								Console.WriteLine();
 								Console.WriteLine("topOfStack=" + interpreter.TopOfStack + "  " + interpreter.Registers);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006 Luis Miras
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -52,6 +52,13 @@ namespace bugreport
 
 			AbstractBuffer subbedBuffer = AbstractBuffer.Sub(modifiedBuffer, 2);
 			Assert.AreEqual(one, subbedBuffer[0]);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(ArgumentOutOfRangeException))]
+		public void PointerSubUnderflow()
+		{
+			AbstractBuffer.Sub(new AbstractBuffer(new AbstractValue[] {}), 1);
 		}
 		
 		[Test]

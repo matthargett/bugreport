@@ -1,4 +1,4 @@
-// Copyright (c) 2006 Luis Miras
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -31,8 +31,9 @@ namespace bugreport
 			{ 
 				if (currentLine == null)
 				{
-					throw new InvalidOperationException("Call GetNextInstructionBytes before accessing CurrentLine");
+					throw new InvalidOperationException("No previous line read");
 				}
+				
 				return currentLine; 
 			}
 		}
@@ -61,14 +62,11 @@ namespace bugreport
 			}
 		}
 		
-		private Boolean isInMain(String line)
+		private Boolean isInMain(String _line)
 		{
-			if (line == null)
-				return inMain;
-			
-			if (line.Length > 0 && line[0] >= '0' && line[0] <= '7')
+			if (_line.Length > 0 && _line[0] >= '0' && _line[0] <= '7')
 			{
-				if (line.Contains("<main>:"))
+				if (_line.Contains("<main>:"))
 					inMain = true;
 				else 
 					inMain = false;
@@ -97,7 +95,7 @@ namespace bugreport
 				endOfHexIndex = doubleSpaceIndex > spaceTabIndex ? doubleSpaceIndex : spaceTabIndex;
 				
 			if (endOfHexIndex == -1)
-				throw new ArgumentException("line", "Line doesn't contain hexvalues ");
+				return null;
 				
 			String hexString = afterColonToEnd.Substring(0, endOfHexIndex).Trim();
 
