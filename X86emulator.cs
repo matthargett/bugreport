@@ -8,20 +8,34 @@ using NUnit.Framework;
 
 namespace bugreport
 {
-	public class NewReportEventArgs : EventArgs
-	{
+    public class OutOfBoundsMemoryAccessException : ApplicationException
+    {
 		private readonly UInt32 instructionPointer;
-		private readonly Boolean tainted;
-		
-		public NewReportEventArgs(UInt32 _instructionPointer, Boolean _tainted) 
-		{ 
-			instructionPointer = _instructionPointer; 
-			tainted = _tainted;
+		private readonly Boolean isTainted;
+        
+		public OutOfBoundsMemoryAccessException (UInt32 _instructionPointer, Boolean _isTainted)
+		{
+			instructionPointer = _instructionPointer;
+			isTainted = _isTainted;
 		}
-		public UInt32 InstructionPointer { get { return instructionPointer; } }
-		public Boolean IsTainted { get { return tainted; } }
-	}
-	
+
+		public UInt32 InstructionPointer
+		{
+			get
+			{
+				return instructionPointer;
+			}
+		}
+
+		public Boolean IsTainted
+		{
+		    get
+		    {
+		        return isTainted;
+		    }
+		}		
+    }
+
 	public class InvalidOpcodeException : ApplicationException
 	{
 		
@@ -49,7 +63,6 @@ namespace bugreport
 		private UInt32 stackSize;
 		private RegisterCollection registers;
 		private Dictionary<UInt32, AbstractValue> dataSegment;
-		public event EventHandler<NewReportEventArgs> NewReport;
 		
 		public X86emulator()
 		{
@@ -63,7 +76,7 @@ namespace bugreport
 			dataSegment = new Dictionary<UInt32, AbstractValue>();
 			registers = _registers;
 		}
-			
+
 		public UInt32 InstructionPointer
 		{
 			get
@@ -114,26 +127,14 @@ namespace bugreport
 				registers[RegisterName.EAX] = value;
 			}
 		}
-
-		protected virtual void OnNewReport(NewReportEventArgs e)
-		{
-			EventHandler<NewReportEventArgs> temp = NewReport;
-			if (temp != null)
-				temp(this, e);
-		}
-		
-		private void ReportOOB(UInt32 _instructionPointer, Boolean _tainted)
-		{
-			OnNewReport(new NewReportEventArgs(_instructionPointer, _tainted));
-		}
-		
+				
 		public void PushOntoStack(UInt32 value)
 		{
 			//TODO: reconcile this with the proper EBP/ESP handling
 			TopOfStack = new AbstractValue(value);
 			stackSize = 1;
 		}
-		
+
 		public void Run(Byte[] _code)
 		{
 			if (_code.Length == 0)
@@ -141,7 +142,6 @@ namespace bugreport
 			
 			emulateOpcode(_code);
 			instructionPointer += (UInt32)_code.Length;
-			
 			return;
 		}
 
@@ -227,23 +227,16 @@ namespace bugreport
 						if (registers[ev] == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
 						
-						try
-						{
 							registers[ev].PointsTo[index] = registers[ev].PointsTo[index].DoOperation(op, value);
                             if (registers[ev].PointsTo[index].IsOOB)
-                                throw new System.IndexOutOfRangeException();
-						}
-						catch (IndexOutOfRangeException)
-						{
-							ReportOOB(instructionPointer, value.IsTainted);
-						}
+                                throw new OutOfBoundsMemoryAccessException(instructionPointer, value.IsTainted);
 					}
 					else
 					{
 						registers[ev] = registers[ev].DoOperation(op, value);
                         if (registers[ev].IsOOB)
 						{
-							ReportOOB(instructionPointer, value.IsTainted);							
+							throw new OutOfBoundsMemoryAccessException(instructionPointer, value.IsTainted);							
 						}
 					}
 					return;
@@ -285,7 +278,7 @@ namespace bugreport
 						value = value.PointsTo[index];
                         if (value.IsOOB)
 						{
-							ReportOOB(instructionPointer, value.IsTainted);
+							throw new OutOfBoundsMemoryAccessException(instructionPointer, value.IsTainted);
 						}
 					}
 					
@@ -318,7 +311,7 @@ namespace bugreport
 					Registers[gv] = Registers[ev].DoOperation(OperatorEffect.Add, new AbstractValue(index));
                     if (Registers[gv].IsOOB)
 					{
-						ReportOOB(instructionPointer, Registers[ev].IsTainted);
+						throw new OutOfBoundsMemoryAccessException(instructionPointer, Registers[ev].IsTainted);
 					}
 					
 					return;
@@ -354,17 +347,11 @@ namespace bugreport
 						}
 						else
 						{
-							try
-							{
-								value.PointsTo[index] = value.PointsTo[index].DoOperation(op, registers[gv]);
-                                if (value.PointsTo[index].IsOOB)
-                                    throw new System.IndexOutOfRangeException();
-							}
-							catch (IndexOutOfRangeException)
-							{
-								ReportOOB(instructionPointer, registers[gv].IsTainted);
-							}
-						}
+							value.PointsTo[index] = value.PointsTo[index].DoOperation(op, registers[gv]);
+							if (value.PointsTo[index].IsOOB)
+								throw new OutOfBoundsMemoryAccessException(instructionPointer, registers[gv].IsTainted);
+                        }
+
 					}
 					else
 					{

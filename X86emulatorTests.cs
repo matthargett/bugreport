@@ -23,7 +23,6 @@ namespace bugreport
 			x86emulator.Registers[RegisterName.ESP] = pointer;
 			
 			oldStackSize = x86emulator.StackSize;
-			reportedInstructionPointer = 0xdead1337;
 		}
 		
 		[Test]
@@ -248,12 +247,6 @@ namespace bugreport
 			Assert.AreEqual(16, x86emulator.ReturnValue.PointsTo.Length);
 		}
 		
-		UInt32 reportedInstructionPointer;
-		private void onReportOOB(Object sender, NewReportEventArgs e)
-		{
-			reportedInstructionPointer = e.InstructionPointer;
-		}
-
 		[Test]
 		public void MovIntoAssignedEaxOutOfBounds()
 		{
@@ -262,9 +255,15 @@ namespace bugreport
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.ReturnValue = pointer;
 			code = new Byte[] {0xc6, 0x40, index, value};
-			x86emulator.NewReport += onReportOOB;
-			x86emulator.Run(code);
-			Assert.AreEqual(0, reportedInstructionPointer);			
+			x86emulator.Run(new Byte[] { 0x90 });
+			try
+			{
+			    x86emulator.Run(code);
+			}
+			catch (OutOfBoundsMemoryAccessException e)
+			{
+			    Assert.AreEqual(1, e.InstructionPointer);
+			}
 		}
 
 		[Test]
@@ -349,8 +348,6 @@ namespace bugreport
 			code = new Byte[] {0x0f, 0xb6, 0x15, 0xe0, 0x95, 0x04, 0x08};
 			x86emulator.Run(code);
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EDX].Value);
-			
-			
 		}
 
 		[Test]
@@ -384,7 +381,6 @@ namespace bugreport
 
 			AbstractValue sixteen = x86emulator.Registers[RegisterName.EAX].PointsTo[0];
 			Assert.AreEqual(0x10, sixteen.Value);
-			                
 		}
 		
 		[Test]
@@ -408,7 +404,6 @@ namespace bugreport
 
 			AbstractValue fifteen = x86emulator.Registers[RegisterName.EBP].PointsTo[0xf8];
 			Assert.AreEqual(0xf, fifteen.Value);
-			                
 		}
 		
 		[Test]
@@ -424,7 +419,6 @@ namespace bugreport
 			
 			AbstractBuffer espBuffer = x86emulator.Registers[RegisterName.ESP].PointsTo;
 			Assert.AreEqual(0x10, espBuffer[0].Value);
-		
 		}
 
 		[Test]
@@ -438,7 +432,7 @@ namespace bugreport
 			AbstractValue[] values = new AbstractValue [] {zero, one};
 			AbstractBuffer buffer = new AbstractBuffer(values);
 			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(buffer);
-				
+
 			x86emulator.Run(code);
 			Assert.AreEqual(one, x86emulator.Registers[RegisterName.EDX].PointsTo[0]);
 		}
