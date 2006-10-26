@@ -19,17 +19,17 @@ namespace bugreport
 				return collector.ToArray();
 			}
 		}
-		
-		private void onReportOOB(Object sender, NewReportEventArgs e)
+
+		private void onReportOOB(UInt32 _instructionPointer, Boolean _isTainted)
 		{
 			String message = String.Empty;
-			if (e.IsTainted)
+			if (_isTainted)
 				message += "Exploitable ";
-			message += String.Format("OOB at EIP 0x{0:x4}", e.InstructionPointer);
+			message += String.Format("OOB at EIP 0x{0:x4}", _instructionPointer);
 			Console.WriteLine("Found defect: " + message);
 			collector.Add(message);
-		}		
-				
+		}
+
 		internal DumpFileParser getParserForFilename(String _fileName)
 		{
 			FileStream file = null;
@@ -47,8 +47,7 @@ namespace bugreport
 			
 			return new DumpFileParser(file);
 		}
-			
-		
+
 		private static RegisterCollection getRegistersForLinuxMain()
 		{
 				RegisterCollection linuxMainDefaultValues = new RegisterCollection();
@@ -77,7 +76,7 @@ namespace bugreport
 		}
 
 		public static void Main(string[] args)
-		{			
+		{
 			Console.WriteLine("bugreport " + VERSION);
 
 			if (args.Length < 1)
@@ -123,15 +122,13 @@ namespace bugreport
 				}
 				
 				interpreter = new X86emulator(getRegistersForLinuxMain());
-				interpreter.NewReport += onReportOOB;
 				
 				if (_isTracing)
 				{
 					Console.WriteLine();
 					Console.WriteLine("Interpreting file: " + fileName);
-				}				
+				}
 
-				
 				while (!parser.EndOfFunction)
 				{
 					Byte[] instructionBytes = parser.GetNextInstructionBytes();
@@ -147,7 +144,15 @@ namespace bugreport
 								Console.WriteLine("topOfStack=" + interpreter.TopOfStack + "  " + interpreter.Registers);
 								Console.WriteLine(parser.CurrentLine);
 							}
-							interpreter.Run(instructionBytes);
+							
+							try
+							{
+							    interpreter.Run(instructionBytes);
+							}
+							catch (OutOfBoundsMemoryAccessException e)
+							{
+								onReportOOB(e.InstructionPointer, e.IsTainted);
+							}
 						}
 					}
 					catch (Exception e)
