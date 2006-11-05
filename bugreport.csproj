@@ -51,6 +51,8 @@
     <Compile Include="MainTests.cs" />
     <Compile Include="RegisterCollection.cs" />
     <Compile Include="RegisterCollectionTest.cs" />
+    <Compile Include="Analyzer.cs" />
+    <Compile Include="AnalyzerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="systemTestsList.txt" />
