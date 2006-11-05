@@ -11,13 +11,27 @@ namespace bugreport
 {
 	[TestFixture]
 	//[Ignore("long")]
-	public class MainTests
+	public class AnalyzerTests
 	{
 		// TODO: This assumes that the test runner is run from the build directory.
 		private String testRoot = 
 			Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";			
 
 		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
+
+		[Test]
+		public void GetParserFileDoesNotExist() 
+		{
+			Analyzer analyzer = new Analyzer();
+			Assert.IsNull(analyzer.getParserForFilename("this file does not exist"));
+		}
+
+		[Test]
+		public void GetParserFileExists() 
+		{
+			Analyzer analyzer = new Analyzer();
+			Assert.IsNotNull(analyzer.getParserForFilename(testDataFile));
+		}
 
 		[Test]
 		[Category("long")]
@@ -33,7 +47,7 @@ namespace bugreport
 					continue;
 				}
 
-				MainClass mcHammer = new MainClass();
+				Analyzer analyzer = new Analyzer();
 
 				// format: filename.dump[,expected output]
 				String[] args = test.Split(',');
@@ -42,9 +56,9 @@ namespace bugreport
 
 				Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
 
-				mcHammer.AnalyzeWrapper(fileName, false);				
+				analyzer.Analyze(fileName, false);				
 
-				String[] messages = mcHammer.Messages;
+				String[] messages = analyzer.Messages;
 
 				if (expected == "") 
 				{
