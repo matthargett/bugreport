@@ -121,7 +121,7 @@ namespace bugreport
                 case OperatorEffect.Assignment:
                 {
                     AbstractValue newAbstractValue = new AbstractValue(rhs);
-                    if (lhs.IsInitialized && lhs.IsOOB)
+                    if (rhs.IsInitialized && rhs.IsOOB)
                         newAbstractValue.IsOOB = true;
                     
                     return newAbstractValue;
