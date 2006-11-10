@@ -92,27 +92,6 @@ namespace bugreport
 			return ((GetRM(modRM) == 4) && (IsEvDereferenced(_code)));
 		}
 
-		private static Byte getSIBIndex(Byte[] _code)
-		{
-			return (Byte)((getSIB(_code) >> 3) & 7);
-		}
-		
-		private static Byte getSIB(Byte[] _code)
-		{
-			return _code[OpcodeHelper.GetOpcodeLength(_code) + 1];
-		}
-		
-		public static RegisterName GetSIBBaseRegister(Byte[] _code)
-		{
-			if (!HasSIB(_code))
-			    throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetSIBBaseRegister is invalid.");
-
-			if (getSIBIndex(_code) != 0x4)
-				throw new NotImplementedException("GetSIBBaseRegister only supports scaler of none.");
-			Byte sib = ModRM.getSIB(_code);
-			return (RegisterName)(sib & 7);
-		}
-		
 		private static Byte getModRM(Byte[] _code)
 		{
 			Int32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);

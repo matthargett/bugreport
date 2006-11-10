@@ -167,32 +167,6 @@ namespace bugreport
 			Assert.IsTrue(ModRM.HasOffset(code));	
 		}
 
-		[Test]
-		public void EvGvSIBNoIndexToEspFromEax()
-		{
-			code = new Byte[] {0x89, 0x04, 0x24};
-			Assert.IsTrue(ModRM.HasSIB(code));
-			Assert.AreEqual(RegisterName.ESP, ModRM.GetSIBBaseRegister(code));
-			
-		}
-		
-		[Test]
-		[ExpectedException(typeof(InvalidOperationException))]
-		public void HasSIBWhenNoModRMPresent()
-		{
-			code = new Byte[] { 0x00 };
-			ModRM.HasSIB(code);
-		}
-		
-		[Test]
-		[ExpectedException(typeof(InvalidOperationException))]
-		public void GetSIBWhenNoSIBPresent()
-		{ // mov    ebp,esp
-			code = new Byte[] { 0x89, 0xe5} ;
-			Assert.IsFalse(ModRM.HasSIB(code));
-			ModRM.GetSIBBaseRegister(code);
-		}
-		
 
 	}
 }

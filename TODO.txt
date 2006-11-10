@@ -1,7 +1,35 @@
-﻿TODO.txt -- bugreport to-do list
-Dan Moniz <dnm@pobox.com> [http://pobox.com/~dnm/]
-Created: 2006-09-01 03:36:55 UTC | Updated: 2006-09-01 16:33:03 UTC
+TODO.txt -- bugreport to-do list
 
+CHORES:
+
+ Here are some potential refactorings:
+ 
+ -remove reporting delegate, have Analyzer catch OOB exceptions and be
+ responsible for reporting
+ 
+ -make emulator stateless, extract MachineState struct, Run take and
+ returns a MachineState
+ 
+ -implement DoOperation pattern in AbstractBuffer
+ 
+ -comments in .dump dictate expectations, remove expectations from
+ systemTestList.txt
+ 
+ -extract template method(s) from emulateOpcode similar switch statements
+ 
+ -stack handling cleanup (see TODOs in code)
+ 
+ -adding to a pointer with only one element should
+ InvalidOperationException
+ 
+ -GetNewBuffer should be on AbstractBuffer and return AbstactBuffer;
+ tests that use it should move to AbstractBufferTests
+ 
+ -unify duplicative hex switch statements by introducing a private struct
+ 
+ -make operator effect, stack effect, etc a parameter to emulateOpcode
+
+STORIES:
 
 This list is subject to change, of course, but should be kept in order of first
 to last thing(s) to do.
@@ -46,3 +74,6 @@ combinations of optimization options (but with -g on).
 - Get vuln_server.c to pass (both objdump .dump file and ELF binary) with all
 combinations of optimization options *without* -g on.
 
+
+ 
+ 
