@@ -236,5 +236,28 @@ namespace bugreport
 			StringAssert.StartsWith("***", pointerPointerPointer.ToString());
 		}
 
+		[Test]
+		public void CheckOOBAfterAssignment()
+		{
+			AbstractValue src = new AbstractValue(0x31337);
+			src.IsOOB = false;
+			AbstractValue dest = new AbstractValue(0x1);
+			dest.IsOOB = true;
+			dest = dest.DoOperation(OperatorEffect.Assignment, src);
+			
+			Assert.IsFalse(dest.IsOOB);
+		}
+		
+		[Test]
+		public void PreserveIsOOBAfterAssignment()
+		{
+			AbstractValue src = new AbstractValue(0x31337);
+			AbstractValue dest = new AbstractValue(0x1);
+			src.IsOOB = true;
+			dest = dest.DoOperation(OperatorEffect.Assignment, src);
+			
+			Assert.IsTrue(dest.IsOOB);
+		}
+		
     }
 }
