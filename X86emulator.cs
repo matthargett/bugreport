@@ -316,14 +316,13 @@ namespace bugreport
 					
 					return;
 				}
-
 					
 				case OpcodeEncoding.EvGv:
 				case OpcodeEncoding.EbGb:
 				{
 					if (ModRM.HasSIB(_code))
 					{
-						ev = ModRM.GetSIBBaseRegister(_code);
+						ev = SIB.GetBaseRegister(_code);
 					}
 					else
 						ev = ModRM.GetEv(_code);

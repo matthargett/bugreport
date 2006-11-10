@@ -48,6 +48,8 @@
     <Compile Include="AnalyzerTests.cs" />
     <Compile Include="DumpFileParser.cs" />
     <Compile Include="DumpFileParserTests.cs" />
+    <Compile Include="SIB.cs" />
+    <Compile Include="SIBTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
