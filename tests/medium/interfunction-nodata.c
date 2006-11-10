@@ -2,9 +2,9 @@
 
 void bug()
 {
-	int *array = malloc(0);
+	int *array = malloc(1);
 	////<bug />
-	array[0] = 0;
+	array[1] = 0;
 }
 
 int main(int argc, char **argv)

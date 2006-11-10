@@ -3,11 +3,11 @@
 void bug(int *array)
 {
 	////<bug />
-	array[0] = 0;
+	array[4] = 0;
 }
 
 int main(int argc, char **argv)
 {
-	int *array = malloc(0);
+	int *array = malloc(4);
 	bug(array);
 }
