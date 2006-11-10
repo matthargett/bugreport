@@ -1,13 +1,11 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>bugreport</RootNamespace>
-    <AssemblyName>bugreport</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>buglib</RootNamespace>
+    <AssemblyName>analysis</AssemblyName>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EC8B7F75-9D08-4BBA-9480-67785FB9C0DE}</ProjectGuid>
-    <StartArguments>simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump</StartArguments>
-    <StartWorkingDirectory>tests\simple\heap\</StartWorkingDirectory>
+    <ProjectGuid>{B5D04410-74D0-4A43-8904-876611C61F68}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -27,21 +25,29 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="nunit.framework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="MainTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="systemTestsList.txt" />
-    <ProjectReference Include="analysis.csproj">
-      <Project>{B5D04410-74D0-4A43-8904-876611C61F68}</Project>
-      <Name>analysis</Name>
-    </ProjectReference>
+    <Compile Include="AbstractBuffer.cs" />
+    <Compile Include="AbstractBufferTests.cs" />
+    <Compile Include="AbstractValue.cs" />
+    <Compile Include="AbstractValueTests.cs" />
+    <Compile Include="BitMath.cs" />
+    <Compile Include="BitMathTests.cs" />
+    <Compile Include="ModRM.cs" />
+    <Compile Include="ModRMTests.cs" />
+    <Compile Include="OpcodeHelper.cs" />
+    <Compile Include="OpcodeHelperTests.cs" />
+    <Compile Include="RegisterCollection.cs" />
+    <Compile Include="RegisterCollectionTest.cs" />
+    <Compile Include="X86emulator.cs" />
+    <Compile Include="X86emulatorTests.cs" />
+    <Compile Include="Analyzer.cs" />
+    <Compile Include="AnalyzerTests.cs" />
+    <Compile Include="DumpFileParser.cs" />
+    <Compile Include="DumpFileParserTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
