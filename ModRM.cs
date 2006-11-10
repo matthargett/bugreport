@@ -69,13 +69,13 @@ namespace bugreport
 			}
 		}
 		
-		public static Boolean IsEvDereferenced(Byte[] _code)
+		public static Boolean IsEffectiveAddressDereferenced(Byte[] _code)
 		{
 			Byte modRM = getModRM(_code);
 
 			return !(getMod(modRM) == 3);
 		}
-		
+                                                   
 		public static Boolean HasOffset(Byte[] _code)
 		{
 			if (HasSIB(_code))
@@ -89,7 +89,7 @@ namespace bugreport
 		{
 			Byte modRM = getModRM(_code);
 			
-			return ((GetRM(modRM) == 4) && (IsEvDereferenced(_code)));
+			return ((GetRM(modRM) == 4) && (IsEffectiveAddressDereferenced(_code)));
 		}
 
 		private static Byte getModRM(Byte[] _code)

@@ -237,9 +237,8 @@ namespace bugreport
 		[Test]
 		public void Call()
 		{
-			//TODO: should take AbstractValue rather than UInt32
 			//TODO: need to reconcile with esp/ebp handling
-			x86emulator.PushOntoStack(16);
+			x86emulator.PushOntoStack(new AbstractValue(16));
 			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
 			x86emulator.Run(code);
 			Assert.AreEqual(0x5, x86emulator.InstructionPointer);

@@ -19,7 +19,7 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.EAX, ModRM.GetEv(code));
 			Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));
 			Assert.IsFalse(ModRM.HasIndex(code));
-			Assert.IsTrue(ModRM.IsEvDereferenced(code));
+			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 		}
 		
 		[Test]
@@ -97,7 +97,7 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
 			Assert.AreEqual(RegisterName.ESP, ModRM.GetGv(code));
 			Assert.IsFalse(ModRM.HasIndex(code));
-			Assert.IsFalse(ModRM.IsEvDereferenced(code));
+			Assert.IsFalse(ModRM.IsEffectiveAddressDereferenced(code));
 		}
 		
 		[Test]
@@ -132,7 +132,7 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.EAX, ModRM.GetEv(code));
 			Assert.AreEqual(RegisterName.EBX, ModRM.GetGv(code));
 			Assert.IsFalse(ModRM.HasIndex(code));
-			Assert.IsTrue(ModRM.IsEvDereferenced(code));
+			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 			
 		}
 
@@ -143,7 +143,7 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
 			Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));
 			Assert.AreEqual(0xfb, ModRM.GetIndex(code));
-			Assert.IsTrue(ModRM.IsEvDereferenced(code));
+			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 			
 		}
 
@@ -153,7 +153,7 @@ namespace bugreport
 			code = new Byte[] {0x0f, 0xb6, 0x15, 0xe0, 0x95, 0x04, 0x08};
 			Assert.AreEqual(RegisterName.EDX, ModRM.GetGv(code));
 			Assert.IsFalse(ModRM.HasIndex(code));
-			Assert.IsTrue(ModRM.IsEvDereferenced(code));
+			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 			Assert.IsTrue(ModRM.HasOffset(code));	
 		}
 
@@ -163,7 +163,7 @@ namespace bugreport
 			code = new Byte[] {0x0f, 0xb6, 0x15, 0xe0, 0x95, 0x04, 0x08};
 			Assert.AreEqual(RegisterName.EDX, ModRM.GetGv(code));
 			Assert.IsFalse(ModRM.HasIndex(code));
-			Assert.IsTrue(ModRM.IsEvDereferenced(code));
+			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 			Assert.IsTrue(ModRM.HasOffset(code));	
 		}
 

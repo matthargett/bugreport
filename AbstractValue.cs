@@ -70,6 +70,11 @@ namespace bugreport
 		public AbstractValue AddTaint()
 		{
 			//TODO: this doesn't do anything with PointsTo
+			if (this.PointsTo != null)
+			{
+				throw new ArgumentException("AddTaint", "Cannot AddTaint to a pointer");
+			}
+			
 			AbstractValue tainted = new AbstractValue(this);
 			tainted.IsTainted = true;
 			return tainted;

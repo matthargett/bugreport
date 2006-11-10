@@ -128,9 +128,8 @@ namespace bugreport
 			}
 		}
 				
-		public void PushOntoStack(UInt32 value)
+		public void PushOntoStack(AbstractValue value)
 		{
-			//TODO: reconcile this with the proper EBP/ESP handling
 			TopOfStack = new AbstractValue(value);
 			stackSize = 1;
 		}
@@ -189,7 +188,7 @@ namespace bugreport
 						return;
 					}
 					
-					if (!ModRM.IsEvDereferenced(_code))
+					if (!ModRM.IsEffectiveAddressDereferenced(_code))
 						throw new NotImplementedException("EvIz currently supports only dereferenced Ev.");
 				
 					index = 0;
@@ -222,7 +221,7 @@ namespace bugreport
 
 					value = new AbstractValue(_code[valueIndex]);
 					
-					if (ModRM.IsEvDereferenced(_code))
+					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						if (registers[ev] == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
@@ -265,7 +264,7 @@ namespace bugreport
 					}
 					
 					value = registers[ev];
-					if (ModRM.IsEvDereferenced(_code))
+					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						if (value == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
@@ -288,8 +287,7 @@ namespace bugreport
 
 				case OpcodeEncoding.GvM:
 				{
-					// FIXME: There isn't any Ev in this encoding, so this question is confusing
-					if (!ModRM.IsEvDereferenced(_code))
+					if (!ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						throw new InvalidOperationException("GvM must be dereferenced");
 					}
@@ -330,7 +328,7 @@ namespace bugreport
 					gv = ModRM.GetGv(_code);
 					value = registers[ev];
 					
-					if (ModRM.IsEvDereferenced(_code))
+					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						if (value == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
