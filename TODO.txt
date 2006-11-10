@@ -3,10 +3,7 @@ TODO.txt -- bugreport to-do list
 CHORES:
 
  Here are some potential refactorings:
- 
- -remove reporting delegate, have Analyzer catch OOB exceptions and be
- responsible for reporting
- 
+
  -make emulator stateless, extract MachineState struct, Run take and
  returns a MachineState
  
