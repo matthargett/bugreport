@@ -63,7 +63,7 @@ namespace bugreport
 			AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);				
 							
 			AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
-			AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 0x100);
+			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
 			
 			// linux ABI dictates **argv is ebp+12
 			modifiedBuffer[12] = argvPointerPointer;

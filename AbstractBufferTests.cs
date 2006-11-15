@@ -26,7 +26,7 @@ namespace bugreport
 			
 			AbstractBuffer buffer = new AbstractBuffer(avBuffer);
 			Assert.AreEqual(one, buffer[0]);
-			AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 2);
+			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
 			Assert.AreEqual(three, modifiedBuffer[0]);
 			
 		}
@@ -47,10 +47,10 @@ namespace bugreport
 			
 			AbstractBuffer buffer = new AbstractBuffer(avBuffer);
 			Assert.AreEqual(one, buffer[0]);
-			AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 2);
+			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
 			Assert.AreEqual(three, modifiedBuffer[0]);
 
-			AbstractBuffer subbedBuffer = AbstractBuffer.Sub(modifiedBuffer, 2);
+			AbstractBuffer subbedBuffer = modifiedBuffer.DoOperation(OperatorEffect.Sub, new AbstractValue(2));
 			Assert.AreEqual(one, subbedBuffer[0]);
 		}
 		
@@ -58,7 +58,7 @@ namespace bugreport
 		[ExpectedException(typeof(ArgumentOutOfRangeException))]
 		public void PointerSubUnderflow()
 		{
-			AbstractBuffer.Sub(new AbstractBuffer(new AbstractValue[] {}), 1);
+			new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Sub, new AbstractValue(1));
 		}
 		
 		[Test]
@@ -77,9 +77,9 @@ namespace bugreport
 			
 			AbstractBuffer buffer = new AbstractBuffer(avBuffer);
 			Assert.AreEqual(one, buffer[0]);
-			AbstractBuffer modifiedBuffer = AbstractBuffer.Add(buffer, 3);
+			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(3));
 			Assert.AreEqual(four, modifiedBuffer[0]);
-			AbstractBuffer andedBuffer = AbstractBuffer.And(modifiedBuffer, 0xfffffff0);
+			AbstractBuffer andedBuffer = modifiedBuffer.DoOperation(OperatorEffect.And, new AbstractValue(0xfffffff0));
 			Assert.AreEqual(one, andedBuffer[0]);
 		}
 
@@ -153,11 +153,11 @@ namespace bugreport
 
             pointer[0] = value;
             
-            pointer = AbstractBuffer.Add(pointer, 1);
+            pointer = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(1));
             
             pointer[16] = value;
             
-            pointer = AbstractBuffer.Sub(pointer, 1);
+            pointer = pointer.DoOperation(OperatorEffect.Sub, new AbstractValue(1));
 
             Assert.AreEqual(0x41, pointer[0].Value);
             Assert.IsTrue(value.IsTainted);

@@ -138,7 +138,7 @@ namespace bugreport
 					
 					if (lhs.IsPointer)
 					{
-						AbstractBuffer newBuffer = AbstractBuffer.Add(lhs.PointsTo, rhs.Value);
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
 						return new AbstractValue(newBuffer);
 					}
 					
@@ -155,7 +155,7 @@ namespace bugreport
 					
 					if (lhs.IsPointer)
 					{
-						AbstractBuffer newBuffer = AbstractBuffer.Sub(lhs.PointsTo, rhs.Value);
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
 						return new AbstractValue(newBuffer);
 					}
 					UInt32 total = lhs.Value - rhs.Value;
@@ -171,7 +171,7 @@ namespace bugreport
 					
 					if (lhs.IsPointer)
 					{
-						AbstractBuffer newBuffer = AbstractBuffer.And(lhs.PointsTo, rhs.Value);
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
 						return new AbstractValue(newBuffer);
 					}
 					

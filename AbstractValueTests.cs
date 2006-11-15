@@ -170,7 +170,8 @@ namespace bugreport
 			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
 			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
 			
-			AbstractValue pointerAnd = pointerPlus4.DoOperation(OperatorEffect.And, new AbstractValue(0xfffffff0));
+			AbstractValue andValue = new AbstractValue(0xfffffff0);
+			AbstractValue pointerAnd = pointerPlus4.DoOperation(OperatorEffect.And, andValue);
 			Assert.AreEqual(one, pointerAnd.PointsTo[4]);		
 		}
 		
