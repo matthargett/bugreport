@@ -7,8 +7,6 @@ CHORES:
  -make emulator stateless, extract MachineState struct, Run take and
  returns a MachineState
  
- -implement DoOperation pattern in AbstractBuffer
- 
  -comments in .dump dictate expectations, remove expectations from
  systemTestList.txt
  

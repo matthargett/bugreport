@@ -193,7 +193,8 @@ namespace bugreport
 				
 					index = 0;
 					Byte dwordOffset = 2;
-					if (ModRM.HasIndex(_code)) {
+					if (ModRM.HasIndex(_code)) 
+					{
 						index = ModRM.GetIndex(_code);
 						dwordOffset++;
 					}

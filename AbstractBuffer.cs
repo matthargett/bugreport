@@ -50,36 +50,46 @@ namespace bugreport
             return;
         }
 
-        public static AbstractBuffer Add(AbstractBuffer _buffer, UInt32 _addValue)
+        public AbstractBuffer DoOperation(OperatorEffect _operatorEffect, AbstractValue _rhs)
         {
-            AbstractBuffer result = new AbstractBuffer(_buffer);
-            result.baseIndex += _addValue;
+			AbstractBuffer lhs = this;
+			
+			switch(_operatorEffect)
+			{
+				case OperatorEffect.Add:
+				{
+		            AbstractBuffer result = new AbstractBuffer(lhs);
+		            result.baseIndex += _rhs.Value;
 
+            return result;
+        }
+				case OperatorEffect.Sub:
+        {
+		            AbstractBuffer result = new AbstractBuffer(lhs);
+
+		            if (result.baseIndex < _rhs.Value)
+		                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _rhs.Value));
+
+		            result.baseIndex -= _rhs.Value;
             return result;
         }
         
-        public static AbstractBuffer And(AbstractBuffer _buffer, UInt32 _andValue)
+				case OperatorEffect.And:
         {
-            AbstractBuffer result = new AbstractBuffer(_buffer);
+		            AbstractBuffer result = new AbstractBuffer(lhs);
 
-            if ((result.baseIndex & _andValue) < 0)
-                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _andValue {1:x4}", result.baseIndex, _andValue));
+		            if ((result.baseIndex & _rhs.Value) < 0)
+		                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _andValue {1:x4}", result.baseIndex, _rhs));
 
-            result.baseIndex &= _andValue;
+		            result.baseIndex &= _rhs.Value;
             return result;
+        }
+
+				default:
+					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+			}
         }
         
-        public static AbstractBuffer Sub(AbstractBuffer _buffer, UInt32 _subValue)
-        {
-            AbstractBuffer result = new AbstractBuffer(_buffer);
-
-            if (result.baseIndex < _subValue)
-                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _subValue));
-
-            result.baseIndex -= _subValue;
-            return result;
-        }
-
         private bool IsIndexPastBounds(Int32 index)
         {
             return (((baseIndex + index) >= this.allocatedLength) && ((baseIndex + index) >= this.storage.Length));
