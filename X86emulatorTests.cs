@@ -21,6 +21,7 @@ namespace bugreport
 			AbstractBuffer buffer = new AbstractBuffer(new AbstractValue[0x200]);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.Registers[RegisterName.ESP] = pointer;
+			x86emulator.Registers[RegisterName.EBP] = x86emulator.Registers[RegisterName.ESP];
 			
 			oldStackSize = x86emulator.StackSize;
 		}
@@ -47,13 +48,19 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void PushEbp()
+		public void PushEbpThenPopEbp()
 		{
-			code = new Byte[] {0x55};
-			x86emulator.Run(code);
+			
+			Byte [] pushCode = new Byte[] {0x55};
+			Byte [] popCode = new Byte[] {0x5d};
+			x86emulator.Run(pushCode);
 
 			Assert.AreEqual(0x1, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize + 1, x86emulator.StackSize);
+			x86emulator.Registers[RegisterName.EBP] = null;
+			x86emulator.Run(popCode);
+			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
+			Assert.AreEqual(x86emulator.Registers[RegisterName.ESP], x86emulator.Registers[RegisterName.EBP]);
+			
 		}
 		
 		[Test]
