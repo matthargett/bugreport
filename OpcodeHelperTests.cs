@@ -79,6 +79,15 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void PoprBP()
+		{
+			code = new Byte[] {0x5d};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+		}
+		
+		[Test]
 		public void PushrBX()
 		{
 			code = new Byte[] {0x53};

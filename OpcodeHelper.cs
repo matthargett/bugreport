@@ -6,7 +6,7 @@ using System;
 
 namespace bugreport
 {
-	public enum StackEffect {None, Push};
+	public enum StackEffect {None, Push, Pop};
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl};
 
@@ -31,6 +31,7 @@ namespace bugreport
 					return OpcodeEncoding.GvEb;
 				case 0x53:
 					return OpcodeEncoding.rBX;
+				case 0x5d:
 				case 0x55:
 					return OpcodeEncoding.rBP;
 				case 0x83:
@@ -64,11 +65,21 @@ namespace bugreport
 		
 		public static StackEffect GetStackEffect(Byte[] _code)
 		{
-			if (GetEncoding(_code) == OpcodeEncoding.rBP || GetEncoding(_code) == OpcodeEncoding.rBX)
+			if (GetEncoding(_code) == OpcodeEncoding.rBX)
 			{
 				return StackEffect.Push;
 			}
-			return StackEffect.None;
+			
+			switch(_code[0])
+			{
+				case 0x55:
+					return StackEffect.Push;
+				case 0x5d:
+					return StackEffect.Pop;
+
+				default:
+					return StackEffect.None;
+			}
 		}
 		
 		public static OperatorEffect GetOperatorEffect(Byte[] _code)

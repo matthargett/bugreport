@@ -152,8 +152,9 @@ namespace bugreport
 
 			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(_code);
 			OperatorEffect op = OpcodeHelper.GetOperatorEffect(_code);
-
-			if (OpcodeHelper.GetStackEffect(_code) == StackEffect.Push)
+			
+			// FIXME: change this rBX stack handling to be more like the rBP handling below
+			if (OpcodeHelper.GetStackEffect(_code) == StackEffect.Push && encoding == OpcodeEncoding.rBX)
 			{
 				stackSize++;
 				return;
@@ -177,6 +178,21 @@ namespace bugreport
 					return;
 				}
 
+				case OpcodeEncoding.rBP:
+				{
+						switch (OpcodeHelper.GetStackEffect(_code))
+						{
+								case StackEffect.Pop:
+									registers[RegisterName.EBP] = TopOfStack;
+									break;
+								case StackEffect.Push:
+									TopOfStack = registers[RegisterName.EBP];
+									break;
+								default:
+									throw new NotImplementedException("rBP only supports push and pop");
+						}
+						return;
+				}
 				case OpcodeEncoding.EvIz:
 				{
 					if (ModRM.HasSIB(_code))
