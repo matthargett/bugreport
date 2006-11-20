@@ -95,6 +95,15 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
 		}
+
+		[Test]
+		public void PoprBX()
+		{
+			code = new Byte[] {0x5b};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+		}
 		
 		[Test]
 		public void EbIb()

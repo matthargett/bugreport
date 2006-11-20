@@ -62,6 +62,22 @@ namespace bugreport
 			Assert.AreEqual(x86emulator.Registers[RegisterName.ESP], x86emulator.Registers[RegisterName.EBP]);
 			
 		}
+
+		[Test]
+		public void PushEbxThenPopEbx()
+		{
+			
+			Byte [] pushCode = new Byte[] {0x53};
+			Byte [] popCode = new Byte[] {0x5b};
+			x86emulator.Registers[RegisterName.EBX] = new AbstractValue(0x31337);
+			x86emulator.Run(pushCode);
+
+			Assert.AreEqual(0x1, x86emulator.InstructionPointer);
+			x86emulator.Registers[RegisterName.EBX] = null;
+			x86emulator.Run(popCode);
+			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
+			Assert.AreEqual(0x31337, x86emulator.Registers[RegisterName.EBX].Value);
+		}
 		
 		[Test]
 		public void PushEbx()
@@ -70,7 +86,7 @@ namespace bugreport
 			x86emulator.Run(code);
 
 			Assert.AreEqual(0x1, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize + 1, x86emulator.StackSize);
+			Assert.AreEqual(x86emulator.TopOfStack, x86emulator.Registers[RegisterName.EBX]);
 		}
 
 		[Test]
