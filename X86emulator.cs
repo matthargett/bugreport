@@ -60,15 +60,13 @@ namespace bugreport
 	public class X86emulator
 	{
 		private UInt32 instructionPointer;
-		private UInt32 stackSize;
 		private RegisterCollection registers;
 		private Dictionary<UInt32, AbstractValue> dataSegment;
 		
 		public X86emulator()
 		{
 			dataSegment = new Dictionary<UInt32, AbstractValue>();
-			registers = new RegisterCollection();
-			stackSize = 1;
+			registers = new RegisterCollection();			
 		}
 		
 		public X86emulator(RegisterCollection _registers)
@@ -93,15 +91,7 @@ namespace bugreport
 		public Dictionary<UInt32, AbstractValue> DataSegment
 		{
 			get { return dataSegment; }
-		}
-		
-		public UInt32 StackSize
-		{
-			get
-			{
-				return stackSize;
-			}
-		}
+		}		
 
 		public AbstractValue TopOfStack
 		{
@@ -131,7 +121,6 @@ namespace bugreport
 		public void PushOntoStack(AbstractValue value)
 		{
 			TopOfStack = new AbstractValue(value);
-			stackSize = 1;
 		}
 
 		public void Run(Byte[] _code)
