@@ -30,6 +30,7 @@ namespace bugreport
 				case 0x0f:
 					return OpcodeEncoding.GvEb;
 				case 0x53:
+				case 0x5b:
 					return OpcodeEncoding.rBX;
 				case 0x5d:
 				case 0x55:
@@ -65,15 +66,13 @@ namespace bugreport
 		
 		public static StackEffect GetStackEffect(Byte[] _code)
 		{
-			if (GetEncoding(_code) == OpcodeEncoding.rBX)
-			{
-				return StackEffect.Push;
-			}
-			
+		
 			switch(_code[0])
 			{
+				case 0x53:
 				case 0x55:
 					return StackEffect.Push;
+				case 0x5b:
 				case 0x5d:
 					return StackEffect.Pop;
 
