@@ -12,8 +12,6 @@ CHORES:
  
  -extract template method(s) from emulateOpcode similar switch statements
  
- -stack handling cleanup (see TODOs in code)
- 
  -adding to a pointer with only one element should
  InvalidOperationException
  
