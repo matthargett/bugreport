@@ -12,7 +12,6 @@ namespace bugreport
 	{
 		Byte[] code;
 		X86emulator x86emulator; 
-		UInt32 oldStackSize;	
 		
 		[SetUp]
 		public void SetUp()
@@ -23,7 +22,6 @@ namespace bugreport
 			x86emulator.Registers[RegisterName.ESP] = pointer;
 			x86emulator.Registers[RegisterName.EBP] = x86emulator.Registers[RegisterName.ESP];
 			
-			oldStackSize = x86emulator.StackSize;
 		}
 		
 		[Test]
@@ -93,7 +91,6 @@ namespace bugreport
 		public void DefaultValues()
 		{
 			Assert.AreEqual(0x0, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 		}
 
 		[Test]
@@ -106,7 +103,6 @@ namespace bugreport
 			x86emulator.Run(code);
 
 			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.ESP].Value);
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EBP].Value);
 		}
@@ -123,7 +119,6 @@ namespace bugreport
 			x86emulator.Run(code);
 
 			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 		
@@ -150,7 +145,6 @@ namespace bugreport
 			x86emulator.Run(code);
 
 			Assert.AreEqual(0x2, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 		
@@ -167,7 +161,6 @@ namespace bugreport
 			x86emulator.Run(code);
 
 			Assert.AreEqual(0x3, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(1, x86emulator.ReturnValue.Value);
 		}
 		
@@ -194,7 +187,6 @@ namespace bugreport
 			x86emulator.Registers[RegisterName.ESP] = new AbstractValue(0x0a);
 			x86emulator.Run(code);
 			Assert.AreEqual(0x3, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(0x02, x86emulator.Registers[RegisterName.ESP].Value);
 		}
 
@@ -204,7 +196,6 @@ namespace bugreport
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			x86emulator.Run(code);
 			Assert.AreEqual(0x7, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(0x10, x86emulator.TopOfStack.Value);
 		}
 
@@ -214,7 +205,6 @@ namespace bugreport
 			code = new Byte[] {0xb8, 0x00, 0x00, 0x00, 0x00};
 			x86emulator.Run(code);
 			Assert.AreEqual(code.Length, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(0x0, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 
@@ -225,7 +215,6 @@ namespace bugreport
 			x86emulator.Registers[RegisterName.EAX] = new AbstractValue(1);
 			x86emulator.Run(code);
 			Assert.AreEqual(code.Length, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(0x2, x86emulator.Registers[RegisterName.EAX].Value);
 		}
 
@@ -235,7 +224,6 @@ namespace bugreport
 			code = new Byte[] {0xb8, 0x37, 0x13, 0x03, 0x00};
 			x86emulator.Run(code);
 			Assert.AreEqual(code.Length, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(0x00031337, x86emulator.ReturnValue.Value);
 		}
 
@@ -245,7 +233,6 @@ namespace bugreport
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x37, 0x13, 0x03, 0x00};
 			x86emulator.Run(code);
 			Assert.AreEqual(0x7, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(0x00031337, x86emulator.TopOfStack.Value);
 		}
 		
@@ -265,7 +252,6 @@ namespace bugreport
 			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
 			x86emulator.Run(code);
 			Assert.AreEqual(0x5, x86emulator.InstructionPointer);
-			Assert.AreEqual(oldStackSize, x86emulator.StackSize);
 			Assert.AreEqual(16, x86emulator.ReturnValue.PointsTo.Length);
 		}
 		
