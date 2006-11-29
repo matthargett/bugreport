@@ -4,9 +4,6 @@ CHORES:
 
  Here are some potential refactorings:
 
- -make emulator stateless, extract MachineState struct, Run take and
- returns a MachineState
- 
  -comments in .dump dictate expectations, remove expectations from
  systemTestList.txt
  

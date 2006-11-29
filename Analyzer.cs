@@ -80,8 +80,6 @@ namespace bugreport
 		public void Analyze(String _fileArgument, Boolean _isTracing) 
 		{
 			DumpFileParser parser;
-			X86emulator interpreter;
-			
 			String[] fileNames;
 			
 			if (_fileArgument.Contains("*"))
@@ -101,13 +99,13 @@ namespace bugreport
 					return;
 				}
 				
-				interpreter = new X86emulator(new MachineState(getRegistersForLinuxMain()));
-				
 				if (_isTracing)
 				{
 					Console.WriteLine();
 					Console.WriteLine("Interpreting file: " + fileName);
 				}
+
+				MachineState machineState = new MachineState(getRegistersForLinuxMain());
 
 				while (!parser.EndOfFunction)
 				{
@@ -121,13 +119,13 @@ namespace bugreport
 							if (_isTracing)
 							{
 								Console.WriteLine();
-								Console.WriteLine("topOfStack=" + interpreter.TopOfStack + "  " + interpreter.Registers);
+								Console.WriteLine("topOfStack=" + machineState.TopOfStack + "  " + machineState.Registers);
 								Console.WriteLine(parser.CurrentLine);
 							}
 							
 							try
 							{
-							    interpreter.Run(instructionBytes);
+							    machineState = X86emulator.Run(machineState, instructionBytes);
 							}
 							catch (OutOfBoundsMemoryAccessException e)
 							{

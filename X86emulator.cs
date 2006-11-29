@@ -56,78 +56,21 @@ namespace bugreport
 		}
 	}
 
-	public class X86emulator
+	public static class X86emulator
 	{
-		private UInt32 instructionPointer;
-		private RegisterCollection registers;
-		private Dictionary<UInt32, AbstractValue> dataSegment;
-		
-		public X86emulator(MachineState _machineState)
-		{
-			dataSegment = _machineState.DataSegment;
-			registers = _machineState.Registers;
-		}
-
-		public UInt32 InstructionPointer
-		{
-			get
-			{
-				return instructionPointer;
-			}
-		}
-		
-		public RegisterCollection Registers
-		{
-			get { return registers; }
-		}
-
-		public Dictionary<UInt32, AbstractValue> DataSegment
-		{
-			get { return dataSegment; }
-		}		
-
-		public AbstractValue TopOfStack
-		{
-			get
-			{
-				return registers[RegisterName.ESP].PointsTo[0];
-			}
-			
-			private set 
-			{
-				registers[RegisterName.ESP].PointsTo[0] = value;
-			}
-		}
-
-		public AbstractValue ReturnValue
-		{
-			get
-			{
-				return registers[RegisterName.EAX];
-			}
-			set
-			{
-				registers[RegisterName.EAX] = value;
-			}
-		}
-				
-		public void PushOntoStack(AbstractValue value)
-		{
-			TopOfStack = new AbstractValue(value);
-		}
-
-		public void Run(Byte[] _code)
+		public static MachineState Run(MachineState _machineState, Byte[] _code)
 		{
 			if (_code.Length == 0)
 				throw new ArgumentException("_code", "Empty array not allowed.");
 			
-			emulateOpcode(_code);
-			instructionPointer += (UInt32)_code.Length;
-			return;
+			MachineState afterState = emulateOpcode(_machineState, _code);
+			afterState.InstructionPointer += (UInt32)_code.Length;
+			return afterState;
 		}
 
-		private void emulateOpcode(Byte[] _code)
+		private static MachineState emulateOpcode(MachineState _machineState, Byte[] _code)
 		{
+			MachineState machineState = _machineState;
 			RegisterName ev, gv;
 			AbstractValue value;
 			Byte index;
@@ -142,15 +85,15 @@ namespace bugreport
 				case OpcodeEncoding.rAxIz:
 				{
 					UInt32 immediate = BitMath.BytesToDword(_code, 1);
-					value = registers[RegisterName.EAX];
-					registers[RegisterName.EAX] = value.DoOperation(op, new AbstractValue(immediate));
-					return;
+					value = machineState.Registers[RegisterName.EAX];
+					machineState.Registers[RegisterName.EAX] = value.DoOperation(op, new AbstractValue(immediate));
+					return machineState;
 				}
 
 				case OpcodeEncoding.rAxOv:
 				{
-					registers[RegisterName.EAX] = dataSegment[BitMath.BytesToDword(_code, 1)];
-					return;
+					machineState.Registers[RegisterName.EAX] = machineState.DataSegment[BitMath.BytesToDword(_code, 1)];
+					return machineState;
 				}
 
 				case OpcodeEncoding.rBP:
@@ -158,15 +101,15 @@ namespace bugreport
 						switch (OpcodeHelper.GetStackEffect(_code))
 						{
 								case StackEffect.Pop:
-									registers[RegisterName.EBP] = TopOfStack;
+									machineState.Registers[RegisterName.EBP] = machineState.TopOfStack;
 									break;
 								case StackEffect.Push:
-									TopOfStack = registers[RegisterName.EBP];
+									machineState.TopOfStack = machineState.Registers[RegisterName.EBP];
 									break;
 								default:
 									throw new NotImplementedException("rBP only supports push and pop");
 						}
-						return;
+						return machineState;
 				}
 
 				case OpcodeEncoding.rBX:
@@ -174,15 +117,15 @@ namespace bugreport
 						switch (OpcodeHelper.GetStackEffect(_code))
 						{
 								case StackEffect.Pop:
-									registers[RegisterName.EBX] = TopOfStack;
+									machineState.Registers[RegisterName.EBX] = machineState.TopOfStack;
 									break;
 								case StackEffect.Push:
-									TopOfStack = registers[RegisterName.EBX];
+									machineState.TopOfStack = machineState.Registers[RegisterName.EBX];
 									break;
 								default:
 									throw new NotImplementedException("rBX only supports push and pop");
 						}
-						return;
+						return machineState;
 				}
 				case OpcodeEncoding.EvIz:
 				{
@@ -191,8 +134,8 @@ namespace bugreport
 						if (_code[2] != 0x24)
 							throw new NotImplementedException(String.Format("Only supports 0x24 at this time, got: 0x{0:x2}.", _code[2]));
 						
-						TopOfStack = new AbstractValue(BitMath.BytesToDword(_code, 3));
-						return;
+						machineState.TopOfStack = new AbstractValue(BitMath.BytesToDword(_code, 3));
+						return machineState;
 					}
 					
 					if (!ModRM.IsEffectiveAddressDereferenced(_code))
@@ -209,9 +152,9 @@ namespace bugreport
 					ev = ModRM.GetEv(_code);
 					UInt32 immediate = BitMath.BytesToDword(_code, dwordOffset);
 					
-					registers[ev].PointsTo[index] = new AbstractValue(immediate);
+					machineState.Registers[ev].PointsTo[index] = new AbstractValue(immediate);
 					
-					return;
+					return machineState;
 				}
 					
 				case OpcodeEncoding.EvIb:				
@@ -231,28 +174,28 @@ namespace bugreport
 					
 					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
-						if (registers[ev] == null)
+						if (machineState.Registers[ev] == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
 						
-							registers[ev].PointsTo[index] = registers[ev].PointsTo[index].DoOperation(op, value);
-                            if (registers[ev].PointsTo[index].IsOOB)
-                                throw new OutOfBoundsMemoryAccessException(instructionPointer, value.IsTainted);
+							machineState.Registers[ev].PointsTo[index] = machineState.Registers[ev].PointsTo[index].DoOperation(op, value);
+                            if (machineState.Registers[ev].PointsTo[index].IsOOB)
+                                throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
 					}
 					else
 					{
-						registers[ev] = registers[ev].DoOperation(op, value);
-                        if (registers[ev].IsOOB)
+						machineState.Registers[ev] = machineState.Registers[ev].DoOperation(op, value);
+                        if (machineState.Registers[ev].IsOOB)
 						{
-							throw new OutOfBoundsMemoryAccessException(instructionPointer, value.IsTainted);							
+							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);							
 						}
 					}
-					return;
+					return machineState;
 				}
 
 				case OpcodeEncoding.Jz:
-					AbstractValue[] buffer = AbstractValue.GetNewBuffer(TopOfStack.Value); // hardcoded malloc emulation
-					ReturnValue = new AbstractValue(buffer);
-					return;
+					AbstractValue[] buffer = AbstractValue.GetNewBuffer(machineState.TopOfStack.Value); // hardcoded malloc emulation
+					machineState.ReturnValue = new AbstractValue(buffer);
+					return machineState;
 
 				case OpcodeEncoding.GvEv:
 				case OpcodeEncoding.GvEb:
@@ -266,12 +209,12 @@ namespace bugreport
 						offsetBeginsAt++; // for modRM byte
 						
 						UInt32 offset = BitMath.BytesToDword(_code, offsetBeginsAt);
-						value = dataSegment[offset];
-						registers[gv] = registers[gv].DoOperation(op, value);
-						return;
+						value = machineState.DataSegment[offset];
+						machineState.Registers[gv] = machineState.Registers[gv].DoOperation(op, value);
+						return machineState;
 					}
 					
-					value = registers[ev];
+					value = machineState.Registers[ev];
 					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						if (value == null)
@@ -285,12 +228,12 @@ namespace bugreport
 						value = value.PointsTo[index];
                         if (value.IsOOB)
 						{
-							throw new OutOfBoundsMemoryAccessException(instructionPointer, value.IsTainted);
+							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
 						}
 					}
 					
-					registers[gv] = registers[gv].DoOperation(op, value);
-					return;
+					machineState.Registers[gv] = machineState.Registers[gv].DoOperation(op, value);
+					return machineState;
 				}
 
 				case OpcodeEncoding.GvM:
@@ -303,7 +246,7 @@ namespace bugreport
 					gv = ModRM.GetGv(_code);
 					ev = ModRM.GetEv(_code);
 					
-					if (Registers[ev].PointsTo == null)
+					if (machineState.Registers[ev].PointsTo == null)
 					{
 						throw new NotImplementedException("GvM currently only supports dereferenced ev");
 					}
@@ -314,13 +257,13 @@ namespace bugreport
 						index = ModRM.GetIndex(_code);
 					}
 					
-					Registers[gv] = Registers[ev].DoOperation(OperatorEffect.Add, new AbstractValue(index));
-                    if (Registers[gv].IsOOB)
+					machineState.Registers[gv] = machineState.Registers[ev].DoOperation(OperatorEffect.Add, new AbstractValue(index));
+                    if (machineState.Registers[gv].IsOOB)
 					{
-						throw new OutOfBoundsMemoryAccessException(instructionPointer, Registers[ev].IsTainted);
+						throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[ev].IsTainted);
 					}
 					
-					return;
+					return machineState;
 				}
 					
 				case OpcodeEncoding.EvGv:
@@ -334,7 +277,7 @@ namespace bugreport
 						ev = ModRM.GetEv(_code);
 					
 					gv = ModRM.GetGv(_code);
-					value = registers[ev];
+					value = machineState.Registers[ev];
 					
 					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
@@ -352,38 +295,38 @@ namespace bugreport
 						}
 						else
 						{
-							value.PointsTo[index] = value.PointsTo[index].DoOperation(op, registers[gv]);
+							value.PointsTo[index] = value.PointsTo[index].DoOperation(op, machineState.Registers[gv]);
 							if (value.PointsTo[index].IsOOB)
-								throw new OutOfBoundsMemoryAccessException(instructionPointer, registers[gv].IsTainted);
+								throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[gv].IsTainted);
                         }
 
 					}
 					else
 					{
-						registers[ev] = value.DoOperation(op, registers[gv]);
+						machineState.Registers[ev] = value.DoOperation(op, machineState.Registers[gv]);
 					}
-					return;							
+					return machineState;							
 				}
 
 				case OpcodeEncoding.ObAL:
 				{
 					UInt32 offset;
 					
-					AbstractValue dwordValue = registers[RegisterName.EAX];
+					AbstractValue dwordValue = machineState.Registers[RegisterName.EAX];
 					AbstractValue byteValue = dwordValue.TruncateValueToByte();
 					
 					offset = BitMath.BytesToDword(_code, 1); // This is 1 for ObAL
-					if (dataSegment.ContainsKey(offset)) 
-						value = dataSegment[offset];
+					if (machineState.DataSegment.ContainsKey(offset)) 
+						value = machineState.DataSegment[offset];
 					else
 						value = new AbstractValue();						
 					
-					dataSegment[offset] = value.DoOperation(op, byteValue);
-					return;	
+					machineState.DataSegment[offset] = value.DoOperation(op, byteValue);
+					return machineState;	
 				}
 				
 				case OpcodeEncoding.None:
-					return;
+					return machineState;
 
 				default:
 					throw new InvalidOpcodeException( _code);

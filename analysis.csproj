@@ -51,6 +51,7 @@
     <Compile Include="SIB.cs" />
     <Compile Include="SIBTests.cs" />
     <Compile Include="MachineState.cs" />
+    <Compile Include="MachineStateTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
