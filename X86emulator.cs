@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 
 namespace bugreport
 {
@@ -63,16 +62,10 @@ namespace bugreport
 		private RegisterCollection registers;
 		private Dictionary<UInt32, AbstractValue> dataSegment;
 		
-		public X86emulator()
+		public X86emulator(MachineState _machineState)
 		{
-			dataSegment = new Dictionary<UInt32, AbstractValue>();
-			registers = new RegisterCollection();			
-		}
-		
-		public X86emulator(RegisterCollection _registers)
-		{
-			dataSegment = new Dictionary<UInt32, AbstractValue>();
-			registers = _registers;
+			dataSegment = _machineState.DataSegment;
+			registers = _machineState.Registers;
 		}
 
 		public UInt32 InstructionPointer

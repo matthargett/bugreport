@@ -16,7 +16,7 @@ namespace bugreport
 		[SetUp]
 		public void SetUp()
 		{
-			x86emulator = new X86emulator();
+			x86emulator = new X86emulator(new MachineState(new RegisterCollection()));
 			AbstractBuffer buffer = new AbstractBuffer(new AbstractValue[0x200]);
 			AbstractValue pointer = new AbstractValue(buffer);
 			x86emulator.Registers[RegisterName.ESP] = pointer;
@@ -30,7 +30,7 @@ namespace bugreport
 			AbstractValue value = new AbstractValue(1);
 			RegisterCollection registers = new RegisterCollection();
 			registers[RegisterName.EAX] = value;
-			x86emulator = new X86emulator(registers);
+			x86emulator = new X86emulator(new MachineState(registers));
 			Assert.AreEqual(value, x86emulator.Registers[RegisterName.EAX]);
 		}
 		

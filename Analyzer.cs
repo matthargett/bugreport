@@ -101,7 +101,7 @@ namespace bugreport
 					return;
 				}
 				
-				interpreter = new X86emulator(getRegistersForLinuxMain());
+				interpreter = new X86emulator(new MachineState(getRegistersForLinuxMain()));
 				
 				if (_isTracing)
 				{
