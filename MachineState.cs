@@ -22,6 +22,10 @@ namespace bugreport
 			{
 				return instructionPointer;
 			}
+			set 
+			{
+				instructionPointer = value;
+			}
 		}
 		
 		public RegisterCollection Registers
@@ -41,7 +45,7 @@ namespace bugreport
 				return registers[RegisterName.ESP].PointsTo[0];
 			}
 			
-			private set 
+			set 
 			{
 				registers[RegisterName.ESP].PointsTo[0] = value;
 			}
@@ -79,7 +83,9 @@ namespace bugreport
 		public bool Equals(MachineState other)
 		{
 			// add comparisions for all members here
-			throw new NotImplementedException();
+			return this.dataSegment.Equals(other.dataSegment) &&
+				this.instructionPointer == other.instructionPointer &&
+				this.registers.Equals(other.registers);
 		}
 		
 		public override int GetHashCode()
