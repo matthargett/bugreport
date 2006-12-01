@@ -78,6 +78,9 @@ namespace bugreport
 			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(_code);
 			OperatorEffect op = OpcodeHelper.GetOperatorEffect(_code);
 			
+			if (op == OperatorEffect.Unknown)
+				throw new InvalidOpcodeException(_code);
+	
 			switch (encoding)
 			{
 				

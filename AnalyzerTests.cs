@@ -10,13 +10,8 @@ using System.Collections.Generic;
 namespace bugreport
 {
 	[TestFixture]
-	//[Ignore("long")]
 	public class AnalyzerTests
 	{
-		// TODO: This assumes that the test runner is run from the build directory.
-		private String testRoot = 
-			Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";			
-
 		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
 		[Test]
