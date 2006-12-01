@@ -10,8 +10,6 @@ namespace bugreport
 {
 	public class Analyzer
 	{
-		const String VERSION = "0.1";
-				
 		private List<String> collector = new List<String>();
 		
 		public string[] Messages 
@@ -32,20 +30,11 @@ namespace bugreport
 			collector.Add(message);
 		}
 
-		internal DumpFileParser getParserForFilename(String _fileName)
+		private DumpFileParser getParserForFilename(String _fileName)
 		{
-			FileStream file = null;
+			FileStream file;
 			
-			try
-			{
-				file = File.OpenRead(_fileName);
-			}
-			
-			catch(FileNotFoundException)
-			{
-				Console.WriteLine("File not found: " + _fileName);
-				return null;				
-			}
+			file = File.OpenRead(_fileName);
 			
 			return new DumpFileParser(file);
 		}
@@ -81,6 +70,9 @@ namespace bugreport
 		{
 			DumpFileParser parser;
 			String[] fileNames;
+
+			if (null == _fileArgument)
+				throw new ArgumentNullException("_fileArgument");
 			
 			if (_fileArgument.Contains("*"))
 			{
@@ -90,13 +82,18 @@ namespace bugreport
 			{
 				fileNames = new String[] { _fileArgument };
 			}
+
+			if (0 == fileNames.Length)
+			{
+				throw new FileNotFoundException("Wildcard doesn't match any files");
+			}
 			
 			foreach(String fileName in fileNames)
 			{							
 				parser = getParserForFilename(fileName);
 				if (null == parser) 
 				{
-					return;
+					throw new ApplicationException("Couldn't create a parser for filename: " + fileName);
 				}
 				
 				if (_isTracing)

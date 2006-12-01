@@ -33,8 +33,6 @@ namespace bugreport
 					continue;
 				}
 
-				MainClass mcHammer = new MainClass();
-
 				// format: filename.dump[,expected output]
 				String[] args = test.Split(',');
 				String fileName = (testRoot + args[0]).Trim();
@@ -42,9 +40,9 @@ namespace bugreport
 
 				Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
 
-				mcHammer.AnalyzeWrapper(fileName, false);				
+				MainClass.Main(new String[] {fileName});	
 
-				String[] messages = mcHammer.Messages;
+				String[] messages = MainClass.Messages;
 
 				if (expected == "") 
 				{

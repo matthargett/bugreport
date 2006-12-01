@@ -12,20 +12,39 @@ namespace bugreport
 	[TestFixture]
 	public class AnalyzerTests
 	{
+		Analyzer analyzer;
+
 		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
 		[Test]
-		public void GetParserFileDoesNotExist() 
+		[ExpectedException(typeof(FileNotFoundException))]
+		public void FileDoesNotExist() 
 		{
-			Analyzer analyzer = new Analyzer();
-			Assert.IsNull(analyzer.getParserForFilename("this file does not exist"));
+			analyzer = new Analyzer();
+			analyzer.Analyze("this file does not exist", false);
 		}
 
 		[Test]
-		public void GetParserFileExists() 
+		[ExpectedException(typeof(FileNotFoundException))]
+		public void NoMatchWildcardDoesNotExist() 
 		{
-			Analyzer analyzer = new Analyzer();
-			Assert.IsNotNull(analyzer.getParserForFilename(testDataFile));
+			analyzer = new Analyzer();
+			analyzer.Analyze("thisfiledoesnotexist*", false);
+		}
+
+		[Test]
+		[ExpectedException(typeof(ArgumentNullException))]
+		public void NullFileName() 
+		{
+			analyzer = new Analyzer();
+			analyzer.Analyze(null, false);
+		}
+
+		[Test]
+		public void FileExists() 
+		{
+			analyzer = new Analyzer();
+			analyzer.Analyze(testDataFile, false);
 		}
 	}
 }
