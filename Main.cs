@@ -11,9 +11,9 @@ namespace bugreport
 	public class MainClass
 	{
 		const String VERSION = "0.1";
-		Analyzer analyzer = new Analyzer();
+		static Analyzer analyzer;
 
-		public String[] Messages 
+		public static String[] Messages 
 		{
 			get 
 			{
@@ -39,13 +39,8 @@ namespace bugreport
 				isTracing = true;
 			}
 			
-			new MainClass().AnalyzeWrapper(fileArgument, isTracing);
-		}
-		
-		
-		public void AnalyzeWrapper(String fileArgument, Boolean isTracing)
-		{
-			analyzer.Analyze(fileArgument, isTracing);			
+			analyzer = new Analyzer();
+			analyzer.Analyze(fileArgument, isTracing);
 		}
 	} 
 }
