@@ -13,9 +13,7 @@ namespace bugreport
 	public class AnalyzerTests
 	{
 		Analyzer analyzer;
-
-		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
-
+/*
 		[Test]
 		[ExpectedException(typeof(FileNotFoundException))]
 		public void FileDoesNotExist() 
@@ -31,20 +29,13 @@ namespace bugreport
 			analyzer = new Analyzer();
 			analyzer.Analyze("thisfiledoesnotexist*", false);
 		}
-
+*/
 		[Test]
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void NullFileName() 
 		{
 			analyzer = new Analyzer();
 			analyzer.Analyze(null, false);
-		}
-
-		[Test]
-		public void FileExists() 
-		{
-			analyzer = new Analyzer();
-			analyzer.Analyze(testDataFile, false);
 		}
 	}
 }
