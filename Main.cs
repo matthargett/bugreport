@@ -31,16 +31,51 @@ namespace bugreport
 				return;	
 			}
 			
-			String fileArgument = args[args.Length - 1];
-			Boolean isTracing = false;
-			
-			if (args[0].Equals("--trace")) 
+			Boolean isTracing = getTracingOptionFromArguments(args);
+			String[] fileNames = getFileNamesFromArguments(args);	
+			if (0 == fileNames.Length)
 			{
-				isTracing = true;
+				throw new FileNotFoundException("No files found by name specified");
 			}
-			
-			analyzer = new Analyzer();
-			analyzer.Analyze(fileArgument, isTracing);
+
+			analyzeFiles(fileNames, isTracing);
+		}
+
+		public static Boolean getTracingOptionFromArguments(String[] _args)
+		{
+			if (_args[0].Equals("--trace")) 
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		public static String[] getFileNamesFromArguments(String[] _args)
+		{
+			String fileArgument = _args[_args.Length - 1];
+			String[] fileNames;
+			if (fileArgument.Contains("*"))
+			{
+				fileNames = Directory.GetFiles(Environment.CurrentDirectory, fileArgument);
+			}
+			else
+			{
+				fileNames = new String[] { fileArgument };
+			}
+
+			return fileNames;
+		}
+
+		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)
+		{
+			foreach(String fileName in _fileNames)
+			{							
+				Console.WriteLine();
+				Console.WriteLine("Interpreting file: " + fileName);
+				analyzer = new Analyzer();
+				analyzer.Analyze(File.OpenRead(fileName), _isTracing);
+			}
 		}
 	} 
 }

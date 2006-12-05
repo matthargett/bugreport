@@ -30,15 +30,6 @@ namespace bugreport
 			collector.Add(message);
 		}
 
-		private DumpFileParser getParserForFilename(String _fileName)
-		{
-			FileStream file;
-			
-			file = File.OpenRead(_fileName);
-			
-			return new DumpFileParser(file);
-		}
-
 		private static RegisterCollection getRegistersForLinuxMain()
 		{
 			RegisterCollection linuxMainDefaultValues = new RegisterCollection();
@@ -66,78 +57,49 @@ namespace bugreport
 			return linuxMainDefaultValues;
 		}
 
-		public void Analyze(String _fileArgument, Boolean _isTracing) 
+		public void Analyze(Stream _streamToParse, Boolean _isTracing) 
 		{
-			DumpFileParser parser;
-			String[] fileNames;
-
-			if (null == _fileArgument)
-				throw new ArgumentNullException("_fileArgument");
+			if (null == _streamToParse)
+				throw new ArgumentNullException("_streamToParse");
 			
-			if (_fileArgument.Contains("*"))
-			{
-				fileNames = Directory.GetFiles(Environment.CurrentDirectory, _fileArgument);
-			}
-			else
-			{
-				fileNames = new String[] { _fileArgument };
-			}
-
-			if (0 == fileNames.Length)
-			{
-				throw new FileNotFoundException("Wildcard doesn't match any files");
-			}
+			DumpFileParser parser = new DumpFileParser(_streamToParse);
 			
-			foreach(String fileName in fileNames)
-			{							
-				parser = getParserForFilename(fileName);
-				if (null == parser) 
-				{
-					throw new ApplicationException("Couldn't create a parser for filename: " + fileName);
-				}
+			MachineState machineState = new MachineState(getRegistersForLinuxMain());
+
+			while (!parser.EndOfFunction)
+			{
+				Byte[] instructionBytes = parser.GetNextInstructionBytes();
 				
-				if (_isTracing)
+				try
 				{
-					Console.WriteLine();
-					Console.WriteLine("Interpreting file: " + fileName);
-				}
-
-				MachineState machineState = new MachineState(getRegistersForLinuxMain());
-
-				while (!parser.EndOfFunction)
-				{
-					Byte[] instructionBytes = parser.GetNextInstructionBytes();
-					
-					try
+					// TODO: This may ignore the last instructions in the method.  Investigate + fix.
+					if (!parser.EndOfFunction)						
 					{
-						// TODO: This may ignore the last instructions in the method.  Investigate + fix.
-						if (!parser.EndOfFunction)						
+						if (_isTracing)
 						{
-							if (_isTracing)
-							{
-								Console.WriteLine();
-								Console.WriteLine("topOfStack=" + machineState.TopOfStack + "  " + machineState.Registers);
-								Console.WriteLine(parser.CurrentLine);
-							}
-							
-							try
-							{
-							    machineState = X86emulator.Run(machineState, instructionBytes);
-							}
-							catch (OutOfBoundsMemoryAccessException e)
-							{
-								onReportOOB(e.InstructionPointer, e.IsTainted);
-							}
+							Console.WriteLine();
+							Console.WriteLine("topOfStack=" + machineState.TopOfStack + "  " + machineState.Registers);
+							Console.WriteLine(parser.CurrentLine);
+						}
+						
+						try
+						{
+						    machineState = X86emulator.Run(machineState, instructionBytes);
+						}
+						catch (OutOfBoundsMemoryAccessException e)
+						{
+							onReportOOB(e.InstructionPointer, e.IsTainted);
 						}
 					}
-					catch (Exception e)
-					{
-						StreamWriter writer = new StreamWriter(Console.OpenStandardError());
-						writer.WriteLine(e.ToString());
-						collector.Add(e.ToString());
-						writer.Close();
-						break;
-					}
+				}
+
+				catch (Exception e)
+				{
+					StreamWriter writer = new StreamWriter(Console.OpenStandardError());
+					writer.WriteLine(e.ToString());
+					collector.Add(e.ToString());
+					writer.Close();
+					break;
 				}
 			}
 		}
