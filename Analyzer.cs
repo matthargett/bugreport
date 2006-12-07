@@ -8,11 +8,40 @@ using System.Collections.Generic;
 
 namespace bugreport
 {
+	public struct ReportItem
+	{
+		public UInt32 InstructionPointer;
+		public Boolean IsTainted;
+
+		public ReportItem(UInt32 instructionPointer, Boolean isTainted)
+		{
+			this.InstructionPointer = instructionPointer;
+			this.IsTainted = isTainted;
+		}
+	}
+
 	public class Analyzer
 	{
 		private List<String> collector = new List<String>();
+		private Stream stream;
+
+		public Analyzer(Stream stream)
+		{
+			if (null == stream)
+				throw new ArgumentNullException("stream");
+			
+			this.stream = stream;
+		}
+
+		public IList<ReportItem> ReportItems
+		{
+			get
+			{
+				return new List<ReportItem>();
+			}
+		}
 		
-		public string[] Messages 
+		public String[] Messages 
 		{
 			get 
 			{
@@ -20,12 +49,12 @@ namespace bugreport
 			}
 		}
 
-		private void onReportOOB(UInt32 _instructionPointer, Boolean _isTainted)
+		private void onReportOOB(ReportItem reportItem)
 		{
 			String message = String.Empty;
-			if (_isTainted)
+			if (reportItem.IsTainted)
 				message += "Exploitable ";
-			message += String.Format("OOB at EIP 0x{0:x4}", _instructionPointer);
+			message += String.Format("OOB at EIP 0x{0:x4}", reportItem.InstructionPointer);
 			Console.WriteLine("Found defect: " + message);
 			collector.Add(message);
 		}
@@ -57,12 +86,9 @@ namespace bugreport
 			return linuxMainDefaultValues;
 		}
 
-		public void Analyze(Stream _streamToParse, Boolean _isTracing) 
+		public void Analyze(Boolean _isTracing) 
 		{
-			if (null == _streamToParse)
-				throw new ArgumentNullException("_streamToParse");
-			
-			DumpFileParser parser = new DumpFileParser(_streamToParse);
+			DumpFileParser parser = new DumpFileParser(stream);
 			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
 
@@ -88,7 +114,8 @@ namespace bugreport
 						}
 						catch (OutOfBoundsMemoryAccessException e)
 						{
-							onReportOOB(e.InstructionPointer, e.IsTainted);
+							ReportItem reportItem = new ReportItem(e.InstructionPointer, e.IsTainted);	
+							onReportOOB(reportItem);
 						}
 					}
 				}

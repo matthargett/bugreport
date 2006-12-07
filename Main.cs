@@ -35,7 +35,8 @@ namespace bugreport
 			String[] fileNames = getFileNamesFromArguments(args);	
 			if (0 == fileNames.Length)
 			{
-				throw new FileNotFoundException("No files found by name specified");
+				Console.WriteLine("No files found by name specified");
+				Environment.Exit(-1);
 			}
 
 			analyzeFiles(fileNames, isTracing);
@@ -73,8 +74,8 @@ namespace bugreport
 			{							
 				Console.WriteLine();
 				Console.WriteLine("Interpreting file: " + fileName);
-				analyzer = new Analyzer();
-				analyzer.Analyze(File.OpenRead(fileName), _isTracing);
+				analyzer = new Analyzer(File.OpenRead(fileName));
+				analyzer.Analyze(_isTracing);
 			}
 		}
 	} 
