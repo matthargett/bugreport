@@ -34,8 +34,27 @@ namespace bugreport
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void NullFileName() 
 		{
-			analyzer = new Analyzer();
-			analyzer.Analyze(null, false);
+			analyzer = new Analyzer(null);
+			analyzer.Analyze(false);
+		}	
+
+		[Test]
+		public void NoReportItems()
+		{
+			MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
+			analyzer = new Analyzer(stream);	
+			Assert.AreEqual(0, analyzer.ReportItems.Count);
+		}
+
+		[Test]
+		[Ignore("TODO")]
+		public void WithReportItems()
+		{
+			MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
+			// TODO: need to inject a mock emulator that will cause reportItems to generate
+			analyzer = new Analyzer(stream);
+			analyzer.Analyze(false);
+			Assert.AreEqual(1, analyzer.ReportItems.Count);
 		}
 	}
 }
