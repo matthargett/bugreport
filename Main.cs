@@ -76,6 +76,15 @@ namespace bugreport
 				Console.WriteLine("Interpreting file: " + fileName);
 				analyzer = new Analyzer(File.OpenRead(fileName));
 				analyzer.Run(_isTracing);
+				IList<ReportItem> reportItems = analyzer.ReportItems;
+				foreach (ReportItem item in reportItems)
+				{
+					String message = String.Empty;
+					if (item.IsTainted)
+						message += "Exploitable ";
+					message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
+					Console.WriteLine("Found defect: " + message);					
+				}
 			}
 		}
 	} 
