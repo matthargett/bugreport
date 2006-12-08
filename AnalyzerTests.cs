@@ -4,6 +4,7 @@
 
 using System;
 using NUnit.Framework;
+using NUnit.Mocks;
 using System.IO;
 using System.Collections.Generic;
 
@@ -13,6 +14,25 @@ namespace bugreport
 	public class AnalyzerTests
 	{
 		Analyzer analyzer;
+		
+		public class AnalyzerWithReports : Analyzer
+		{
+			public AnalyzerWithReports(Stream stream) : base (stream) {}
+			
+			protected override MachineState runCode(MachineState _machineState, byte[] _instructionBytes)
+			{
+				throw new OutOfBoundsMemoryAccessException(0xdeadbeef, false);
+			}
+			
+			protected override IParsable createDumpFileParser(Stream _stream)
+			{
+				DynamicMock control= new DynamicMock(typeof(IParsable));
+				control.ExpectAndReturn("get_EndOfFunction", false, null);
+				control.ExpectAndReturn("get_EndOfFunction", false, null);
+				control.ExpectAndReturn("get_EndOfFunction", false, null);
+				return control.MockInstance as IParsable;
+			}
+		}
 /*
 		[Test]
 		[ExpectedException(typeof(FileNotFoundException))]
@@ -35,7 +55,7 @@ namespace bugreport
 		public void NullFileName() 
 		{
 			analyzer = new Analyzer(null);
-			analyzer.Analyze(false);
+			analyzer.Run(false);
 		}	
 
 		[Test]
@@ -47,13 +67,11 @@ namespace bugreport
 		}
 
 		[Test]
-		[Ignore("TODO")]
 		public void WithReportItems()
 		{
 			MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
-			// TODO: need to inject a mock emulator that will cause reportItems to generate
-			analyzer = new Analyzer(stream);
-			analyzer.Analyze(false);
+			analyzer = new AnalyzerWithReports(stream);
+			analyzer.Run(false);
 			Assert.AreEqual(1, analyzer.ReportItems.Count);
 		}
 	}

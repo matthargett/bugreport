@@ -10,7 +10,22 @@ using System.Globalization;
 
 namespace bugreport
 {
-	public class DumpFileParser
+	public interface IParsable 
+	{
+		Boolean EndOfFunction
+		{
+			get;
+		}
+		
+		Byte [] GetNextInstructionBytes();
+		
+		String CurrentLine
+		{	
+			get;
+		}
+	}
+	
+	public class DumpFileParser : IParsable
 	{
 		private Stream stream;
 		private StreamReader reader;
