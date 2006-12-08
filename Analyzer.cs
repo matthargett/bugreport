@@ -56,7 +56,7 @@ namespace bugreport
 			if (reportItem.IsTainted)
 				message += "Exploitable ";
 			message += String.Format("OOB at EIP 0x{0:x4}", reportItem.InstructionPointer);
-			Console.WriteLine("Found defect: " + message);
+//			Console.WriteLine("Found defect: " + message);
 			collector.Add(message);
 			reportItems.Add(reportItem);
 		}
