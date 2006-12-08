@@ -75,7 +75,7 @@ namespace bugreport
 				Console.WriteLine();
 				Console.WriteLine("Interpreting file: " + fileName);
 				analyzer = new Analyzer(File.OpenRead(fileName));
-				analyzer.Analyze(_isTracing);
+				analyzer.Run(_isTracing);
 			}
 		}
 	} 

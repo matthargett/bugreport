@@ -23,6 +23,7 @@ namespace bugreport
 	public class Analyzer
 	{
 		private List<String> collector = new List<String>();
+		private List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
 
 		public Analyzer(Stream stream)
@@ -37,7 +38,7 @@ namespace bugreport
 		{
 			get
 			{
-				return new List<ReportItem>();
+				return reportItems;
 			}
 		}
 		
@@ -57,6 +58,7 @@ namespace bugreport
 			message += String.Format("OOB at EIP 0x{0:x4}", reportItem.InstructionPointer);
 			Console.WriteLine("Found defect: " + message);
 			collector.Add(message);
+			reportItems.Add(reportItem);
 		}
 
 		private static RegisterCollection getRegistersForLinuxMain()
@@ -86,9 +88,21 @@ namespace bugreport
 			return linuxMainDefaultValues;
 		}
 
-		public void Analyze(Boolean _isTracing) 
+		
+		protected virtual MachineState runCode(MachineState _machineState, Byte [] _instructionBytes)
 		{
-			DumpFileParser parser = new DumpFileParser(stream);
+			return X86emulator.Run(_machineState, _instructionBytes);
+		}
+
+		
+		protected virtual IParsable createDumpFileParser(Stream _stream)
+		{
+			return new DumpFileParser(_stream);
+		}
+		
+		public void Run(Boolean _isTracing) 
+		{
+			IParsable parser = createDumpFileParser(stream);
 			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
 
@@ -110,7 +124,7 @@ namespace bugreport
 						
 						try
 						{
-						    machineState = X86emulator.Run(machineState, instructionBytes);
+						    machineState = runCode(machineState, instructionBytes);
 						}
 						catch (OutOfBoundsMemoryAccessException e)
 						{
