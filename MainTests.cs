@@ -6,6 +6,7 @@ using System;
 using NUnit.Framework;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace bugreport
 {
@@ -19,6 +20,28 @@ namespace bugreport
 
 		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
+		private List<String> getOutputForFilename(String fileName)
+		{
+
+			List<String> messages = new List<String>();
+			
+			Process testProcess = new Process();
+			testProcess.StartInfo.FileName = "bugreport.exe";
+			testProcess.StartInfo.Arguments = fileName;
+			testProcess.StartInfo.RedirectStandardOutput = true;
+			testProcess.StartInfo.UseShellExecute = false;
+			testProcess.StartInfo.CreateNoWindow = true;
+			testProcess.Start();
+			testProcess.StandardOutput.ReadLine(); // version string
+			testProcess.StandardOutput.ReadLine(); // blank line
+			testProcess.StandardOutput.ReadLine(); // interpreting filename
+			while (!testProcess.StandardOutput.EndOfStream)
+			{
+				messages.Add(testProcess.StandardOutput.ReadLine());
+			}
+			return messages;			
+		}
+		
 		[Test]
 		[Category("long")]
 		public void SystemTest()
@@ -40,14 +63,11 @@ namespace bugreport
 
 				Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
 
-				MainClass.Main(new String[] {fileName});	
-
-				String[] messages = MainClass.Messages;
+				List<String> messages = getOutputForFilename(fileName);
 
 				if (expected == "") 
 				{
-					Assert.IsEmpty(messages,
-						fileName + " ==> not empty: " + String.Join(":", messages));
+					Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
 				} 
 				else 
 				{
