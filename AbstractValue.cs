@@ -49,6 +49,15 @@ namespace bugreport
 			storage = _value;
 		}
 		
+		public override bool Equals(object obj)
+		{
+			AbstractValue other = (AbstractValue)obj;
+
+			return this.Value == other.Value &&
+				this.IsOOB == other.IsOOB &&
+				this.IsTainted == other.IsTainted &&
+				this.PointsTo == other.PointsTo;			
+		}
 		public static AbstractValue[] GetNewBuffer(uint size) {
 			AbstractValue[] buffer = new AbstractValue[size];
 			for (uint i = 0; i < size; i++) 
@@ -77,6 +86,14 @@ namespace bugreport
 			AbstractValue tainted = new AbstractValue(this);
 			tainted.IsTainted = true;
 			return tainted;
+		}
+		
+		public AbstractValue AddTaintIf(Boolean condition)
+		{
+			if (condition)
+				return AddTaint();
+			
+			return this;
 		}
 		
 		public AbstractBuffer PointsTo
@@ -114,92 +131,6 @@ namespace bugreport
 		public Boolean IsPointer
 		{
 			get { return pointsTo != null; }
-		}
-		
-		public AbstractValue DoOperation(OperatorEffect _operatorEffect, AbstractValue rhs)
-		{
-			AbstractValue lhs = this;
-			
-			switch(_operatorEffect)
-			{
-                case OperatorEffect.Assignment:
-                {
-                    AbstractValue newAbstractValue = new AbstractValue(rhs);
-                    if (rhs.IsInitialized && rhs.IsOOB)
-                        newAbstractValue.IsOOB = true;
-                    
-                    return newAbstractValue;
-                }
-					
-				case OperatorEffect.Add:
-				{
-					if (rhs.IsPointer)
-						throw new ArgumentException("rhs pointer not supported.");
-					
-					if (lhs.IsPointer)
-					{
-						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
-						return new AbstractValue(newBuffer);
-					}
-					
-					UInt32 sum = lhs.Value + rhs.Value;
-					AbstractValue result = new AbstractValue(sum);
-					result.IsTainted = lhs.IsTainted || rhs.IsTainted;
-					return result;
-				}
-					
-				case OperatorEffect.Sub:
-				{
-					if (rhs.IsPointer)
-						throw new ArgumentException("rhs pointer not supported.");
-					
-					if (lhs.IsPointer)
-					{
-						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
-						return new AbstractValue(newBuffer);
-					}
-					UInt32 total = lhs.Value - rhs.Value;
-					AbstractValue result = new AbstractValue(total);
-					result.IsTainted = lhs.IsTainted || rhs.IsTainted;
-					return result;
-				}
-				
-				case OperatorEffect.And:
-				{
-					if (rhs.IsPointer)
-						throw new ArgumentException("rhs pointer not supported.");
-					
-					if (lhs.IsPointer)
-					{
-						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
-						return new AbstractValue(newBuffer);
-					}
-					
-					UInt32 total = lhs.Value & rhs.Value;
-					AbstractValue result = new AbstractValue(total);
-					result.IsTainted = lhs.IsTainted || rhs.IsTainted;
-					return result;
-				}
-				
-				case OperatorEffect.Shr:
-				{
-					UInt32 total = lhs.Value >> (Byte)rhs.Value;
-					AbstractValue result = new AbstractValue(total);
-					result.IsTainted = lhs.IsTainted || rhs.IsTainted;
-					return result;
-				}
-					
-				case OperatorEffect.Shl:
-				{
-					UInt32 total = lhs.Value << (Byte)rhs.Value;
-					AbstractValue result = new AbstractValue(total);
-					result.IsTainted = lhs.IsTainted || rhs.IsTainted;
-					return result;
-				}
-					
-				default:
-					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
-			}
 		}
 		
 		public override string ToString()
