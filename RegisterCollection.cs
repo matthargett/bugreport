@@ -20,6 +20,14 @@ namespace bugreport
 			}
 		}
 		
+		public RegisterCollection(RegisterCollection _copyMe)
+		{
+			registers = new AbstractValue[8];
+			for (UInt32 i = 0; i < registers.Length; ++i) {
+				registers[i] = new AbstractValue(_copyMe.registers[i]);
+			}
+			
+		}
 		public AbstractValue this[RegisterName index]
 		{
 			get { return registers[(Int32)index]; }

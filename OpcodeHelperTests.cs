@@ -191,6 +191,17 @@ namespace bugreport
 		}
 
 		[Test]
+		public void EvIbCmp()
+		{
+			code = new Byte[] {0x83, 0x7d, 0x08, 0x01};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.EvIb, encoding);		
+
+			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
+			Assert.AreEqual(OperatorEffect.Cmp, operatorEffect);
+			
+		}
+		[Test]
 		public void EvIbShr()
 		{	
 			code = new Byte[] {0xc1, 0xe8, 0x04};

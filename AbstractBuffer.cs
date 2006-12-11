@@ -61,17 +61,17 @@ namespace bugreport
 		            AbstractBuffer result = new AbstractBuffer(lhs);
 		            result.baseIndex += _rhs.Value;
 
-            return result;
-        }
+					return result;
+				}
 				case OperatorEffect.Sub:
-        {
+				{
 		            AbstractBuffer result = new AbstractBuffer(lhs);
 
 		            if (result.baseIndex < _rhs.Value)
 		                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _rhs.Value));
 
 		            result.baseIndex -= _rhs.Value;
-            return result;
+					return result;
         }
         
 				case OperatorEffect.And:

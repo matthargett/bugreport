@@ -8,7 +8,7 @@ namespace bugreport
 {
 	public enum StackEffect {None, Push, Pop};
 	
-	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl};
+	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp};
 
 	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM};
 	
@@ -105,6 +105,8 @@ namespace bugreport
 							return OperatorEffect.And;
 						case 5:
 							return OperatorEffect.Sub;
+						case 7:
+							return OperatorEffect.Cmp;
 						default:
 							return OperatorEffect.Unknown;
 					}

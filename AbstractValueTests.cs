@@ -12,6 +12,13 @@ namespace bugreport
 	{	
 		AbstractValue pointer;
 		AbstractBuffer buffer;
+		MachineState state;
+		
+		[SetUp]
+		public void SetUp()
+		{
+			state = new MachineState(new RegisterCollection());
+		}
 		
 		[Test]
 		public void DefaultIsNotInitialized() 
@@ -72,110 +79,6 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void DoOperationForAssignment()
-		{
-			AbstractValue one = new AbstractValue(1);
-			AbstractValue two = new AbstractValue(2).AddTaint();
-			one = one.DoOperation(OperatorEffect.Assignment, two);
-			
-			Assert.AreEqual(2, one.Value);
-			Assert.IsTrue(one.IsTainted);
-		}
-		
-		[Test]
-		[ExpectedException(typeof(ArgumentException))]
-		public void DoOperationForUnknown()
-		{
-			AbstractValue one = new AbstractValue(1);
-			AbstractValue two = new AbstractValue(2).AddTaint();
-			one.DoOperation(OperatorEffect.Unknown, two);
-		}
-
-		[Test]
-		public void DoOperationForAdd()
-		{
-			AbstractValue one = new AbstractValue(1);
-			AbstractValue two = new AbstractValue(2).AddTaint();
-			AbstractValue three = one.DoOperation(OperatorEffect.Add, two);
-			
-			Assert.AreEqual(3, three.Value);
-			Assert.IsTrue(three.IsTainted);
-		}
-		
-		[Test]
-		public void DoOperationForSub()
-		{
-			AbstractValue one = new AbstractValue(1);
-			AbstractValue three = new AbstractValue(3).AddTaint();
-			AbstractValue two = three.DoOperation(OperatorEffect.Sub, one);
-			
-			Assert.AreEqual(2, two.Value);
-			Assert.IsTrue(two.IsTainted);
-		}
-
-		[Test]
-		public void DoOperationForAnd()
-		{
-			AbstractValue threeFifty = new AbstractValue(0x350).AddTaint();
-			AbstractValue ff = new AbstractValue(0xff);
-			AbstractValue fifty = threeFifty.DoOperation(OperatorEffect.And, ff);
-			
-			Assert.AreEqual(0x50, fifty.Value);
-			Assert.IsTrue(fifty.IsTainted);
-		}
-
-		[Test]
-		public void DoOperationForShr()
-		{
-			AbstractValue eight = new AbstractValue(0x8).AddTaint();
-			AbstractValue threeBits = new AbstractValue(0x3);
-			AbstractValue one = eight.DoOperation(OperatorEffect.Shr, threeBits);
-			
-			Assert.AreEqual(0x1, one.Value);
-			Assert.IsTrue(one.IsTainted);
-		}
-
-		[Test]
-		public void DoOperationForShl()
-		{
-			AbstractValue one = new AbstractValue(0x1).AddTaint();
-			AbstractValue threeBits = new AbstractValue(0x3);
-			AbstractValue eight = one.DoOperation(OperatorEffect.Shl, threeBits);
-			
-			Assert.AreEqual(0x8, eight.Value);
-			Assert.IsTrue(eight.IsTainted);
-		}
-
-		[Test]
-		public void PointerAdd()
-		{
-			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);	
-			AbstractValue one= new AbstractValue(0x1);
-			buffer[4] = one;
-			pointer = new AbstractValue(buffer);
-			
-			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
-			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
-		}
-		
-		[Test]
-		public void DoOperationForPointerAnd()
-		{
-			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
-			AbstractValue one= new AbstractValue(0x1);
-			buffer[4] = one;
-			
-			pointer = new AbstractValue(buffer);
-			
-			AbstractValue pointerPlus4 = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(0x4));
-			Assert.AreEqual(one, pointerPlus4.PointsTo[0]);
-			
-			AbstractValue andValue = new AbstractValue(0xfffffff0);
-			AbstractValue pointerAnd = pointerPlus4.DoOperation(OperatorEffect.And, andValue);
-			Assert.AreEqual(one, pointerAnd.PointsTo[4]);		
-		}
-		
-		[Test]
 		[ExpectedException(typeof(ArgumentException))]
 		public void EmptyBuffer()
 		{
@@ -220,7 +123,7 @@ namespace bugreport
 			AbstractBuffer buffer2 = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
 			AbstractValue pointer2 = new AbstractValue(buffer2);
 			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer, pointer2});
-			AbstractValue addedPointerPointer = pointerPointer.DoOperation(OperatorEffect.Add, new AbstractValue(1));
+			AbstractValue addedPointerPointer = state.DoOperation(pointerPointer, OperatorEffect.Add, new AbstractValue(1));
 			Assert.AreEqual(2, addedPointerPointer.PointsTo[0].PointsTo[0].Value);
 			StringAssert.StartsWith("**", pointerPointer.ToString());
 		}
@@ -244,7 +147,7 @@ namespace bugreport
 			src.IsOOB = false;
 			AbstractValue dest = new AbstractValue(0x1);
 			dest.IsOOB = true;
-			dest = dest.DoOperation(OperatorEffect.Assignment, src);
+			dest = state.DoOperation(dest, OperatorEffect.Assignment, src);
 			
 			Assert.IsFalse(dest.IsOOB);
 		}
@@ -255,10 +158,9 @@ namespace bugreport
 			AbstractValue src = new AbstractValue(0x31337);
 			AbstractValue dest = new AbstractValue(0x1);
 			src.IsOOB = true;
-			dest = dest.DoOperation(OperatorEffect.Assignment, src);
+			dest = state.DoOperation(dest, OperatorEffect.Assignment, src);
 			
 			Assert.IsTrue(dest.IsOOB);
 		}
-		
     }
 }

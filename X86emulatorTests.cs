@@ -190,7 +190,22 @@ namespace bugreport
 			Assert.AreEqual(0x3, state.InstructionPointer);
 			Assert.AreEqual(0x02, state.Registers[RegisterName.ESP].Value);
 		}
+		
+		[Test]
+		[Ignore("In Progress --Luis")]
+		public void Cmp()
+		{
+			code = new Byte[] {0x83, 0xf8, 0x0};
+			state.Registers[RegisterName.EAX] = new AbstractValue(1);
+			state = X86emulator.Run(state, code);
+			Assert.AreEqual(0x3, state.InstructionPointer);
+			Assert.IsFalse(state.ZeroFlag);
 
+			state.Registers[RegisterName.EAX] = new AbstractValue(0);
+			state = X86emulator.Run(state, code);
+			Assert.AreEqual(0x3, state.InstructionPointer);
+			Assert.IsTrue(state.ZeroFlag);
+		}
 		[Test]
 		public void MovPtrEsp0x10()
 		{
