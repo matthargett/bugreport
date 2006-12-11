@@ -22,7 +22,6 @@ namespace bugreport
 
 	public class Analyzer
 	{
-		private List<String> collector = new List<String>();
 		private List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
 
@@ -42,25 +41,6 @@ namespace bugreport
 			}
 		}
 		
-		public String[] Messages 
-		{
-			get 
-			{
-				return collector.ToArray();
-			}
-		}
-
-		private void onReportOOB(ReportItem reportItem)
-		{
-			String message = String.Empty;
-			if (reportItem.IsTainted)
-				message += "Exploitable ";
-			message += String.Format("OOB at EIP 0x{0:x4}", reportItem.InstructionPointer);
-//			Console.WriteLine("Found defect: " + message);
-			collector.Add(message);
-			reportItems.Add(reportItem);
-		}
-
 		private static RegisterCollection getRegistersForLinuxMain()
 		{
 			RegisterCollection linuxMainDefaultValues = new RegisterCollection();
@@ -129,7 +109,7 @@ namespace bugreport
 						catch (OutOfBoundsMemoryAccessException e)
 						{
 							ReportItem reportItem = new ReportItem(e.InstructionPointer, e.IsTainted);	
-							onReportOOB(reportItem);
+							reportItems.Add(reportItem);
 						}
 					}
 				}
@@ -138,7 +118,6 @@ namespace bugreport
 				{
 					StreamWriter writer = new StreamWriter(Console.OpenStandardError());
 					writer.WriteLine(e.ToString());
-					collector.Add(e.ToString());
 					writer.Close();
 					break;
 				}

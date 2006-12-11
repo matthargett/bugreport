@@ -13,14 +13,6 @@ namespace bugreport
 		const String VERSION = "0.1";
 		static Analyzer analyzer;
 
-		public static String[] Messages 
-		{
-			get 
-			{
-				return analyzer.Messages;
-			}
-		}
-
 		public static void Main(String[] args)
 		{
 			Console.WriteLine("bugreport " + VERSION);
@@ -83,7 +75,7 @@ namespace bugreport
 					if (item.IsTainted)
 						message += "Exploitable ";
 					message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
-					Console.WriteLine("Found defect: " + message);					
+					Console.WriteLine(message);					
 				}
 			}
 		}
