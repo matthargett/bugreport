@@ -116,19 +116,6 @@ namespace bugreport
 		}
 
 		[Test]
-		public void AddPointerPointer()
-		{	
-			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(1)});
-			pointer = new AbstractValue(buffer);
-			AbstractBuffer buffer2 = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
-			AbstractValue pointer2 = new AbstractValue(buffer2);
-			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer, pointer2});
-			AbstractValue addedPointerPointer = state.DoOperation(pointerPointer, OperatorEffect.Add, new AbstractValue(1));
-			Assert.AreEqual(2, addedPointerPointer.PointsTo[0].PointsTo[0].Value);
-			StringAssert.StartsWith("**", pointerPointer.ToString());
-		}
-
-		[Test]
 		public void PointerPointerPointer()
 		{	
 			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
@@ -141,24 +128,24 @@ namespace bugreport
 		}
 
 		[Test]
-		public void CheckOOBAfterAssignment()
+		public void CheckOOBAfterCopy()
 		{
 			AbstractValue src = new AbstractValue(0x31337);
 			src.IsOOB = false;
 			AbstractValue dest = new AbstractValue(0x1);
 			dest.IsOOB = true;
-			dest = state.DoOperation(dest, OperatorEffect.Assignment, src);
+			dest = new AbstractValue(src);
 			
 			Assert.IsFalse(dest.IsOOB);
 		}
 		
 		[Test]
-		public void PreserveIsOOBAfterAssignment()
+		public void PreserveIsOOBAfterCopy()
 		{
 			AbstractValue src = new AbstractValue(0x31337);
 			AbstractValue dest = new AbstractValue(0x1);
 			src.IsOOB = true;
-			dest = state.DoOperation(dest, OperatorEffect.Assignment, src);
+			dest = new AbstractValue(src);
 			
 			Assert.IsTrue(dest.IsOOB);
 		}

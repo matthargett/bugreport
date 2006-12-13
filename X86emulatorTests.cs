@@ -110,7 +110,7 @@ namespace bugreport
 		
 		[Test]
 		public void MovEaxEaxFourByteValue()
-		{
+		{ //  mov    eax,DWORD PTR [eax]
 			UInt32 value = 0x31337;
 			AbstractValue[] buffer = new AbstractValue[] {new AbstractValue(value)};
 			AbstractValue pointer = new AbstractValue(buffer);
@@ -127,7 +127,7 @@ namespace bugreport
 		[ExpectedException(typeof(InvalidOperationException))]
 		public void DerefRegisterWithNull()
 		{
-			// mov eax, [eax]
+			//  mov    eax,DWORD PTR [eax]
 			code = new Byte[] {0x8b, 0x00};
 			state.Registers[RegisterName.EAX] = null;
 			state = X86emulator.Run(state, code);
@@ -135,7 +135,7 @@ namespace bugreport
 		
 		[Test]
 		public void MovEaxEaxPointerPointerValue()
-		{
+		{ //  mov    eax,DWORD PTR [eax]
 			UInt32 value = 0x31337;
 			AbstractValue argv = new AbstractValue(value);
 			AbstractValue[] argvBuffer = new AbstractValue[] {argv};
@@ -458,7 +458,9 @@ namespace bugreport
 			state.Registers[RegisterName.EAX] = new AbstractValue(buffer);
 
 			state = X86emulator.Run(state, code);
-			Assert.AreEqual(one, state.Registers[RegisterName.EDX].PointsTo[0]);
+			AbstractValue edx = state.Registers[RegisterName.EDX];
+			Assert.IsNotNull(edx);
+			Assert.AreEqual(one, edx.PointsTo[0]);
 		}
 	
 	}
