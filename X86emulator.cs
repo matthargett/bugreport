@@ -88,8 +88,7 @@ namespace bugreport
 				case OpcodeEncoding.rAxIz:
 				{
 					UInt32 immediate = BitMath.BytesToDword(_code, 1);
-					value = machineState.Registers[RegisterName.EAX];
-					machineState.Registers[RegisterName.EAX] = machineState.DoOperation(value, op, new AbstractValue(immediate));
+					machineState = machineState.DoOperation(RegisterName.EAX, op, new AbstractValue(immediate));
 					return machineState;
 				}
 
@@ -180,13 +179,15 @@ namespace bugreport
 						if (machineState.Registers[ev] == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
 						
-							machineState.Registers[ev].PointsTo[index] = machineState.DoOperation(machineState.Registers[ev].PointsTo[index], op, value);
-                            if (machineState.Registers[ev].PointsTo[index].IsOOB)
-                                throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
+						// DoOp...(AbsVal, op, AbsVal)
+//						machineState.Registers[ev].PointsTo[index] = machineState.DoOperation(machineState.Registers[ev].PointsTo[index], op, value);
+						machineState = machineState.DoOperation(machineState.Registers[ev],index, op, value);
+						if (machineState.Registers[ev].PointsTo[index].IsOOB)
+							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
 					}
 					else
 					{
-						machineState.Registers[ev] = machineState.DoOperation(machineState.Registers[ev], op, value);
+						machineState = machineState.DoOperation((RegisterName)ev, op, value);
                         if (machineState.Registers[ev].IsOOB)
 						{
 							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);							
@@ -213,7 +214,7 @@ namespace bugreport
 						
 						UInt32 offset = BitMath.BytesToDword(_code, offsetBeginsAt);
 						value = machineState.DataSegment[offset];
-						machineState.Registers[gv] = machineState.DoOperation(machineState.Registers[gv], op, value);
+						machineState = machineState.DoOperation(gv, op, value);
 						return machineState;
 					}
 					
@@ -235,7 +236,7 @@ namespace bugreport
 						}
 					}
 					
-					machineState.Registers[gv] = machineState.DoOperation(machineState.Registers[gv], op, value);
+					machineState = machineState.DoOperation(gv, op, value);
 					return machineState;
 				}
 
@@ -260,7 +261,8 @@ namespace bugreport
 						index = ModRM.GetIndex(_code);
 					}
 					
-					machineState.Registers[gv] = machineState.DoOperation(machineState.Registers[ev], OperatorEffect.Add, new AbstractValue(index));
+					AbstractValue rhs = machineState.DoOperation(machineState.Registers[ev], OperatorEffect.Add, new AbstractValue(index));
+					machineState = machineState.DoOperation(gv, OperatorEffect.Assignment, rhs);
                     if (machineState.Registers[gv].IsOOB)
 					{
 						throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[ev].IsTainted);
@@ -298,7 +300,8 @@ namespace bugreport
 						}
 						else
 						{
-							value.PointsTo[index] = machineState.DoOperation(value.PointsTo[index], op, machineState.Registers[gv]);
+							// DoOp...(AbsVal, op, AbsVal)
+							machineState = machineState.DoOperation(value,index, op, machineState.Registers[gv]);
 							if (value.PointsTo[index].IsOOB)
 								throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[gv].IsTainted);
                         }
@@ -306,7 +309,7 @@ namespace bugreport
 					}
 					else
 					{
-						machineState.Registers[ev] = machineState.DoOperation(value, op, machineState.Registers[gv]);
+						machineState = machineState.DoOperation((RegisterName)ev, op, (RegisterName)gv);
 					}
 					return machineState;							
 				}
@@ -319,12 +322,16 @@ namespace bugreport
 					AbstractValue byteValue = dwordValue.TruncateValueToByte();
 					
 					offset = BitMath.BytesToDword(_code, 1); // This is 1 for ObAL
-					if (machineState.DataSegment.ContainsKey(offset)) 
+/*					if (machineState.DataSegment.ContainsKey(offset)) 
 						value = machineState.DataSegment[offset];
 					else
 						value = new AbstractValue();						
+*/
+					if (!machineState.DataSegment.ContainsKey(offset)) 
+						machineState.DataSegment[offset] = new AbstractValue();
 					
-					machineState.DataSegment[offset] = machineState.DoOperation(value, op, byteValue);
+					// DoOp(offset, op, AbsVal)
+					machineState = machineState.DoOperation(offset, op, byteValue);
 					return machineState;	
 				}
 				

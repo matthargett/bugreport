@@ -65,13 +65,21 @@ namespace bugreport
 
 				List<String> messages = getOutputForFilename(fileName);
 
-				if (expected == "") 
+				try
 				{
-					Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
-				} 
-				else 
+					if (expected == "") 
+					{
+						Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
+					} 
+					else 
+					{
+						Assert.Contains(expected, messages);
+					}
+				}
+				catch (AssertionException e)
 				{
-					Assert.Contains(expected, messages);
+					Console.WriteLine("System test filename: " + fileName);
+					throw e;
 				}
 			}
 		}		

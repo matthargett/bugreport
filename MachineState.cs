@@ -53,11 +53,15 @@ namespace bugreport
 		{
 			get
 			{
+				System.Diagnostics.Debug.Assert(registers[RegisterName.ESP] != null);
+				System.Diagnostics.Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
 				return registers[RegisterName.ESP].PointsTo[0];
 			}
 			
 			set 
 			{
+				System.Diagnostics.Debug.Assert(registers[RegisterName.ESP] != null);
+				System.Diagnostics.Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
 				registers[RegisterName.ESP].PointsTo[0] = value;
 			}
 		}
@@ -79,20 +83,62 @@ namespace bugreport
 			TopOfStack = new AbstractValue(value);
 		}
 
-		public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+		
+		public MachineState DoOperation(UInt32 offset, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
 			if (rhs.IsPointer)
 				throw new ArgumentException("rhs pointer not supported.");
 
 			MachineState newState = new MachineState(this);
 
-			if (Registers[lhs].IsPointer)
+			switch(_operatorEffect)
+			{
+				case OperatorEffect.Assignment:
+				{
+					newState.dataSegment[offset] = DoOperation(newState.dataSegment[offset], _operatorEffect, rhs);
+					break;
+				}
+				default:
+					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+			}
+			return newState;					
+		}
+
+		public MachineState DoOperation(AbstractValue lhs, Int32 index, OperatorEffect _operatorEffect, AbstractValue rhs)
+		{
+			if (!lhs.IsPointer)
+				throw new ArgumentException("lhs must be a pointer.");
+
+			MachineState newState = new MachineState(this);
+
+			switch(_operatorEffect)
+			{
+				case OperatorEffect.Assignment:
+				{
+					lhs.PointsTo[index] = DoOperation(lhs.PointsTo[index], _operatorEffect,rhs);
+					break;
+				}
+				default:
+					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+					
+			}
+			return newState;
+		}
+		
+		public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+		{
+
+			MachineState newState = new MachineState(this);
+
+			if (Registers[lhs].IsPointer && _operatorEffect != OperatorEffect.Assignment)
 			{
 				AbstractBuffer newBuffer = Registers[lhs].PointsTo.DoOperation(_operatorEffect, rhs);
 				newState.Registers[lhs] = new AbstractValue(newBuffer);
 			}
 			else
-				throw new NotImplementedException("Operating on a register that does not contain a pointer is not supported");
+			{
+				newState.Registers[lhs] = DoOperation(this.Registers[lhs], _operatorEffect, rhs);
+			}
 
 			return newState;
 		}
@@ -100,53 +146,15 @@ namespace bugreport
 		public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, RegisterName rhs)
 		{
 			MachineState newState = new MachineState(this);
-			
-			switch(_operatorEffect)
-			{
-				case OperatorEffect.Assignment:
-				{
-					newState.Registers[lhs] = new AbstractValue(Registers[rhs]);
-					break;
-				}
-				case OperatorEffect.Add:
-				{
-					newState.Registers[lhs] = new AbstractValue(Registers[lhs].Value + Registers[rhs].Value);
-					newState.Registers[lhs] = newState.Registers[lhs].AddTaintIf(Registers[lhs].IsTainted || Registers[rhs].IsTainted);
-					break;
-				}
-				case OperatorEffect.Sub:
-				{
-					newState.Registers[lhs] = new AbstractValue(Registers[lhs].Value - Registers[rhs].Value);
-					newState.Registers[lhs] = newState.Registers[lhs].AddTaintIf(Registers[lhs].IsTainted || Registers[rhs].IsTainted);
-					break;
-				}
-				case OperatorEffect.And:
-				{
-					newState.Registers[lhs] = new AbstractValue(Registers[lhs].Value & Registers[rhs].Value);
-					newState.Registers[lhs] = newState.Registers[lhs].AddTaintIf(Registers[lhs].IsTainted || Registers[rhs].IsTainted);
-					break;
-				}
-				case OperatorEffect.Shr:
-				{
-					newState.Registers[lhs] = new AbstractValue(Registers[lhs].Value >> (Byte)(Registers[rhs].Value));
-					newState.Registers[lhs] = newState.Registers[lhs].AddTaintIf(Registers[lhs].IsTainted || Registers[rhs].IsTainted);
-					break;
-				}
-				case OperatorEffect.Shl:
-				{
-					newState.Registers[lhs] = new AbstractValue(Registers[lhs].Value << (Byte)(Registers[rhs].Value));
-					newState.Registers[lhs] = newState.Registers[lhs].AddTaintIf(Registers[lhs].IsTainted || Registers[rhs].IsTainted);
-					break;
-				}
-				
-				default:
-					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
-					
-			}
-			return newState;
+			newState.Registers[lhs] = DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
+			return newState;	
 		}
+
 		public AbstractValue DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
+			if (rhs.IsPointer && _operatorEffect != OperatorEffect.Assignment)
+				throw new ArgumentException("rhs pointer only supported for OperatorEffect.Assignment.");
+
 			switch(_operatorEffect)
 			{
                 case OperatorEffect.Assignment:
@@ -160,9 +168,6 @@ namespace bugreport
 					
 				case OperatorEffect.Add:
 				{
-					if (rhs.IsPointer)
-						throw new ArgumentException("rhs pointer not supported.");
-					
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
@@ -181,9 +186,6 @@ namespace bugreport
 					
 				case OperatorEffect.Sub:
 				{
-					if (rhs.IsPointer)
-						throw new ArgumentException("rhs pointer not supported.");
-					
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
@@ -202,9 +204,6 @@ namespace bugreport
 				
 				case OperatorEffect.And:
 				{
-					if (rhs.IsPointer)
-						throw new ArgumentException("rhs pointer not supported.");
-					
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);

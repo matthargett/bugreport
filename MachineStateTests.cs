@@ -129,6 +129,19 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void PointerSub()
+		{
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);	
+			buffer[0] = one;
+			eax = new AbstractValue(buffer);
+			ebx = new AbstractValue(0x4);
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
+			Assert.IsNotNull(eax.PointsTo);
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Sub, RegisterName.EBX);
+			Assert.AreEqual(one, eax.PointsTo[0]);
+		}
+		
+		[Test]
 		public void DoOperationForPointerAnd()
 		{
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);

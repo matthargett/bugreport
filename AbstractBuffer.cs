@@ -53,9 +53,15 @@ namespace bugreport
         public AbstractBuffer DoOperation(OperatorEffect _operatorEffect, AbstractValue _rhs)
         {
 			AbstractBuffer lhs = this;
-			
+			// TODO: should have a guard for if _rhs isnt a pointer
 			switch(_operatorEffect)
 			{
+				case OperatorEffect.Assignment:
+				{
+		            AbstractBuffer result = new AbstractBuffer(lhs);
+
+					return result;
+				}
 				case OperatorEffect.Add:
 				{
 		            AbstractBuffer result = new AbstractBuffer(lhs);
@@ -72,18 +78,18 @@ namespace bugreport
 
 		            result.baseIndex -= _rhs.Value;
 					return result;
-        }
+				}
         
 				case OperatorEffect.And:
-        {
+				{
 		            AbstractBuffer result = new AbstractBuffer(lhs);
 
 		            if ((result.baseIndex & _rhs.Value) < 0)
 		                throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _andValue {1:x4}", result.baseIndex, _rhs));
 
 		            result.baseIndex &= _rhs.Value;
-            return result;
-        }
+					return result;
+				}
 
 				default:
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
