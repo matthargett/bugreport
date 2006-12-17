@@ -1,4 +1,4 @@
-// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert, Cullen Bryan
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -17,8 +17,7 @@ namespace bugreport.DumpFileParserTests
 		public virtual void SetUp()
 		{
 			stream = new MemoryStream();
-			writer = new StreamWriter(stream);
-			parser = new DumpFileParser(stream);
+			writer = new StreamWriter(stream);			
 		}
 	}
 	
@@ -35,6 +34,7 @@ namespace bugreport.DumpFileParserTests
 		[ExpectedException(typeof(InvalidOperationException))]
 		public void CurrentLineBeforeFirstBytes()
 		{
+            parser = new DumpFileParser(stream);					
 			String none = parser.CurrentLine;
 		}
 		
@@ -42,15 +42,16 @@ namespace bugreport.DumpFileParserTests
 		public void EmptyLine()
 		{
 			writer.WriteLine(String.Empty);
-			writer.Flush();
-			stream.Position = 0;
+            writer.Flush();	            
+            parser = new DumpFileParser(stream);					
 
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		} 
 
 		[Test]
 		public void NoLines()
-		{
+		{            
+            parser = new DumpFileParser(stream);
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		} 
 	}
@@ -72,20 +73,21 @@ namespace bugreport.DumpFileParserTests
 		public void MainIsLastFunction()
 		{
 			writer.WriteLine(" 8048399:	c3                   	ret    ");
-			writer.Flush();
-			stream.Position = 0;
+            writer.Flush();	            
+            parser = new DumpFileParser(stream);					
 
 			Byte[] code = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0xc3, code[0]);
+            Assert.AreEqual(0, parser.ExpectedReportItem.Count);
 		} 
 
 		[Test] 
 		public void CurrentLine()
 		{
-			const String line = " 8048399:	c3                   	ret    ";
+			const String line = " 8048399:	c3                   	ret    ";            
 			writer.WriteLine(line);
-			writer.Flush();
-			stream.Position = 0;
+            writer.Flush();            
+            parser = new DumpFileParser(stream);			
 
 			parser.GetNextInstructionBytes();
 			Assert.AreEqual(line, parser.CurrentLine);
@@ -98,18 +100,33 @@ namespace bugreport.DumpFileParserTests
 			writer.WriteLine("");
 			writer.WriteLine("0804837c <nonmain2>:");
 			writer.WriteLine(" 8048398:	90                   	nop  ");
-			
-			writer.Flush();
-			stream.Position = 0;
+            writer.Flush();			            
+            parser = new DumpFileParser(stream);			
 
 			Byte[] code = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0xc3, code[0]);
-			Assert.IsFalse(parser.EndOfFunction);
+			Assert.IsTrue(parser.EndOfFunction);
 			
 			Assert.IsNull(parser.GetNextInstructionBytes());
 			Assert.IsTrue(parser.EndOfFunction);
+            Assert.AreEqual(0, parser.ExpectedReportItem.Count);
 		}
 
+        [Test]
+        public void WithExpectedReportItmes()
+        {
+            writer.WriteLine(" //<OutOfBoundsMemoryAccess Location=0x8000ffff Exploitable=True/>");
+            writer.WriteLine(" //<OutOfBoundsMemoryAccess Location=0x8000FFFA Exploitable=False/>");
+            writer.Flush();            
+            parser = new DumpFileParser (stream);            
+            Assert.AreEqual(2, parser.ExpectedReportItem.Count);
+
+            Assert.AreEqual(0x8000ffff, parser.ExpectedReportItem[0].InstructionPointer);
+            Assert.AreEqual(true, parser.ExpectedReportItem[0].IsTainted);
+
+            Assert.AreEqual(0x8000FFFA, parser.ExpectedReportItem[1].InstructionPointer);
+            Assert.AreEqual(false, parser.ExpectedReportItem[1].IsTainted);         
+        } 
 	}
 
 	[TestFixture]
@@ -126,8 +143,8 @@ namespace bugreport.DumpFileParserTests
 		public void LineWithSingleHex()
 		{
 			writer.WriteLine(" 804837c:       55                      push   ebp");
-			writer.Flush();
-			stream.Position = 0;
+            writer.Flush();			            
+            parser = new DumpFileParser(stream);			
 
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -147,8 +164,8 @@ namespace bugreport.DumpFileParserTests
 		public void HasColonButNoHex()
 		{
 			writer.WriteLine("        : ");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();            
+            parser = new DumpFileParser(stream);
 
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -157,8 +174,8 @@ namespace bugreport.DumpFileParserTests
 		public void HasColonInWrongPlace()
 		{
 			writer.WriteLine(":");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();			  
+            parser = new DumpFileParser(stream);
 			
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -168,8 +185,8 @@ namespace bugreport.DumpFileParserTests
 		public void LineWithSingleHex()
 		{
 			writer.WriteLine(" 804837c:       55                      push   ebp");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();			  
+            parser = new DumpFileParser(stream);
 
 			Byte[] result = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0x55, result[0]);
@@ -179,8 +196,8 @@ namespace bugreport.DumpFileParserTests
 		public void LineWithMultipleHex()
 		{
 			writer.WriteLine(" 8048385:       83 ec 10                sub    esp,0x10");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();            
+            parser = new DumpFileParser(stream);
 
 			Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};
 			Byte[] result = parser.GetNextInstructionBytes();
@@ -191,8 +208,8 @@ namespace bugreport.DumpFileParserTests
 		public void LineWithMuchoHex()
 		{
 			writer.WriteLine(" 8048388:       c7 04 24 10 00 00 00    mov    DWORD PTR [esp],0x10");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();            
+            parser = new DumpFileParser(stream);
 
 			Byte[] expectedResult = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			Byte[] result = parser.GetNextInstructionBytes();
@@ -204,8 +221,8 @@ namespace bugreport.DumpFileParserTests
 		public void LineWithBadHex()
 		{
 			writer.WriteLine(" 8048385:       83 ej 10                sub    esp,0x10");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();            
+            parser = new DumpFileParser(stream);
 
 			parser.GetNextInstructionBytes();
 		}	
@@ -215,8 +232,8 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine("BADLINE");
 			writer.WriteLine(" 8048385:       83 ec 10                sub    esp,0x10");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();            
+            parser = new DumpFileParser(stream);
 						
 			Byte[] result = parser.GetNextInstructionBytes();
 			Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};
@@ -228,12 +245,12 @@ namespace bugreport.DumpFileParserTests
 		public void LineWithSpaceTab()
 		{
 			writer.WriteLine(" 8048388:       c7 04 24 10 00 00 00 \tmov    DWORD PTR [esp],0x10");
-			writer.Flush();
-			stream.Position = 0;
+			writer.Flush();            
+            parser = new DumpFileParser(stream);
 
 			Byte[] expectedResult = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			Byte[] result = parser.GetNextInstructionBytes();
-			Assert.AreEqual(expectedResult, result);			
+			Assert.AreEqual(expectedResult, result);            
 		}
 	}
 }
