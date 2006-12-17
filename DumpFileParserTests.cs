@@ -65,7 +65,7 @@ namespace bugreport.DumpFileParserTests
 			base.SetUp();
 			writer.WriteLine("0804837c <nomain>:");
 			writer.WriteLine(" 8048398:	c9                   	leave  ");
-			writer.WriteLine("");
+			writer.WriteLine();
 			writer.WriteLine("0804837c <main>:");
 		}
 		
@@ -97,7 +97,7 @@ namespace bugreport.DumpFileParserTests
 		public void MainIsNotLastFunction()
 		{
 			writer.WriteLine(" 8048399:	c3                   	ret    ");
-			writer.WriteLine("");
+			writer.WriteLine();
 			writer.WriteLine("0804837c <nonmain2>:");
 			writer.WriteLine(" 8048398:	90                   	nop  ");
             writer.Flush();			            

@@ -67,7 +67,7 @@ namespace bugreport
 
 				try
 				{
-					if (expected == "") 
+					if (String.Empty == expected) 
 					{
 						Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
 					} 
@@ -79,7 +79,7 @@ namespace bugreport
 				catch (AssertionException e)
 				{
 					Console.WriteLine("System test filename: " + fileName);
-					throw e;
+					throw;
 				}
 			}
 		}		
