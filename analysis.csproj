@@ -1,64 +1,61 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <RootNamespace>buglib</RootNamespace>
-    <AssemblyName>analysis</AssemblyName>
+    <ProjectGuid>{8DC8856B-6FF9-4E39-BF0B-1C1B55115273}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B5D04410-74D0-4A43-8904-876611C61F68}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>bugreport</RootNamespace>
+    <AssemblyName>analysis</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
-    <Optimize>False</Optimize>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugSymbols>True</DebugSymbols>
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <OutputPath>bin\Release\</OutputPath>
-    <Optimize>True</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
     <DebugSymbols>False</DebugSymbols>
     <DebugType>None</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.2.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="nunit.framework">
       <HintPath>lib\nunit\nunit.framework.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Xml" />
     <Reference Include="nunit.mocks">
       <HintPath>lib\nunit\nunit.mocks.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AbstractBuffer.cs" />
     <Compile Include="AbstractBufferTests.cs" />
     <Compile Include="AbstractValue.cs" />
     <Compile Include="AbstractValueTests.cs" />
+    <Compile Include="Analyzer.cs" />
+    <Compile Include="AnalyzerTests.cs" />
     <Compile Include="BitMath.cs" />
     <Compile Include="BitMathTests.cs" />
+    <Compile Include="DumpFileParser.cs" />
+    <Compile Include="DumpFileParserTests.cs" />
+    <Compile Include="MachineState.cs" />
+    <Compile Include="MachineStateTests.cs" />
     <Compile Include="ModRM.cs" />
     <Compile Include="ModRMTests.cs" />
     <Compile Include="OpcodeHelper.cs" />
     <Compile Include="OpcodeHelperTests.cs" />
     <Compile Include="RegisterCollection.cs" />
     <Compile Include="RegisterCollectionTest.cs" />
-    <Compile Include="X86emulator.cs" />
-    <Compile Include="X86emulatorTests.cs" />
-    <Compile Include="Analyzer.cs" />
-    <Compile Include="AnalyzerTests.cs" />
-    <Compile Include="DumpFileParser.cs" />
-    <Compile Include="DumpFileParserTests.cs" />
     <Compile Include="SIB.cs" />
     <Compile Include="SIBTests.cs" />
-    <Compile Include="MachineState.cs" />
-    <Compile Include="MachineStateTests.cs" />
+    <Compile Include="X86emulator.cs" />
+    <Compile Include="X86emulatorTests.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
