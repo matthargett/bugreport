@@ -482,6 +482,29 @@ namespace bugreport
 			Assert.IsNotNull(edx);
 			Assert.AreEqual(one, edx.PointsTo[0]);
 		}
+		
+		[Test]
+		public void JnzPlus6()
+		{
+			// cmp eax, 0
+			Byte [] cmpCode = new Byte[] {0x83, 0xf8, 0x0};
+			state.Registers[RegisterName.EAX] = new AbstractValue(0);
+			state = X86emulator.Run(state, cmpCode);
+
+			Byte offset = 0x06;
+			Byte [] jnzCode = new Byte[] {0x75, offset};
+			UInt32 oldEIP = state.InstructionPointer;
+			state = X86emulator.Run(state, jnzCode);
+
+			Assert.AreEqual(jnzCode.Length, state.InstructionPointer - oldEIP);
+
+			state.Registers[RegisterName.EAX] = new AbstractValue(1);
+			state = X86emulator.Run(state, cmpCode);
+			
+			oldEIP = state.InstructionPointer;
+			state = X86emulator.Run(state, jnzCode);
+			Assert.AreEqual(jnzCode.Length + offset, state.InstructionPointer - oldEIP);	
+		}
 	
 	}
 }

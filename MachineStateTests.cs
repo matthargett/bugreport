@@ -45,7 +45,7 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void DoOperationForAssignment()
+		public void Assignment()
 		{
 			eax = one;
 			ebx = two;
@@ -57,13 +57,13 @@ namespace bugreport
 		
 		[Test]
 		[ExpectedException(typeof(ArgumentException))]
-		public void DoOperationForUnknown()
+		public void Unknown()
 		{
 			state.DoOperation(RegisterName.EAX, OperatorEffect.Unknown, RegisterName.EBX);
 		}
 
 		[Test]
-		public void DoOperationForAdd()
+		public void Add()
 		{
 			eax = one;
 			ebx = two;
@@ -74,7 +74,7 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void DoOperationForSub()
+		public void Sub()
 		{
 			eax = one;
 			ebx = two;
@@ -85,7 +85,7 @@ namespace bugreport
 		}
 
 		[Test]
-		public void DoOperationForAnd()
+		public void And()
 		{
 			eax = new AbstractValue(0x350).AddTaint();
 			ebx = new AbstractValue(0xff);
@@ -96,7 +96,7 @@ namespace bugreport
 		}
 
 		[Test]
-		public void DoOperationForShr()
+		public void Shr()
 		{
 			eax = new AbstractValue(0x8).AddTaint();
 			ebx = new AbstractValue(0x3);
@@ -142,7 +142,7 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void DoOperationForPointerAnd()
+		public void PointerAnd()
 		{
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
 			buffer[4] = one;
@@ -155,6 +155,21 @@ namespace bugreport
 			AbstractValue andValue = new AbstractValue(0xfffffff0);
 			state = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
 			Assert.AreEqual(one, eax.PointsTo[4]);		
+		}
+		
+		[Test]
+		public void Jnz()
+		{
+			Byte offset = 6;
+			eax = two;
+			ebx = one;
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EAX);
+			state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));
+			Assert.AreEqual(0, state.InstructionPointer);
+
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EBX);
+			state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));		
+			Assert.AreEqual(offset, state.InstructionPointer);
 		}
 	}
 }

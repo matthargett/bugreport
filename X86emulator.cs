@@ -179,8 +179,6 @@ namespace bugreport
 						if (machineState.Registers[ev] == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
 						
-						// DoOp...(AbsVal, op, AbsVal)
-//						machineState.Registers[ev].PointsTo[index] = machineState.DoOperation(machineState.Registers[ev].PointsTo[index], op, value);
 						machineState = machineState.DoOperation(ev,index, op, value);
 						if (machineState.Registers[ev].PointsTo[index].IsOOB)
 							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
@@ -322,19 +320,24 @@ namespace bugreport
 					AbstractValue byteValue = dwordValue.TruncateValueToByte();
 					
 					offset = BitMath.BytesToDword(_code, 1); // This is 1 for ObAL
-/*					if (machineState.DataSegment.ContainsKey(offset)) 
-						value = machineState.DataSegment[offset];
-					else
-						value = new AbstractValue();						
-*/
-					if (!machineState.DataSegment.ContainsKey(offset)) 
+
+					if (!machineState.DataSegment.ContainsKey(offset))
 						machineState.DataSegment[offset] = new AbstractValue();
 					
-					// DoOp(offset, op, AbsVal)
 					machineState = machineState.DoOperation(offset, op, byteValue);
 					return machineState;	
 				}
 				
+				case OpcodeEncoding.Jb:
+				{
+					UInt32 offset;
+					offset = (UInt32) _code[1];
+					
+					machineState = machineState.DoOperation(op, new AbstractValue(offset));
+					
+					return machineState;
+				}
+					
 				case OpcodeEncoding.None:
 					return machineState;
 

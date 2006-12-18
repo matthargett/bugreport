@@ -242,8 +242,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rAxOv, encoding);		
 
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
-			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
-			
+			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);			
 		}
 
 		[Test]
@@ -254,8 +253,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.GvM, encoding);		
 
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
-			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
-			
+			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);			
 		}
 		
 		[Test]
@@ -266,8 +264,18 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rAxIz, encoding);		
 
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
-			Assert.AreEqual(OperatorEffect.Add, operatorEffect);
-			
+			Assert.AreEqual(OperatorEffect.Add, operatorEffect);			
+		}
+		
+		[Test]
+		public void Jb()
+		{
+			code = new Byte[] {0x75, 0x06};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.Jb, encoding);		
+
+			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
+			Assert.AreEqual(OperatorEffect.Jnz, operatorEffect);						
 		}
 
 	}
