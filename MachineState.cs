@@ -87,7 +87,28 @@ namespace bugreport
 			TopOfStack = new AbstractValue(value);
 		}
 
-		
+
+		public MachineState DoOperation(OperatorEffect _operatorEffect, AbstractValue _offset)
+		{
+			if (_offset.IsPointer)
+				throw new ArgumentException("_offset pointer not supported.");
+
+			MachineState newState = new MachineState(this);
+			switch(_operatorEffect)
+			{
+				case OperatorEffect.Jnz:
+				{
+					if (!newState.zeroFlag)
+						newState.instructionPointer += _offset.Value;
+					
+					break;
+				}
+				default:
+					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+			}
+			return newState;
+		}
+
 		public MachineState DoOperation(UInt32 offset, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
 			if (rhs.IsPointer)

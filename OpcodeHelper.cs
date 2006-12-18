@@ -8,9 +8,9 @@ namespace bugreport
 {
 	public enum StackEffect {None, Push, Pop};
 	
-	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp};
+	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM};
+	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -35,6 +35,8 @@ namespace bugreport
 				case 0x5d:
 				case 0x55:
 					return OpcodeEncoding.rBP;
+				case 0x75:
+					return OpcodeEncoding.Jb;
 				case 0x83:
 				case 0xc1:
 					return OpcodeEncoding.EvIb;
@@ -92,6 +94,9 @@ namespace bugreport
 					
 				case 0x29:
 					return OperatorEffect.Sub;
+					
+				case 0x75:
+					return OperatorEffect.Jnz;
 				
 				case 0x83:
 				{
