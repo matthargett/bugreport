@@ -8,12 +8,14 @@ namespace bugreport
 		private UInt32 instructionPointer;
 		private RegisterCollection registers;
 		private Dictionary<UInt32, AbstractValue> dataSegment;
+		Boolean zeroFlag;
 
 		public MachineState(RegisterCollection _registers)
 		{
 			dataSegment = new Dictionary<UInt32, AbstractValue>();
 			registers = _registers;
 			instructionPointer = 0x00;
+			zeroFlag = false;
 		}
 		
 		public MachineState(MachineState _copyMe)
@@ -21,10 +23,12 @@ namespace bugreport
 			this.instructionPointer = _copyMe.instructionPointer;
 			this.registers = new RegisterCollection(_copyMe.registers);
 			this.dataSegment = new Dictionary<UInt32, AbstractValue>(_copyMe.dataSegment);
+			this.zeroFlag = _copyMe.zeroFlag;
 		}
 		public Boolean ZeroFlag
 		{
-			get { return false; }
+			get { return zeroFlag; }
+			private set { zeroFlag = value; } 
 		}
 
 		public UInt32 InstructionPointer
@@ -95,7 +99,7 @@ namespace bugreport
 			{
 				case OperatorEffect.Assignment:
 				{
-					newState.dataSegment[offset] = DoOperation(newState.dataSegment[offset], _operatorEffect, rhs);
+					newState.dataSegment[offset] = newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs);
 					break;
 				}
 				default:
@@ -104,9 +108,9 @@ namespace bugreport
 			return newState;					
 		}
 
-		public MachineState DoOperation(AbstractValue lhs, Int32 index, OperatorEffect _operatorEffect, AbstractValue rhs)
+		public MachineState DoOperation(RegisterName lhs, Int32 index, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
-			if (!lhs.IsPointer)
+			if (!Registers[lhs].IsPointer)
 				throw new ArgumentException("lhs must be a pointer.");
 
 			MachineState newState = new MachineState(this);
@@ -114,8 +118,9 @@ namespace bugreport
 			switch(_operatorEffect)
 			{
 				case OperatorEffect.Assignment:
+				case OperatorEffect.Cmp:
 				{
-					lhs.PointsTo[index] = DoOperation(lhs.PointsTo[index], _operatorEffect,rhs);
+					newState.Registers[lhs].PointsTo[index] = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect,rhs);
 					break;
 				}
 				default:
@@ -127,9 +132,8 @@ namespace bugreport
 		
 		public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
-
 			MachineState newState = new MachineState(this);
-
+			
 			if (Registers[lhs].IsPointer && _operatorEffect != OperatorEffect.Assignment)
 			{
 				AbstractBuffer newBuffer = Registers[lhs].PointsTo.DoOperation(_operatorEffect, rhs);
@@ -137,7 +141,7 @@ namespace bugreport
 			}
 			else
 			{
-				newState.Registers[lhs] = DoOperation(this.Registers[lhs], _operatorEffect, rhs);
+				newState.Registers[lhs] = newState.DoOperation(this.Registers[lhs], _operatorEffect, rhs);
 			}
 
 			return newState;
@@ -146,7 +150,7 @@ namespace bugreport
 		public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, RegisterName rhs)
 		{
 			MachineState newState = new MachineState(this);
-			newState.Registers[lhs] = DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
+			newState.Registers[lhs] = newState.DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
 			return newState;	
 		}
 
@@ -245,6 +249,16 @@ namespace bugreport
 					}
 
 					return result;
+				}
+					
+				case OperatorEffect.Cmp:
+				{
+					if ((lhs.Value - rhs.Value) == 0)
+						ZeroFlag = true;
+					else
+						ZeroFlag = false;
+	
+					return lhs;
 				}
 					
 				default:

@@ -181,7 +181,7 @@ namespace bugreport
 						
 						// DoOp...(AbsVal, op, AbsVal)
 //						machineState.Registers[ev].PointsTo[index] = machineState.DoOperation(machineState.Registers[ev].PointsTo[index], op, value);
-						machineState = machineState.DoOperation(machineState.Registers[ev],index, op, value);
+						machineState = machineState.DoOperation(ev,index, op, value);
 						if (machineState.Registers[ev].PointsTo[index].IsOOB)
 							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
 					}
@@ -301,7 +301,7 @@ namespace bugreport
 						else
 						{
 							// DoOp...(AbsVal, op, AbsVal)
-							machineState = machineState.DoOperation(value,index, op, machineState.Registers[gv]);
+							machineState = machineState.DoOperation(ev, index, op, machineState.Registers[gv]);
 							if (value.PointsTo[index].IsOOB)
 								throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[gv].IsTainted);
                         }

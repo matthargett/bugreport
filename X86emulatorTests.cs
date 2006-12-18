@@ -192,9 +192,8 @@ namespace bugreport
 		}
 		
 		[Test]
-		[Ignore("In Progress --Luis")]
-		public void Cmp()
-		{
+		public void CmpEax0()
+		{ // cmp eax, 0
 			code = new Byte[] {0x83, 0xf8, 0x0};
 			state.Registers[RegisterName.EAX] = new AbstractValue(1);
 			state = X86emulator.Run(state, code);
@@ -203,9 +202,30 @@ namespace bugreport
 
 			state.Registers[RegisterName.EAX] = new AbstractValue(0);
 			state = X86emulator.Run(state, code);
-			Assert.AreEqual(0x3, state.InstructionPointer);
+			Assert.AreEqual(0x6, state.InstructionPointer);
 			Assert.IsTrue(state.ZeroFlag);
 		}
+		
+		[Test]
+		public void CmpEbpPlusEight0()
+		{ // cmp    DWORD PTR [ebp+8],0x0
+			code = new Byte[] {0x83, 0x7d, 0x08, 0x0};
+			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+			buffer[8] = new AbstractValue(1);
+			
+			AbstractValue pointer = new AbstractValue(buffer);
+			state.Registers[RegisterName.EBP] = pointer;
+
+			state = X86emulator.Run(state, code);
+			Assert.AreEqual(0x4, state.InstructionPointer);
+			Assert.IsFalse(state.ZeroFlag);
+
+			buffer[8] = new AbstractValue(0);
+			state = X86emulator.Run(state, code);
+			Assert.AreEqual(0x8, state.InstructionPointer);
+			Assert.IsTrue(state.ZeroFlag);
+		}
+
 		[Test]
 		public void MovPtrEsp0x10()
 		{
