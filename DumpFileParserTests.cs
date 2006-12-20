@@ -84,13 +84,14 @@ namespace bugreport.DumpFileParserTests
 		[Test] 
 		public void CurrentLine()
 		{
-			const String line = " 8048399:	c3                   	ret    ";            
-			writer.WriteLine(line);
+			const String line = " 8048399:	c3                   	ret    ";
+            writer.WriteLine(line);            
+			writer.WriteLine(" 8048400:	9A                   	nop    ");
             writer.Flush();            
             parser = new DumpFileParser(stream);			
 
 			parser.GetNextInstructionBytes();
-			Assert.AreEqual(line, parser.CurrentLine);
+			Assert.AreEqual(line, parser.CurrentLine);                        
 		} 
 
 		[Test] 
