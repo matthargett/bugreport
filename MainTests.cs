@@ -76,7 +76,7 @@ namespace bugreport
 						Assert.Contains(expected, messages);
 					}
 				}
-				catch (AssertionException e)
+				catch (AssertionException)
 				{
 					Console.WriteLine("System test filename: " + fileName);
 					throw;

@@ -32,8 +32,9 @@ namespace bugreport
 		private Boolean inMain;
 		private String currentLine;
         private List<Byte[]> opCodeList;
-        private int index = 0;
+        private Int32 index = -1;
         private List<ReportItem> expectedReportItems;
+        private List<string> lines;
 
 		public DumpFileParser(Stream _stream)
 		{
@@ -41,38 +42,39 @@ namespace bugreport
 			stream.Position = 0;
 			reader = new StreamReader(stream);
 			inMain = false;
-            expectedReportItems = new List<ReportItem>();            
+            expectedReportItems = new List<ReportItem>();
+            lines = new List<string>();            
             opCodeList = parse();            
 		}
 		
 		public String CurrentLine
 		{
 			get 
-			{ 
-				if (currentLine == null)
-				{
-					throw new InvalidOperationException("No previous line read");
-				}
-				
-				return currentLine; 
+			{
+                if (index == -1)
+                {
+                    throw new InvalidOperationException("No Previous Line Read.");
+                }
+
+				return lines[index]; 
 			}
 		}
 			
 		public Byte[] GetNextInstructionBytes()
 		{
-            if (index >= opCodeList.Count)
+            if (EndOfFunction)
             {               
                 return null;
             }
             
-            return opCodeList[index++];
+            return opCodeList[++index];
 		}
 		
 		public Boolean EndOfFunction
 		{
 			get
 			{
-                return (index >= opCodeList.Count);             
+                return (index >= opCodeList.Count-1);
 			}
 		}
 
@@ -161,7 +163,7 @@ namespace bugreport
 
             while (!reader.EndOfStream)
             {
-                currentLine = reader.ReadLine();
+                currentLine = reader.ReadLine();                
                 if (hasAnnotation(currentLine))
                 {
                     ReportItem item = getAnnotation(currentLine);
@@ -174,6 +176,7 @@ namespace bugreport
                     if (opCode != null)
                     {
                         opCodeList.Add(getHexFromString(currentLine));
+                        lines.Add(currentLine);
                     }
                 }
             }
