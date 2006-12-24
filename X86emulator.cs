@@ -259,7 +259,7 @@ namespace bugreport
 						index = ModRM.GetIndex(_code);
 					}
 					
-					AbstractValue rhs = machineState.DoOperation(machineState.Registers[ev], OperatorEffect.Add, new AbstractValue(index));
+					AbstractValue rhs = machineState.DoOperation(machineState.Registers[ev], OperatorEffect.Add, new AbstractValue(index)).Value;
 					machineState = machineState.DoOperation(gv, OperatorEffect.Assignment, rhs);
                     if (machineState.Registers[gv].IsOOB)
 					{

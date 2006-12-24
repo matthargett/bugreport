@@ -192,7 +192,7 @@ namespace bugreport
 		}
 		
 		[Test]
-		public void CmpEax0()
+		public void CmpKnownEax0()
 		{ // cmp eax, 0
 			code = new Byte[] {0x83, 0xf8, 0x0};
 			state.Registers[RegisterName.EAX] = new AbstractValue(1);
@@ -204,6 +204,18 @@ namespace bugreport
 			state = X86emulator.Run(state, code);
 			Assert.AreEqual(0x6, state.InstructionPointer);
 			Assert.IsTrue(state.ZeroFlag);
+		}
+
+		[Test]
+		[Ignore("In progress --Luis")]
+		public void CmpUnknownEax0()
+		{ // cmp eax, 0
+//			MachineState[] possibleStates;
+//			
+//			code = new Byte[] {0x83, 0xf8, 0x0};
+//			state.Registers[RegisterName.EAX] = new AbstractValue();
+//			possibleStates = X86emulator.Run(state, code);
+//			Assert.AreEqual(2, possibleStates.Length);
 		}
 		
 		[Test]
@@ -505,6 +517,6 @@ namespace bugreport
 			state = X86emulator.Run(state, jnzCode);
 			Assert.AreEqual(jnzCode.Length + offset, state.InstructionPointer - oldEIP);	
 		}
-	
+
 	}
 }

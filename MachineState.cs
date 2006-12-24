@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace bugreport
 {
+	public struct OperationResult
+	{
+		public AbstractValue Value;
+		public Boolean ZeroFlag;
+	}
+	
 	public struct MachineState : IEquatable<MachineState>
 	{
 		private UInt32 instructionPointer;
@@ -120,7 +126,7 @@ namespace bugreport
 			{
 				case OperatorEffect.Assignment:
 				{
-					newState.dataSegment[offset] = newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs);
+					newState.dataSegment[offset] = newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
 					break;
 				}
 				default:
@@ -141,7 +147,9 @@ namespace bugreport
 				case OperatorEffect.Assignment:
 				case OperatorEffect.Cmp:
 				{
-					newState.Registers[lhs].PointsTo[index] = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect,rhs);
+					OperationResult result = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
+					newState.Registers[lhs].PointsTo[index] = result.Value;
+					newState.ZeroFlag = result.ZeroFlag;
 					break;
 				}
 				default:
@@ -162,7 +170,9 @@ namespace bugreport
 			}
 			else
 			{
-				newState.Registers[lhs] = newState.DoOperation(this.Registers[lhs], _operatorEffect, rhs);
+				OperationResult result = newState.DoOperation(this.Registers[lhs], _operatorEffect, rhs);
+				newState.Registers[lhs] = result.Value;
+				newState.ZeroFlag = result.ZeroFlag;
 			}
 
 			return newState;
@@ -171,24 +181,30 @@ namespace bugreport
 		public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, RegisterName rhs)
 		{
 			MachineState newState = new MachineState(this);
-			newState.Registers[lhs] = newState.DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
+			OperationResult result = newState.DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
+			newState.Registers[lhs] = result.Value;
+			newState.ZeroFlag = result.ZeroFlag;
 			return newState;	
 		}
 
-		public AbstractValue DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+		public OperationResult DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
 			if (rhs.IsPointer && _operatorEffect != OperatorEffect.Assignment)
 				throw new ArgumentException("rhs pointer only supported for OperatorEffect.Assignment.");
+			
+			OperationResult result = new OperationResult();
 
 			switch(_operatorEffect)
 			{
                 case OperatorEffect.Assignment:
                 {
-                    AbstractValue newAbstractValue = new AbstractValue(rhs);
+                    AbstractValue newValue = new AbstractValue(rhs);
                     if (rhs.IsInitialized && rhs.IsOOB)
-                        newAbstractValue.IsOOB = true;
+                        newValue.IsOOB = true;
                     
-                    return newAbstractValue;
+                    result.Value = newValue;
+                    
+                    return result;
                 }
 					
 				case OperatorEffect.Add:
@@ -196,16 +212,18 @@ namespace bugreport
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
-						return new AbstractValue(newBuffer);
+						result.Value = new AbstractValue(newBuffer);
+						return result;
 					}
 					
 					UInt32 sum = lhs.Value + rhs.Value;
-					AbstractValue result = new AbstractValue(sum);
+					AbstractValue sumValue = new AbstractValue(sum);
 					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						result = result.AddTaint();
+						sumValue = sumValue.AddTaint();
 					}
 					
+					result.Value = sumValue;
 					return result;
 				}
 					
@@ -214,15 +232,18 @@ namespace bugreport
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
-						return new AbstractValue(newBuffer);
+						result.Value = new AbstractValue(newBuffer);
+						return result;
 					}
 					UInt32 total = lhs.Value - rhs.Value;
-					AbstractValue result = new AbstractValue(total);
+					AbstractValue totalValue = new AbstractValue(total);
 					
 					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						result = result.AddTaint();
+						totalValue = totalValue.AddTaint();
 					}
+					
+					result.Value = totalValue;
 					
 					return result;
 				}
@@ -232,54 +253,59 @@ namespace bugreport
 					if (lhs.IsPointer)
 					{
 						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
-						return new AbstractValue(newBuffer);
+						result.Value = new AbstractValue(newBuffer);
+						return result;
 					}
 					
 					UInt32 total = lhs.Value & rhs.Value;
-					AbstractValue result = new AbstractValue(total);
+					AbstractValue totalValue = new AbstractValue(total);
 
 					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						result = result.AddTaint();
+						totalValue = totalValue.AddTaint();
 					}
 
+					result.Value = totalValue;
 					return result;
 				}
 				
 				case OperatorEffect.Shr:
 				{
 					UInt32 total = lhs.Value >> (Byte)rhs.Value;
-					AbstractValue result = new AbstractValue(total);
+					AbstractValue totalValue = new AbstractValue(total);
 
 					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						result = result.AddTaint();
+						totalValue = totalValue.AddTaint();
 					}
 
+					result.Value = totalValue;
 					return result;
 				}
 					
 				case OperatorEffect.Shl:
 				{
 					UInt32 total = lhs.Value << (Byte)rhs.Value;
-					AbstractValue result = new AbstractValue(total);
+					AbstractValue totalValue = new AbstractValue(total);
 
 					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						result = result.AddTaint();
+						totalValue = totalValue.AddTaint();
 					}
 
+					result.Value = totalValue;
 					return result;
 				}
 					
 				case OperatorEffect.Cmp:
 				{
 					if ((lhs.Value - rhs.Value) == 0)
-						ZeroFlag = true;
+						result.ZeroFlag = true;
 					else
-						ZeroFlag = false;
+						result.ZeroFlag = false;
 	
-					return lhs;
+					result.Value = lhs;
+					return result;
 				}
 					
 				default:
