@@ -66,7 +66,20 @@ namespace bugreport
 			{							
 				Console.WriteLine();
 				Console.WriteLine("Interpreting file: " + fileName);
-				analyzer = new Analyzer(File.OpenRead(fileName));
+				FileStream fileStream;
+
+				try
+				{
+					fileStream = File.OpenRead(fileName);
+				}
+				catch (FileNotFoundException e)
+				{
+					Console.WriteLine(e.Message);
+					Environment.Exit(-1);
+					return; // needed to hush up a false warning in mono
+				}
+
+				analyzer = new Analyzer(fileStream);
 				analyzer.Run(_isTracing);
 				IList<ReportItem> reportItems = analyzer.ReportItems;
 				foreach (ReportItem item in reportItems)

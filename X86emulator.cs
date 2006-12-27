@@ -179,7 +179,7 @@ namespace bugreport
 						if (machineState.Registers[ev] == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));						
 						
-						machineState = machineState.DoOperation(ev,index, op, value);
+						machineState = machineState.DoOperation(ev, index, op, value);
 						if (machineState.Registers[ev].PointsTo[index].IsOOB)
 							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
 					}
