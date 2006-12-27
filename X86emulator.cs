@@ -7,34 +7,6 @@ using System.Collections.Generic;
 
 namespace bugreport
 {
-    public class OutOfBoundsMemoryAccessException : ApplicationException
-    {
-		private readonly UInt32 instructionPointer;
-		private readonly Boolean isTainted;
-        
-		public OutOfBoundsMemoryAccessException (UInt32 _instructionPointer, Boolean _isTainted)
-		{
-			instructionPointer = _instructionPointer;
-			isTainted = _isTainted;
-		}
-
-		public UInt32 InstructionPointer
-		{
-			get
-			{
-				return instructionPointer;
-			}
-		}
-
-		public Boolean IsTainted
-		{
-		    get
-		    {
-		        return isTainted;
-		    }
-		}		
-    }
-
 	public class InvalidOpcodeException : ApplicationException
 	{
 		
@@ -58,17 +30,17 @@ namespace bugreport
 
 	public static class X86emulator
 	{
-		public static MachineState Run(MachineState _machineState, Byte[] _code)
+		public static MachineState Run(List<ReportItem> reportItemCollector, MachineState _machineState, Byte[] _code)
 		{
 			if (_code.Length == 0)
 				throw new ArgumentException("_code", "Empty array not allowed.");
 			
-			MachineState afterState = emulateOpcode(_machineState, _code);
+			MachineState afterState = emulateOpcode(reportItemCollector, _machineState, _code);
 			afterState.InstructionPointer += (UInt32)_code.Length;
 			return afterState;
 		}
 
-		private static MachineState emulateOpcode(MachineState _machineState, Byte[] _code)
+		private static MachineState emulateOpcode(List<ReportItem> reportItemCollector, MachineState _machineState, Byte[] _code)
 		{
 			MachineState machineState = _machineState;
 			RegisterName ev, gv;
@@ -181,14 +153,14 @@ namespace bugreport
 						
 						machineState = machineState.DoOperation(ev, index, op, value);
 						if (machineState.Registers[ev].PointsTo[index].IsOOB)
-							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
+							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, value.IsTainted));
 					}
 					else
 					{
 						machineState = machineState.DoOperation((RegisterName)ev, op, value);
                         if (machineState.Registers[ev].IsOOB)
 						{
-							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);							
+							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, value.IsTainted));
 						}
 					}
 					return machineState;
@@ -228,9 +200,9 @@ namespace bugreport
 							index = ModRM.GetIndex(_code);
 						
 						value = value.PointsTo[index];
-                        if (value.IsOOB)
+						if (value.IsOOB)
 						{
-							throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, value.IsTainted);
+							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, value.IsTainted));
 						}
 					}
 					
@@ -261,9 +233,9 @@ namespace bugreport
 					
 					AbstractValue rhs = machineState.DoOperation(machineState.Registers[ev], OperatorEffect.Add, new AbstractValue(index)).Value;
 					machineState = machineState.DoOperation(gv, OperatorEffect.Assignment, rhs);
-                    if (machineState.Registers[gv].IsOOB)
+					if (machineState.Registers[gv].IsOOB)
 					{
-						throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[ev].IsTainted);
+						reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, machineState.Registers[ev].IsTainted));
 					}
 					
 					return machineState;
@@ -301,7 +273,7 @@ namespace bugreport
 							// DoOp...(AbsVal, op, AbsVal)
 							machineState = machineState.DoOperation(ev, index, op, machineState.Registers[gv]);
 							if (value.PointsTo[index].IsOOB)
-								throw new OutOfBoundsMemoryAccessException(machineState.InstructionPointer, machineState.Registers[gv].IsTainted);
+								reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, machineState.Registers[gv].IsTainted));
                         }
 
 					}

@@ -22,7 +22,7 @@ namespace bugreport
 
 	public class Analyzer
 	{
-		private List<ReportItem> reportItems = new List<ReportItem>();
+		protected List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
 
 		public Analyzer(Stream stream)
@@ -71,7 +71,7 @@ namespace bugreport
 		
 		protected virtual MachineState runCode(MachineState _machineState, Byte [] _instructionBytes)
 		{
-			return X86emulator.Run(_machineState, _instructionBytes);
+			return X86emulator.Run(reportItems, _machineState, _instructionBytes);
 		}
 
 		
@@ -102,15 +102,7 @@ namespace bugreport
 							Console.WriteLine(parser.CurrentLine);
 						}
 						
-						try
-						{
-						    machineState = runCode(machineState, instructionBytes);
-						}
-						catch (OutOfBoundsMemoryAccessException e)
-						{
-							ReportItem reportItem = new ReportItem(e.InstructionPointer, e.IsTainted);	
-							reportItems.Add(reportItem);
-						}
+						machineState = runCode(machineState, instructionBytes);
 					}
 				}
 
