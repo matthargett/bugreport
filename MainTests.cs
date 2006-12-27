@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace bugreport
 {
@@ -20,46 +21,68 @@ namespace bugreport
 
 		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
+		private void waitForAnalysisToFinish(Process analysisProcess)
+		{
+			TimeSpan maximumTimeAllowed = TimeSpan.FromSeconds(10);
+			while (!analysisProcess.HasExited && (DateTime.Now - analysisProcess.StartTime < maximumTimeAllowed))
+			{
+				Thread.Sleep(100);
+			} 
+		}
+
+		private List<String> getOutputFromAnalysis(Process analysisProcess)
+		{
+			List<String> messages = new List<String>();
+
+			analysisProcess.StandardOutput.ReadLine(); // version string
+			analysisProcess.StandardOutput.ReadLine(); // blank line
+			while (!analysisProcess.StandardOutput.EndOfStream)
+			{
+				messages.Add(analysisProcess.StandardOutput.ReadLine());
+			}
+
+			return messages;			
+		}
+
+		private Process getAnalysisProcessForFileName(String fileName)
+		{
+			Process analysisProcess = new Process();
+			analysisProcess.StartInfo.FileName = "bugreport.exe";
+			analysisProcess.StartInfo.Arguments = fileName;
+			analysisProcess.StartInfo.RedirectStandardOutput = true;
+			analysisProcess.StartInfo.UseShellExecute = false;
+			analysisProcess.StartInfo.CreateNoWindow = true;
+
+			return analysisProcess;
+		}
+
 		private List<String> getOutputForFilename(String fileName)
 		{
-
-			List<String> messages = new List<String>();
+			Process analysisProcess = getAnalysisProcessForFileName(fileName);
+			analysisProcess.Start();
 			
-			Process testProcess = new Process();
-			testProcess.StartInfo.FileName = "bugreport.exe";
-			testProcess.StartInfo.Arguments = fileName;
-			testProcess.StartInfo.RedirectStandardOutput = true;
-			testProcess.StartInfo.UseShellExecute = false;
-			testProcess.StartInfo.CreateNoWindow = true;
-			testProcess.Start();
-			testProcess.StandardOutput.ReadLine(); // version string
-			testProcess.StandardOutput.ReadLine(); // blank line
-			testProcess.StandardOutput.ReadLine(); // interpreting filename
-			while (!testProcess.StandardOutput.EndOfStream)
-			{
-				messages.Add(testProcess.StandardOutput.ReadLine());
-			}
-			return messages;			
+			waitForAnalysisToFinish(analysisProcess);
+			
+			return getOutputFromAnalysis(analysisProcess);
 		}
 		
 		[Test]
 		[Category("long")]
 		public void SystemTest()
 		{
-			String[] tests = File.ReadAllLines(testDataFile);
+			String[] testSpecifications = File.ReadAllLines(testDataFile);
 
-			foreach(String s in tests) 
+			foreach(String testSpecification in testSpecifications) 
 			{
-				String test = s.Trim();
-				if (test.StartsWith("#") || test.Length == 0) 
+				if (testSpecification.Trim().StartsWith("#") || testSpecification.Trim().Length == 0) 
 				{
 					continue;
 				}
 
-				// format: filename.dump[,expected output]
-				String[] args = test.Split(',');
+				// format: filename.dump[,expectedOutput output]
+				String[] args = testSpecification.Split(',');
 				String fileName = (testRoot + args[0]).Trim();
-				String expected = args[1].Trim();				
+				String expectedOutput = args[1].Trim();				
 
 				Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
 
@@ -67,18 +90,22 @@ namespace bugreport
 
 				try
 				{
-					if (String.Empty == expected) 
+					if (String.Empty == expectedOutput) 
 					{
 						Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
 					} 
 					else 
 					{
-						Assert.Contains(expected, messages);
+						Assert.Contains(expectedOutput, messages);
 					}
 				}
 				catch (AssertionException)
 				{
-					Console.WriteLine("System test filename: " + fileName);
+					foreach (String line in messages)
+					{
+						Console.WriteLine(line);
+					}
+
 					throw;
 				}
 			}
