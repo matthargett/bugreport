@@ -21,7 +21,8 @@ namespace bugreport
 			
 			protected override MachineState runCode(MachineState _machineState, byte[] _instructionBytes)
 			{
-				throw new OutOfBoundsMemoryAccessException(0xdeadbeef, false);
+				reportItems.Add(new ReportItem(0, false));
+				return _machineState;
 			}
 			
 			protected override IParsable createDumpFileParser(Stream _stream)
