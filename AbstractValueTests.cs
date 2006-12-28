@@ -12,13 +12,6 @@ namespace bugreport
 	{	
 		AbstractValue pointer;
 		AbstractBuffer buffer;
-		MachineState state;
-		
-		[SetUp]
-		public void SetUp()
-		{
-			state = new MachineState(new RegisterCollection());
-		}
 		
 		[Test]
 		public void DefaultIsNotInitialized() 

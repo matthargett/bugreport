@@ -22,6 +22,9 @@ namespace bugreport
 
 	public class Analyzer
 	{
+		public delegate void EmulationComplete(MachineState state, String assemblyText);
+		public event EmulationComplete OnEmulationComplete; 
+
 		protected List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
 
@@ -75,14 +78,14 @@ namespace bugreport
 		}
 
 		
-		protected virtual IParsable createDumpFileParser(Stream _stream)
+		protected virtual IParsable createFileParser(Stream _stream)
 		{
 			return new DumpFileParser(_stream);
 		}
-		
-		public void Run(Boolean _isTracing) 
+
+		public void Run() 
 		{
-			IParsable parser = createDumpFileParser(stream);
+			IParsable parser = createFileParser(stream);
 			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
 
@@ -90,28 +93,10 @@ namespace bugreport
 			{
 				Byte[] instructionBytes = parser.GetNextInstructionBytes();
 				
-				try
+				machineState = runCode(machineState, instructionBytes);
+				if (null != this.OnEmulationComplete)
 				{
-					// TODO: This may ignore the last instructions in the method.  Investigate + fix.
-					if (!parser.EndOfFunction)						
-					{
-						if (_isTracing)
-						{
-							Console.WriteLine();
-							Console.WriteLine("topOfStack=" + machineState.TopOfStack + "  " + machineState.Registers);
-							Console.WriteLine(parser.CurrentLine);
-						}
-						
-						machineState = runCode(machineState, instructionBytes);
-					}
-				}
-
-				catch (Exception e)
-				{
-					StreamWriter writer = new StreamWriter(Console.OpenStandardError());
-					writer.WriteLine(e.ToString());
-					writer.Close();
-					break;
+					OnEmulationComplete(machineState, parser.CurrentLine);
 				}
 			}
 		}
