@@ -60,6 +60,13 @@ namespace bugreport
 			return fileNames;
 		}
 
+		private static void printInfo(MachineState machineState, String assemblyCodeText)
+		{
+			Console.WriteLine();
+			Console.WriteLine(assemblyCodeText);
+			Console.WriteLine("topOfStack=" + machineState.TopOfStack + "  " + machineState.Registers);
+		}
+
 		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)
 		{
 			foreach(String fileName in _fileNames)
@@ -80,7 +87,13 @@ namespace bugreport
 				}
 
 				analyzer = new Analyzer(fileStream);
-				analyzer.Run(_isTracing);
+
+				if (_isTracing)
+				{
+					analyzer.OnEmulationComplete += printInfo;
+				}
+
+				analyzer.Run();
 				IList<ReportItem> reportItems = analyzer.ReportItems;
 				foreach (ReportItem item in reportItems)
 				{

@@ -25,12 +25,11 @@ namespace bugreport
 				return _machineState;
 			}
 			
-			protected override IParsable createDumpFileParser(Stream _stream)
+			protected override IParsable createFileParser(Stream _stream)
 			{
 				DynamicMock control= new DynamicMock(typeof(IParsable));
 				control.ExpectAndReturn("get_EndOfFunction", false, null);
-				control.ExpectAndReturn("get_EndOfFunction", false, null);
-				control.ExpectAndReturn("get_EndOfFunction", false, null);
+				control.ExpectAndReturn("get_EndOfFunction", true, null);
 				return control.MockInstance as IParsable;
 			}
 		}
@@ -56,7 +55,7 @@ namespace bugreport
 		public void NullFileName() 
 		{
 			analyzer = new Analyzer(null);
-			analyzer.Run(false);
+			analyzer.Run();
 		}	
 
 		[Test]
@@ -72,7 +71,7 @@ namespace bugreport
 		{
 			MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 			analyzer = new AnalyzerWithReports(stream);
-			analyzer.Run(false);
+			analyzer.Run();
 			Assert.AreEqual(1, analyzer.ReportItems.Count);
 		}
 	}
