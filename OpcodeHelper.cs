@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -8,7 +8,7 @@ namespace bugreport
 {
 	public enum StackEffect {None, Push, Pop};
 	
-	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz};
+	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, Nop};
 
 	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
@@ -116,7 +116,10 @@ namespace bugreport
 							return OperatorEffect.Unknown;
 					}
 				}
-			
+				
+				case 0x90:
+					return OperatorEffect.Nop;
+	
 				case 0xc1:
 				{
 					Byte rm = ModRM.GetOpcodeGroupIndex(_code);
