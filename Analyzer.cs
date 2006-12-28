@@ -22,7 +22,7 @@ namespace bugreport
 
 	public class Analyzer
 	{
-		public delegate void EmulationComplete(MachineState state, String assemblyText);
+		public delegate void EmulationComplete(MachineState state, Byte[] code);
 		public event EmulationComplete OnEmulationComplete; 
 
 		protected List<ReportItem> reportItems = new List<ReportItem>();
@@ -96,7 +96,7 @@ namespace bugreport
 				machineState = runCode(machineState, instructionBytes);
 				if (null != this.OnEmulationComplete)
 				{
-					OnEmulationComplete(machineState, parser.CurrentLine);
+					OnEmulationComplete(machineState, instructionBytes);
 				}
 			}
 		}

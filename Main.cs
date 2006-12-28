@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -60,11 +60,34 @@ namespace bugreport
 			return fileNames;
 		}
 
-		private static void printInfo(MachineState machineState, String assemblyCodeText)
+		private static void printInfo(MachineState state, Byte[] code)
 		{
 			Console.WriteLine();
-			Console.WriteLine(assemblyCodeText);
-			Console.WriteLine("topOfStack=" + machineState.TopOfStack + "  " + machineState.Registers);
+			Console.Write(String.Format("{0:x8}", state.InstructionPointer) + ":\t");
+			foreach (Byte codeByte in code)
+			{
+				Console.Write(String.Format("{0:x2}", codeByte) + " ");
+			}
+
+			Int32 numberOfTabs = 3 - code.Length / 3;
+			for (Int32 i=0; i < numberOfTabs; i++)
+				Console.Write("\t");
+
+			if (OpcodeHelper.GetStackEffect(code) != StackEffect.None)
+				Console.Write(OpcodeHelper.GetStackEffect(code));
+			else	
+				Console.Write(OpcodeHelper.GetOperatorEffect(code));
+
+			if (OpcodeHelper.GetEncoding(code).ToString().Contains("Eb") ||
+				OpcodeHelper.GetEncoding(code).ToString().Contains("Ev"))
+			{
+				if (!ModRM.HasSIB(code))
+					Console.Write("\t" + ModRM.GetEv(code));
+			} 
+
+			Console.WriteLine("\t(" + OpcodeHelper.GetEncoding(code) + ")");
+
+			Console.WriteLine("topOfStack=" + state.TopOfStack + "  " + state.Registers);
 		}
 
 		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)

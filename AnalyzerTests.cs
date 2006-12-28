@@ -14,9 +14,13 @@ namespace bugreport
 	public class AnalyzerTests
 	{
 		Analyzer analyzer;
+		Byte[] code = new Byte[] { 0x90 }; 
+		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 		
 		public class AnalyzerWithReports : Analyzer
 		{
+			Byte[] code = new Byte[] { 0x90 }; 
+
 			public AnalyzerWithReports(Stream stream) : base (stream) {}
 			
 			protected override MachineState runCode(MachineState _machineState, byte[] _instructionBytes)
@@ -29,27 +33,12 @@ namespace bugreport
 			{
 				DynamicMock control= new DynamicMock(typeof(IParsable));
 				control.ExpectAndReturn("get_EndOfFunction", false, null);
+				control.ExpectAndReturn("GetNextInstructionBytes", code, null);
 				control.ExpectAndReturn("get_EndOfFunction", true, null);
 				return control.MockInstance as IParsable;
 			}
 		}
-/*
-		[Test]
-		[ExpectedException(typeof(FileNotFoundException))]
-		public void FileDoesNotExist() 
-		{
-			analyzer = new Analyzer();
-			analyzer.Analyze("this file does not exist", false);
-		}
 
-		[Test]
-		[ExpectedException(typeof(FileNotFoundException))]
-		public void NoMatchWildcardDoesNotExist() 
-		{
-			analyzer = new Analyzer();
-			analyzer.Analyze("thisfiledoesnotexist*", false);
-		}
-*/
 		[Test]
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void NullFileName() 
@@ -61,16 +50,20 @@ namespace bugreport
 		[Test]
 		public void NoReportItems()
 		{
-			MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
-			analyzer = new Analyzer(stream);	
+			analyzer = new Analyzer(stream);
 			Assert.AreEqual(0, analyzer.ReportItems.Count);
 		}
+
+		private void onEmulation(MachineState state, Byte[] code)
+		{
+			Assert.AreEqual(0x90, code[0]);
+		}	
 
 		[Test]
 		public void WithReportItems()
 		{
-			MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 			analyzer = new AnalyzerWithReports(stream);
+			analyzer.OnEmulationComplete += onEmulation;
 			analyzer.Run();
 			Assert.AreEqual(1, analyzer.ReportItems.Count);
 		}
