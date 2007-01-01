@@ -60,6 +60,62 @@ namespace bugreport
 			return fileNames;
 		}
 
+		private static void printInstructionName(Byte[] code)
+		{
+			if (OpcodeHelper.GetStackEffect(code) != StackEffect.None)
+			{
+				Console.Write(OpcodeHelper.GetStackEffect(code).ToString().ToLower());
+			}
+			else
+			{
+				OperatorEffect effect = OpcodeHelper.GetOperatorEffect(code);
+				if (OperatorEffect.Assignment == effect)
+					Console.Write("mov");
+				else if (OperatorEffect.None == effect)
+					Console.Write("nop");
+				else
+					Console.Write(effect.ToString().ToLower());
+			}
+
+			Console.Write("\t");
+		}
+
+		private static void printOperands(Byte[] code)
+		{
+			if (OpcodeHelper.HasModRM(code) )
+			{
+				if (!ModRM.HasSIB(code))
+				{
+					Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+					if (evDereferenced)
+						Console.Write("[");
+		
+					Console.Write(ModRM.GetEv(code).ToString().ToLower());
+
+					if (evDereferenced)
+						Console.Write("]");
+				}
+				else
+				{
+					Console.Write("[" + SIB.GetBaseRegister(code).ToString().ToLower() + "]");
+				}
+
+				Console.Write(", ");
+			}
+
+			if (OpcodeHelper.HasImmediate(code))
+				Console.Write(String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code))); 
+		}
+
+		private static void printEncoding(Byte[] code)
+		{
+			Console.Write("\t");
+			if (OpcodeEncoding.None != OpcodeHelper.GetEncoding(code))
+				Console.WriteLine("\t(" + OpcodeHelper.GetEncoding(code) + ")");
+			else
+				Console.WriteLine();
+		}
+
 		private static void printInfo(MachineState state, Byte[] code)
 		{
 			Console.WriteLine();
@@ -69,25 +125,18 @@ namespace bugreport
 				Console.Write(String.Format("{0:x2}", codeByte) + " ");
 			}
 
+			// magic numbers that happen to look good :)
 			Int32 numberOfTabs = 3 - code.Length / 3;
 			for (Int32 i=0; i < numberOfTabs; i++)
 				Console.Write("\t");
 
-			if (OpcodeHelper.GetStackEffect(code) != StackEffect.None)
-				Console.Write(OpcodeHelper.GetStackEffect(code));
-			else	
-				Console.Write(OpcodeHelper.GetOperatorEffect(code));
+			printInstructionName(code);
 
-			if (OpcodeHelper.GetEncoding(code).ToString().Contains("Eb") ||
-				OpcodeHelper.GetEncoding(code).ToString().Contains("Ev"))
-			{
-				if (!ModRM.HasSIB(code))
-					Console.Write("\t" + ModRM.GetEv(code));
-			} 
+			printOperands(code);
 
-			Console.WriteLine("\t(" + OpcodeHelper.GetEncoding(code) + ")");
+			printEncoding(code);
 
-			Console.WriteLine("topOfStack=" + state.TopOfStack + "  " + state.Registers);
+			Console.WriteLine("topOfStack="+ state.TopOfStack +"  "+ state.Registers);
 		}
 
 		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)

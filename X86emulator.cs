@@ -9,6 +9,9 @@ namespace bugreport
 {
 	public class InvalidOpcodeException : ApplicationException
 	{
+		public InvalidOpcodeException(String message, params Byte[] _code) : base(String.Concat(message, "  ", FormatOpcodes(_code)))
+		{
+		}
 		
 		public InvalidOpcodeException(params Byte[] _code) : base(FormatOpcodes(_code))
 		{
@@ -59,7 +62,7 @@ namespace bugreport
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.rAxIz:
 				{
-					UInt32 immediate = BitMath.BytesToDword(_code, 1);
+					UInt32 immediate = OpcodeHelper.GetImmediate(_code);
 					machineState = machineState.DoOperation(RegisterName.EAX, op, new AbstractValue(immediate));
 					return machineState;
 				}
@@ -108,7 +111,7 @@ namespace bugreport
 						if (_code[2] != 0x24)
 							throw new NotImplementedException(String.Format("Only supports 0x24 at this time, got: 0x{0:x2}.", _code[2]));
 						
-						machineState.TopOfStack = new AbstractValue(BitMath.BytesToDword(_code, 3));
+						machineState.TopOfStack = new AbstractValue(OpcodeHelper.GetImmediate(_code));
 						return machineState;
 					}
 					
@@ -116,15 +119,13 @@ namespace bugreport
 						throw new NotImplementedException("EvIz currently supports only dereferenced Ev.");
 				
 					index = 0;
-					Byte dwordOffset = 2;
 					if (ModRM.HasIndex(_code)) 
 					{
 						index = ModRM.GetIndex(_code);
-						dwordOffset++;
 					}
 					
 					ev = ModRM.GetEv(_code);
-					UInt32 immediate = BitMath.BytesToDword(_code, dwordOffset);
+					UInt32 immediate = OpcodeHelper.GetImmediate(_code);
 					
 					machineState.Registers[ev].PointsTo[index] = new AbstractValue(immediate);
 					
@@ -158,7 +159,7 @@ namespace bugreport
 					else
 					{
 						machineState = machineState.DoOperation((RegisterName)ev, op, value);
-                        if (machineState.Registers[ev].IsOOB)
+						if (machineState.Registers[ev].IsOOB)
 						{
 							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, value.IsTainted));
 						}
@@ -270,7 +271,6 @@ namespace bugreport
 						}
 						else
 						{
-							// DoOp...(AbsVal, op, AbsVal)
 							machineState = machineState.DoOperation(ev, index, op, machineState.Registers[gv]);
 							if (value.PointsTo[index].IsOOB)
 								reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, machineState.Registers[gv].IsTainted));
