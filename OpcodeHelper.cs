@@ -8,7 +8,7 @@ namespace bugreport
 {
 	public enum StackEffect {None, Push, Pop};
 	
-	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, Nop};
+	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump};
 
 	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
@@ -65,6 +65,81 @@ namespace bugreport
 					throw new InvalidOpcodeException(_code);
 			}			
 		}
+
+		public static Boolean HasModRM(Byte[] _code)
+		{
+			switch (GetEncoding(_code))
+			{
+				case OpcodeEncoding.GvEb:
+				case OpcodeEncoding.GvEv:
+				case OpcodeEncoding.EvGv:
+				case OpcodeEncoding.EvIb:
+				case OpcodeEncoding.EbIb:
+				case OpcodeEncoding.EbGb:
+				case OpcodeEncoding.EvIz:
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		public static Boolean HasImmediate(Byte[] _code)
+		{
+			switch (GetEncoding(_code))
+			{
+				case OpcodeEncoding.EvIb:
+				case OpcodeEncoding.EbIb:
+				case OpcodeEncoding.Jb:
+				case OpcodeEncoding.EvIz:
+				case OpcodeEncoding.rAxIz:
+				case OpcodeEncoding.rAxIv:
+				case OpcodeEncoding.Jz:
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		public static UInt32 GetImmediate(Byte[] _code)
+		{
+			if (!HasImmediate(_code))
+				throw new InvalidOperationException("Can't get immediate from an opcode that doesn't have one");
+
+			Byte valueIndex = 1;
+			if (HasModRM(_code))
+			{
+				valueIndex++;
+
+				if (ModRM.HasIndex(_code))
+				{
+					valueIndex++;
+				}
+
+				if (ModRM.HasSIB(_code))
+				{
+					valueIndex++;
+				}
+			}
+
+			switch (GetEncoding(_code))
+			{
+				case OpcodeEncoding.EvIb:
+				case OpcodeEncoding.EbIb:
+				case OpcodeEncoding.Jb:
+				{
+					
+					return _code[valueIndex];
+				}
+				case OpcodeEncoding.EvIz:
+				case OpcodeEncoding.rAxIz:
+				case OpcodeEncoding.rAxIv:
+				case OpcodeEncoding.Jz:
+					return BitMath.BytesToDword(_code, valueIndex);
+
+				default:
+					throw new InvalidOpcodeException("Don't know how to get the immediate for this opcode: ", _code);
+			}
+		}
 		
 		public static StackEffect GetStackEffect(Byte[] _code)
 		{
@@ -88,7 +163,6 @@ namespace bugreport
 
 			switch(_code[0])    	
 			{
-
 				case 0x05:
 					return OperatorEffect.Add;
 					
@@ -117,8 +191,14 @@ namespace bugreport
 					}
 				}
 				
+				case 0xc9:
+					return OperatorEffect.Leave;
+	
+				case 0xc3:
+					return OperatorEffect.Return;
+	
 				case 0x90:
-					return OperatorEffect.Nop;
+					return OperatorEffect.None;
 	
 				case 0xc1:
 				{
@@ -134,6 +214,9 @@ namespace bugreport
 							return OperatorEffect.Unknown;
 					}
 				}
+
+				case 0xe8:
+					return OperatorEffect.Jump;
 				
 				default:
 					return OperatorEffect.Assignment;
@@ -145,6 +228,7 @@ namespace bugreport
 			Byte opcodeLength = 1;
 			if (_code[0] == 0x0f)
 				opcodeLength++;
+
 			return opcodeLength;
 		}
 	}
