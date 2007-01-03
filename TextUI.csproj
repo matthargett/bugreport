@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="MainTests.cs" />
+    <Compile Include="OpcodeFormatter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="analysis.csproj">
