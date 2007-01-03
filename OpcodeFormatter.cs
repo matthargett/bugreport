@@ -8,33 +8,31 @@ namespace bugreport
 {
 	public class OpcodeFormatter
 	{
-		public static String getInstructionName(Byte[] code)
+		public static String GetInstructionName(Byte[] code)
 		{
-			String InstructionName = String.Empty;
+			String instructionName = String.Empty;
 			
 			if (OpcodeHelper.GetStackEffect(code) != StackEffect.None)
 			{
-				InstructionName += OpcodeHelper.GetStackEffect(code).ToString().ToLower();
+				instructionName += OpcodeHelper.GetStackEffect(code).ToString().ToLower();
 			}
 			else
 			{
 				OperatorEffect effect = OpcodeHelper.GetOperatorEffect(code);
 				if (OperatorEffect.Assignment == effect)
-					InstructionName += "mov";
+					instructionName += "mov";
 				else if (OperatorEffect.None == effect)
-					InstructionName +="nop";
+					instructionName +="nop";
 				else
-					InstructionName += effect.ToString().ToLower();
+					instructionName += effect.ToString().ToLower();
 			}
 
-			InstructionName += "\t";
-			
-			return InstructionName;
+			return instructionName;
 		}
 
-		public static String getOperands(Byte[] code)
+		public static String GetOperands(Byte[] code)
 		{
-			String Operands = String.Empty;
+			String operands = String.Empty;
 			
 			if (OpcodeHelper.HasModRM(code) )
 			{
@@ -42,40 +40,37 @@ namespace bugreport
 				{
 					Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
 					if (evDereferenced)
-						Operands += "[";
+						operands += "[";
 		
-					Operands += ModRM.GetEv(code).ToString().ToLower();
+					operands += ModRM.GetEv(code).ToString().ToLower();
 	
 					if (evDereferenced)
-						Operands += "]";
+						operands += "]";
 				}
 				else
 				{
-					Operands += "[" + SIB.GetBaseRegister(code).ToString().ToLower() + "]";
+					operands += "[" + SIB.GetBaseRegister(code).ToString().ToLower() + "]";
 				}
 	
-				Operands += ", ";
+				operands += ", ";
 			}
 	
 			if (OpcodeHelper.HasImmediate(code))
-				Operands += String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code));
+				operands += String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code));
 				
-			return Operands;
+			return operands;
 		}
 	
-		public static String getEncoding(Byte[] code)
+		public static String GetEncoding(Byte[] code)
 		{
-			String Encoding = String.Empty;
+			String encoding = String.Empty;
 				
-			Encoding += "\t";
 			if (OpcodeEncoding.None != OpcodeHelper.GetEncoding(code))
-				Encoding += "\t(" + OpcodeHelper.GetEncoding(code) + ")";
-			else
-				Encoding += "\n";
-			
-			return Encoding;
+			{
+				encoding += "(" + OpcodeHelper.GetEncoding(code) + ")";
 			}
-	
 			
+			return encoding;
 		}
+	}
 }

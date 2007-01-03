@@ -27,7 +27,7 @@ namespace bugreport
 			String[] fileNames = getFileNamesFromArguments(args);	
 			if (0 == fileNames.Length)
 			{
-				Console.WriteLine("No files found by name specified");
+			Console.WriteLine("No files found by name specified");
 				Environment.Exit(-1);
 			}
 
@@ -62,28 +62,31 @@ namespace bugreport
 
 		public static void printInfo(MachineState state, Byte[] code)
 		{
-			String Info = String.Empty;
-			
-			Info += "\n";
-			Info += String.Format("{0:x8}", state.InstructionPointer) + ":\t";
-			
+			String address = String.Format("{0:x8}", state.InstructionPointer);
+			Console.Write(address + ":");
+			Console.Write("\t");
+
 			foreach (Byte codeByte in code)
 			{
-				Info += String.Format("{0:x2}", codeByte) + " ";
+				Console.Write(String.Format("{0:x2}", codeByte) + " ");
 			}
 
 			// magic numbers that happen to look good :)
 			Int32 numberOfTabs = 3 - code.Length / 3;
-			for (Int32 i=0; i < numberOfTabs; i++)
-				Info += "\t";
-			
-			Console.Write(Info);
+			for (Int32 i = 0; i < numberOfTabs; i++)
+				Console.Write("\t");
 
-			Console.Write(OpcodeFormatter.getInstructionName(code));
+			Console.Write(OpcodeFormatter.GetInstructionName(code));
+			Console.Write("\t");
 
-			Console.Write(OpcodeFormatter.getOperands(code));
+			String operands = OpcodeFormatter.GetOperands(code);
+			Console.Write(operands);
+			if (operands.Length < 8)
+				Console.Write("\t");
 
-			Console.WriteLine(OpcodeFormatter.getEncoding(code));
+			String encoding = OpcodeFormatter.GetEncoding(code);
+			Console.Write("\t");
+			Console.WriteLine(encoding);
 
 			Console.WriteLine("topOfStack="+ state.TopOfStack +"  "+ state.Registers);
 		}
