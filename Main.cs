@@ -32,6 +32,11 @@ namespace bugreport
 			}
 
 			analyzeFiles(fileNames, isTracing);
+			
+			if (!analyzer.ReportExpectationMet)
+			 {
+			    Console.WriteLine("Expectations Were Not Met");
+			 }
 		}
 
 		public static Boolean getTracingOptionFromArguments(String[] _args)

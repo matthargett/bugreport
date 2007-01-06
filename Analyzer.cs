@@ -27,13 +27,14 @@ namespace bugreport
 
 		protected List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
+		private IParsable parser;		
 
 		public Analyzer(Stream stream)
 		{
 			if (null == stream)
 				throw new ArgumentNullException("stream");
 			
-			this.stream = stream;
+			this.stream = stream;			
 		}
 
 		public IList<ReportItem> ReportItems
@@ -44,6 +45,19 @@ namespace bugreport
 			}
 		}
 		
+		public Boolean ReportExpectationMet
+		{
+			get
+			{
+				if (parser.ExpectedReportItem.Count == 0)
+				{
+					return true;
+				}
+				
+				return reportItems.Count == parser.ExpectedReportItem.Count;
+			}
+		}		
+				
 		private static RegisterCollection getRegistersForLinuxMain()
 		{
 			RegisterCollection linuxMainDefaultValues = new RegisterCollection();
@@ -85,7 +99,7 @@ namespace bugreport
 
 		public void Run() 
 		{
-			IParsable parser = createFileParser(stream);
+			parser = createFileParser(stream);			
 			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
 

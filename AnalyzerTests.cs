@@ -17,24 +17,44 @@ namespace bugreport
 		Byte[] code = new Byte[] { 0x90 }; 
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 		
-		public class AnalyzerWithReports : Analyzer
+		public class FakeAnalyzer : Analyzer
 		{
 			Byte[] code = new Byte[] { 0x90 }; 
+			ReportItem reportItem = new ReportItem(0, false);
+			private UInt32 expectedReportItemCount;
+			private UInt32 actualReportItemCount;			
 
-			public AnalyzerWithReports(Stream stream) : base (stream) {}
+			public FakeAnalyzer(Stream stream, UInt32 expectedReportItemCount, UInt32 actualReportItemCount) : base (stream) 
+			{
+				this.expectedReportItemCount = expectedReportItemCount;
+				this.actualReportItemCount = actualReportItemCount;
+			}
 			
 			protected override MachineState runCode(MachineState _machineState, byte[] _instructionBytes)
 			{
-				reportItems.Add(new ReportItem(0, false));
+				for (UInt32 i = 0; i < actualReportItemCount; i++)
+				{
+					reportItems.Add(reportItem);
+				}
+				
 				return _machineState;
 			}
 			
 			protected override IParsable createFileParser(Stream _stream)
-			{
+			{				
 				DynamicMock control= new DynamicMock(typeof(IParsable));
 				control.ExpectAndReturn("get_EndOfFunction", false, null);
 				control.ExpectAndReturn("GetNextInstructionBytes", code, null);
 				control.ExpectAndReturn("get_EndOfFunction", true, null);
+				
+				List<ReportItem> reportItemList = new List<ReportItem>();
+				
+				for (UInt32 i = 0; i < expectedReportItemCount; i++)
+				{
+					reportItemList.Add(reportItem);
+				}
+				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList, null);
+				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList, null);
 				return control.MockInstance as IParsable;
 			}
 		}
@@ -62,10 +82,26 @@ namespace bugreport
 		[Test]
 		public void WithReportItems()
 		{
-			analyzer = new AnalyzerWithReports(stream);
+			analyzer = new FakeAnalyzer(stream,1 ,1);
 			analyzer.OnEmulationComplete += onEmulation;
 			analyzer.Run();
 			Assert.AreEqual(1, analyzer.ReportItems.Count);
+		}
+		
+		[Test]
+		public void VerifyExpectedAndActualReports()
+		{				
+			analyzer = new FakeAnalyzer(stream, 2, 2);
+			analyzer.Run();
+			Assert.IsTrue(analyzer.ReportExpectationMet);			
+			
+			analyzer = new FakeAnalyzer(stream, 2, 3);
+			analyzer.Run();
+			Assert.IsFalse(analyzer.ReportExpectationMet);
+			
+			analyzer = new FakeAnalyzer(stream, 0, 1);
+			analyzer.Run();
+			Assert.IsTrue(analyzer.ReportExpectationMet);
 		}
 	}
 }
