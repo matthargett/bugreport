@@ -17,6 +17,11 @@ namespace bugreport
 			get;
 		}
 		
+		List<ReportItem> ExpectedReportItem
+		{
+			get;
+		}
+		
 		Byte [] GetNextInstructionBytes();
 		
 		String CurrentLine
