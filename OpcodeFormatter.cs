@@ -43,6 +43,11 @@ namespace bugreport
 						operands += "[";
 		
 					operands += ModRM.GetEv(code).ToString().ToLower();
+
+					if (ModRM.HasIndex(code))
+					{
+						operands += "+" + ModRM.GetIndex(code);
+					}
 	
 					if (evDereferenced)
 						operands += "]";

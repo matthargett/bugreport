@@ -139,12 +139,10 @@ namespace bugreport
 			
 			if (tainted)
 				result += "t";
-			
-			if (pointsTo == null)
-			{
-				result += String.Format("0x{0:x8}", storage);
-			}
-			else
+		
+			UInt32 valueToPrint = this.Value;
+	
+			if (pointsTo != null)
 			{
 				AbstractValue pointer = pointsTo[0];
 				while (pointer != null)
@@ -152,12 +150,26 @@ namespace bugreport
 					result += "*";
 					
 					if (pointer.PointsTo != null)
+					{
 						pointer = pointer.PointsTo[0];
+					}
 					else
+					{
+						valueToPrint = pointer.Value;
 						pointer = null;
+					}
 				}
 			}
 			
+			if (valueToPrint != UNKNOWN)
+			{
+				result += String.Format("0x{0:x8}", valueToPrint);
+			}
+			else
+			{
+				result += "?";
+			}
+
 			return result;
 		}
 	}

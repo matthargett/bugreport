@@ -14,15 +14,16 @@ namespace bugreport
 		AbstractBuffer buffer;
 		
 		[Test]
-		public void DefaultIsNotInitialized() 
+		public void NotInitialized() 
 		{
 			AbstractValue uninit = new AbstractValue();			
 			Assert.IsFalse(uninit.IsInitialized);
 			Assert.AreEqual(AbstractValue.UNKNOWN, uninit.Value);
+			Assert.AreEqual("?", uninit.ToString());
 		}
 		
 		[Test]
-		public void InitializedIsInitialized() 
+		public void Initialized() 
 		{
 			AbstractValue uninit = new AbstractValue(0xabcdef);
 			Assert.IsTrue(uninit.IsInitialized);
@@ -36,6 +37,7 @@ namespace bugreport
 			pointer = new AbstractValue(buffer);
 			pointer.PointsTo[0] = new AbstractValue(0x31337);
 			Assert.AreEqual(0x31337, pointer.PointsTo[0].Value);
+			Assert.AreEqual("*0x00031337", pointer.ToString());
 		}
 
 		[Test]
@@ -95,7 +97,7 @@ namespace bugreport
 			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
 			pointer = new AbstractValue(buffer);
 			Assert.AreEqual(2, pointer.PointsTo[0].Value);
-			StringAssert.StartsWith("*", pointer.ToString());
+			StringAssert.StartsWith("*0x00000002", pointer.ToString());
 		}
 
 		[Test]
@@ -105,7 +107,7 @@ namespace bugreport
 			pointer = new AbstractValue(buffer);
 			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer});
 			Assert.AreEqual(2, pointerPointer.PointsTo[0].PointsTo[0].Value);
-			StringAssert.StartsWith("**", pointerPointer.ToString());
+			StringAssert.StartsWith("**0x00000002", pointerPointer.ToString());
 		}
 
 		[Test]
@@ -117,7 +119,7 @@ namespace bugreport
 			AbstractValue pointerPointerPointer = new AbstractValue(new AbstractValue[] {pointerPointer});
 			Assert.AreEqual(2, pointerPointerPointer.PointsTo[0].PointsTo[0].PointsTo[0].Value);
 
-			StringAssert.StartsWith("***", pointerPointerPointer.ToString());
+			StringAssert.StartsWith("***0x00000002", pointerPointerPointer.ToString());
 		}
 
 		[Test]
