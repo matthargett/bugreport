@@ -20,6 +20,15 @@ namespace bugreport
 			Assert.AreEqual("(EvIz)", OpcodeFormatter.GetEncoding(code));
 		}
 	
+		[Test]
+		public void MovPtrEaxPlusSizteenZero()
+		{
+			Byte[] code = new Byte[] { 0xc6, 0x40, 0x10, 0x00 };
+			Assert.AreEqual("mov", OpcodeFormatter.GetInstructionName(code));
+			Assert.AreEqual("[eax+16], 0x0", OpcodeFormatter.GetOperands(code));
+			Assert.AreEqual("(EbIb)", OpcodeFormatter.GetEncoding(code));
+		}
+	
 
 	}
 }

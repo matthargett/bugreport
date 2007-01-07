@@ -93,7 +93,8 @@ namespace bugreport
 			Console.Write("\t");
 			Console.WriteLine(encoding);
 
-			Console.WriteLine("topOfStack="+ state.TopOfStack +"  "+ state.Registers);
+			Console.WriteLine(state.Registers);
+			Console.WriteLine();
 		}
 
 		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)

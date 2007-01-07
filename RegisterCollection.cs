@@ -40,7 +40,16 @@ namespace bugreport
 			for(UInt32 i = 0; i < registers.Length; ++i)
 			{
 				AbstractValue value = registers[i];
-				result += " " + RegisterName.GetName(typeof(RegisterName), i) + "=" + value;				
+				result += RegisterName.GetName(typeof(RegisterName), i) + "=" + value + "\t";
+				if (value.ToString().Length < 8)
+				{
+					result += "\t";
+				}
+
+				if ((i + 1) % 4 == 0)
+				{
+					result += Environment.NewLine;
+				}
 			}
 			return result;
 		}

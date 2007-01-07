@@ -29,7 +29,7 @@ namespace bugreport
 		[Test]
 		public void ToStringOutput()
 		{
-			StringAssert.StartsWith(" EAX=", collection.ToString());
+			StringAssert.StartsWith("EAX=?", collection.ToString());
 		}
 	}
 }
