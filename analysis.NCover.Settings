@@ -1,0 +1,4 @@
+﻿<ProfilerSettings>
+  <Assemblies />
+  <ExclusionAttributes>NUnit.Framework.TestFixtureAttribute;NUnit.Framework.TestAttribute</ExclusionAttributes>
+</ProfilerSettings>
