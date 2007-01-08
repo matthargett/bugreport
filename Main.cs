@@ -109,7 +109,7 @@ namespace bugreport
 				{
 					fileStream = File.OpenRead(fileName);
 				}
-				catch (FileNotFoundException e)
+				catch (IOException e)
 				{
 					Console.WriteLine(e.Message);
 					Environment.Exit(-1);

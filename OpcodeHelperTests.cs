@@ -42,7 +42,8 @@ namespace bugreport
 		{
 			code = new Byte[] {0x90};
 			encoding = OpcodeHelper.GetEncoding(code);
-			Assert.AreEqual(OpcodeEncoding.None, encoding);			
+			Assert.AreEqual(OpcodeEncoding.None, encoding);
+			Assert.AreEqual(StackEffect.None, OpcodeHelper.GetStackEffect(code));
 		}
 
 		[Test]
@@ -109,9 +110,11 @@ namespace bugreport
 		[Test]
 		public void EbIb()
 		{
-			code = new Byte[]  {0xc6, 0x40, 0x10, 0x00};
+			Byte immediate = 0;
+			code = new Byte[]  {0xc6, 0x40, 0x10, immediate};
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.EbIb, encoding);
+			Assert.AreEqual(immediate, OpcodeHelper.GetImmediate(code));
 		}
 		
 		[Test]
@@ -277,6 +280,22 @@ namespace bugreport
 
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
 			Assert.AreEqual(OperatorEffect.Jnz, operatorEffect);						
+		}
+		
+		[Test]
+		public void LeaveReturn()
+		{
+			Assert.AreEqual(OperatorEffect.Leave, OpcodeHelper.GetOperatorEffect(new Byte[] {0xc9}));
+			Assert.AreEqual(OperatorEffect.Return, OpcodeHelper.GetOperatorEffect(new Byte[] {0xc3}));
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void InvalidGetImmediate()
+		{
+			code = new Byte[] {0x90};
+			Assert.IsFalse(OpcodeHelper.HasImmediate(code));
+			OpcodeHelper.GetImmediate(code);
 		}
 
 	}

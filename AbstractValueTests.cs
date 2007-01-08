@@ -65,12 +65,36 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void AddTaintIf()
+		{
+			AbstractValue clean = new AbstractValue(0x31337);
+			Assert.IsFalse(clean.IsTainted);
+			AbstractValue notTainted = clean.AddTaintIf(0 == 1);
+			Assert.IsFalse(notTainted.IsTainted);
+			Assert.AreSame(clean, notTainted);
+			
+			AbstractValue tainted = clean.AddTaintIf(1 == 1);
+			Assert.IsTrue(tainted.IsTainted);
+			Assert.AreNotSame(clean, tainted);
+		}
+		
+		[Test]
 		public void AddTaint()
 		{
 			AbstractValue clean = new AbstractValue(0x31337);
 			Assert.IsFalse(clean.IsTainted);
 			AbstractValue tainted = clean.AddTaint();
 			Assert.IsTrue(tainted.IsTainted);
+			Assert.AreNotSame(clean, tainted);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void AddTaintOnPointer()
+		{
+			AbstractBuffer buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(1));
+			AbstractValue clean = new AbstractValue(buffer);
+			clean.AddTaint();
 		}
 		
 		[Test]
