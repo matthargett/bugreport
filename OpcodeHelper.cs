@@ -126,8 +126,7 @@ namespace bugreport
 				case OpcodeEncoding.EvIb:
 				case OpcodeEncoding.EbIb:
 				case OpcodeEncoding.Jb:
-				{
-					
+				{			
 					return _code[valueIndex];
 				}
 				case OpcodeEncoding.EvIz:

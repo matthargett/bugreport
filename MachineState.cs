@@ -9,7 +9,7 @@ namespace bugreport
 		public Boolean ZeroFlag;
 	}
 	
-	public struct MachineState : IEquatable<MachineState>
+	public struct MachineState
 	{
 		private UInt32 instructionPointer;
 		private RegisterCollection registers;
@@ -34,7 +34,7 @@ namespace bugreport
 		public Boolean ZeroFlag
 		{
 			get { return zeroFlag; }
-			private set { zeroFlag = value; } 
+			private set { zeroFlag = value; }
 		}
 
 		public UInt32 InstructionPointer
@@ -43,7 +43,7 @@ namespace bugreport
 			{
 				return instructionPointer;
 			}
-			set 
+			set
 			{
 				instructionPointer = value;
 			}
@@ -57,7 +57,7 @@ namespace bugreport
 		public Dictionary<UInt32, AbstractValue> DataSegment
 		{
 			get { return dataSegment; }
-		}		
+		}
 
 		public AbstractValue TopOfStack
 		{
@@ -68,7 +68,7 @@ namespace bugreport
 				return registers[RegisterName.ESP].PointsTo[0];
 			}
 			
-			set 
+			set
 			{
 				System.Diagnostics.Debug.Assert(registers[RegisterName.ESP] != null);
 				System.Diagnostics.Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
@@ -87,7 +87,7 @@ namespace bugreport
 				registers[RegisterName.EAX] = value;
 			}
 		}
-				
+		
 		public void PushOntoStack(AbstractValue value)
 		{
 			TopOfStack = new AbstractValue(value);
@@ -103,12 +103,12 @@ namespace bugreport
 			switch(_operatorEffect)
 			{
 				case OperatorEffect.Jnz:
-				{
-					if (!newState.zeroFlag)
-						newState.instructionPointer += _offset.Value;
-					
-					break;
-				}
+					{
+						if (!newState.zeroFlag)
+							newState.instructionPointer += _offset.Value;
+						
+						break;
+					}
 				default:
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
 			}
@@ -117,45 +117,35 @@ namespace bugreport
 
 		public MachineState DoOperation(UInt32 offset, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
-			if (rhs.IsPointer)
-				throw new ArgumentException("rhs pointer not supported.");
-
 			MachineState newState = new MachineState(this);
 
 			switch(_operatorEffect)
 			{
 				case OperatorEffect.Assignment:
-				{
-					newState.dataSegment[offset] = newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
-					break;
-				}
-				default:
-					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+					{
+						newState.dataSegment[offset] = newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
+						break;
+					}
 			}
-			return newState;					
+			return newState;
 		}
 
 		public MachineState DoOperation(RegisterName lhs, Int32 index, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
-			if (!Registers[lhs].IsPointer)
-				throw new ArgumentException("lhs must be a pointer.");
-
 			MachineState newState = new MachineState(this);
 
 			switch(_operatorEffect)
 			{
 				case OperatorEffect.Assignment:
 				case OperatorEffect.Cmp:
-				{
-					OperationResult result = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
-					newState.Registers[lhs].PointsTo[index] = result.Value;
-					newState.ZeroFlag = result.ZeroFlag;
-					break;
-				}
-				default:
-					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
-					
+					{
+						OperationResult result = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
+						newState.Registers[lhs].PointsTo[index] = result.Value;
+						newState.ZeroFlag = result.ZeroFlag;
+						break;
+					}
 			}
+			
 			return newState;
 		}
 		
@@ -184,7 +174,7 @@ namespace bugreport
 			OperationResult result = newState.DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
 			newState.Registers[lhs] = result.Value;
 			newState.ZeroFlag = result.ZeroFlag;
-			return newState;	
+			return newState;
 		}
 
 		public OperationResult DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
@@ -196,158 +186,121 @@ namespace bugreport
 
 			switch(_operatorEffect)
 			{
-                case OperatorEffect.Assignment:
-                {
-                    AbstractValue newValue = new AbstractValue(rhs);
-                    if (rhs.IsInitialized && rhs.IsOOB)
-                        newValue.IsOOB = true;
-                    
-                    result.Value = newValue;
-                    
-                    return result;
-                }
+				case OperatorEffect.Assignment:
+					{
+						AbstractValue newValue = new AbstractValue(rhs);
+						if (rhs.IsInitialized && rhs.IsOOB)
+							newValue.IsOOB = true;
+						
+						result.Value = newValue;
+						
+						return result;
+					}
 					
 				case OperatorEffect.Add:
-				{
-					if (lhs.IsPointer)
 					{
-						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
-						result.Value = new AbstractValue(newBuffer);
+						if (lhs.IsPointer)
+						{
+							AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
+							result.Value = new AbstractValue(newBuffer);
+							return result;
+						}
+						
+						UInt32 sum = lhs.Value + rhs.Value;
+						AbstractValue sumValue = new AbstractValue(sum);
+						if (lhs.IsTainted || rhs.IsTainted)
+						{
+							sumValue = sumValue.AddTaint();
+						}
+						
+						result.Value = sumValue;
 						return result;
 					}
-					
-					UInt32 sum = lhs.Value + rhs.Value;
-					AbstractValue sumValue = new AbstractValue(sum);
-					if (lhs.IsTainted || rhs.IsTainted)
-					{
-						sumValue = sumValue.AddTaint();
-					}
-					
-					result.Value = sumValue;
-					return result;
-				}
 					
 				case OperatorEffect.Sub:
-				{
-					if (lhs.IsPointer)
 					{
-						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
-						result.Value = new AbstractValue(newBuffer);
+						if (lhs.IsPointer)
+						{
+							AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
+							result.Value = new AbstractValue(newBuffer);
+							return result;
+						}
+						UInt32 total = lhs.Value - rhs.Value;
+						AbstractValue totalValue = new AbstractValue(total);
+						
+						if (lhs.IsTainted || rhs.IsTainted)
+						{
+							totalValue = totalValue.AddTaint();
+						}
+						
+						result.Value = totalValue;
+						
 						return result;
 					}
-					UInt32 total = lhs.Value - rhs.Value;
-					AbstractValue totalValue = new AbstractValue(total);
 					
-					if (lhs.IsTainted || rhs.IsTainted)
-					{
-						totalValue = totalValue.AddTaint();
-					}
-					
-					result.Value = totalValue;
-					
-					return result;
-				}
-				
 				case OperatorEffect.And:
-				{
-					if (lhs.IsPointer)
 					{
-						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
-						result.Value = new AbstractValue(newBuffer);
+						if (lhs.IsPointer)
+						{
+							AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
+							result.Value = new AbstractValue(newBuffer);
+							return result;
+						}
+						
+						UInt32 total = lhs.Value & rhs.Value;
+						AbstractValue totalValue = new AbstractValue(total);
+
+						if (lhs.IsTainted || rhs.IsTainted)
+						{
+							totalValue = totalValue.AddTaint();
+						}
+
+						result.Value = totalValue;
 						return result;
 					}
 					
-					UInt32 total = lhs.Value & rhs.Value;
-					AbstractValue totalValue = new AbstractValue(total);
-
-					if (lhs.IsTainted || rhs.IsTainted)
-					{
-						totalValue = totalValue.AddTaint();
-					}
-
-					result.Value = totalValue;
-					return result;
-				}
-				
 				case OperatorEffect.Shr:
-				{
-					UInt32 total = lhs.Value >> (Byte)rhs.Value;
-					AbstractValue totalValue = new AbstractValue(total);
-
-					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						totalValue = totalValue.AddTaint();
-					}
+						UInt32 total = lhs.Value >> (Byte)rhs.Value;
+						AbstractValue totalValue = new AbstractValue(total);
 
-					result.Value = totalValue;
-					return result;
-				}
+						if (lhs.IsTainted || rhs.IsTainted)
+						{
+							totalValue = totalValue.AddTaint();
+						}
+
+						result.Value = totalValue;
+						return result;
+					}
 					
 				case OperatorEffect.Shl:
-				{
-					UInt32 total = lhs.Value << (Byte)rhs.Value;
-					AbstractValue totalValue = new AbstractValue(total);
-
-					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						totalValue = totalValue.AddTaint();
-					}
+						UInt32 total = lhs.Value << (Byte)rhs.Value;
+						AbstractValue totalValue = new AbstractValue(total);
 
-					result.Value = totalValue;
-					return result;
-				}
+						if (lhs.IsTainted || rhs.IsTainted)
+						{
+							totalValue = totalValue.AddTaint();
+						}
+
+						result.Value = totalValue;
+						return result;
+					}
 					
 				case OperatorEffect.Cmp:
-				{
-					if ((lhs.Value - rhs.Value) == 0)
-						result.ZeroFlag = true;
-					else
-						result.ZeroFlag = false;
-	
-					result.Value = lhs;
-					return result;
-				}
+					{
+						if ((lhs.Value - rhs.Value) == 0)
+							result.ZeroFlag = true;
+						else
+							result.ZeroFlag = false;
+						
+						result.Value = lhs;
+						return result;
+					}
 					
 				default:
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
 			}
-		}
-				
-		#region Equals and GetHashCode implementation
-		// The code in this region is useful if you want to use this structure in collections.
-		// If you don't need it, you can just remove the region and the ": IEquatable<MachineState>" declaration.
-		
-		public override bool Equals(object obj)
-		{
-			if (obj is MachineState)
-				return Equals((MachineState)obj); // use Equals method below
-			else
-				return false;
-		}
-		
-		public bool Equals(MachineState other)
-		{
-			// add comparisions for all members here
-			return this.dataSegment.Equals(other.dataSegment) &&
-				this.instructionPointer == other.instructionPointer &&
-				this.registers.Equals(other.registers);
-		}
-		
-		public override int GetHashCode()
-		{
-			// combine the hash codes of all members here (e.g. with XOR operator ^)
-			throw new NotImplementedException();
-		}
-		
-		public static bool operator ==(MachineState lhs, MachineState rhs)
-		{
-			return lhs.Equals(rhs);
-		}
-		
-		public static bool operator !=(MachineState lhs, MachineState rhs)
-		{
-			return !(lhs.Equals(rhs)); // use operator == and negate result
-		}
-		#endregion
+		}		
 	}
 }

@@ -16,9 +16,7 @@ namespace bugreport
 	public class MainTests
 	{
 		// TODO: This assumes that the test runner is run from the build directory.
-		private String testRoot = 
-			Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";			
-
+		private String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
 		private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
 		private void waitForAnalysisToFinish(Process analysisProcess)
@@ -36,6 +34,7 @@ namespace bugreport
 
 			analysisProcess.StandardOutput.ReadLine(); // version string
 			analysisProcess.StandardOutput.ReadLine(); // blank line
+			analysisProcess.StandardOutput.ReadLine(); // file name
 			while (!analysisProcess.StandardOutput.EndOfStream)
 			{
 				messages.Add(analysisProcess.StandardOutput.ReadLine());
@@ -48,10 +47,10 @@ namespace bugreport
 		{
 			Process analysisProcess = new Process();
 			analysisProcess.StartInfo.FileName = "bugreport.exe";
-			analysisProcess.StartInfo.Arguments = fileName;
+			analysisProcess.StartInfo.Arguments = "\"" + fileName + "\"";
 			analysisProcess.StartInfo.RedirectStandardOutput = true;
 			analysisProcess.StartInfo.UseShellExecute = false;
-			analysisProcess.StartInfo.CreateNoWindow = true;
+			analysisProcess.StartInfo.CreateNoWindow = false;
 
 			return analysisProcess;
 		}

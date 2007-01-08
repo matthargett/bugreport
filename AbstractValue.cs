@@ -80,7 +80,7 @@ namespace bugreport
 		{
 			if (this.PointsTo != null)
 			{
-				throw new ArgumentException("AddTaint", "Cannot AddTaint to a pointer");
+				throw new InvalidOperationException("Cannot AddTaint to a pointer");
 			}
 			
 			AbstractValue tainted = new AbstractValue(this);
