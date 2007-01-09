@@ -100,7 +100,7 @@ namespace bugreport
 			AbstractValue one = new AbstractValue(0x1);
 			AbstractBuffer buffer = new AbstractBuffer(new AbstractValue[] {one});
 			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Sub, new AbstractValue(3));
-			AbstractBuffer andedBuffer = modifiedBuffer.DoOperation(OperatorEffect.And, new AbstractValue(0xf));
+			modifiedBuffer.DoOperation(OperatorEffect.And, new AbstractValue(0xf));
 		}
 
 		[Test]

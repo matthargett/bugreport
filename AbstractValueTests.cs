@@ -53,7 +53,7 @@ namespace bugreport
 		[ExpectedException(typeof(ArgumentException))]
 		public void ZeroSizeBuffer()
 		{
-			new AbstractValue(new AbstractValue[] {});
+			pointer = new AbstractValue(new AbstractValue[] {});
 		}
 		
 		[Test]
@@ -101,7 +101,7 @@ namespace bugreport
 		[ExpectedException(typeof(ArgumentException))]
 		public void EmptyBuffer()
 		{
-			new AbstractValue(new AbstractBuffer(new AbstractValue[] {}));
+			pointer = new AbstractValue(new AbstractBuffer(new AbstractValue[] {}));
 		}
 		
 		[Test]

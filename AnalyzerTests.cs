@@ -17,7 +17,7 @@ namespace bugreport
 		Byte[] code = new Byte[] { 0x90 }; 
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 		
-		public class FakeAnalyzer : Analyzer
+		private class FakeAnalyzer : Analyzer
 		{
 			Byte[] code = new Byte[] { 0x90 }; 
 			ReportItem reportItem = new ReportItem(0, false);
