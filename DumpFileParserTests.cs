@@ -32,6 +32,7 @@ namespace bugreport.DumpFileParserTests
 		
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "none")]
 		public void CurrentLineBeforeFirstBytes()
 		{
             parser = new DumpFileParser(stream);					
