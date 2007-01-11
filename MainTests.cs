@@ -13,6 +13,7 @@ namespace bugreport
 {
 	[TestFixture]
 	//[Ignore("long")]
+	[Platform(Exclude="Mono")]
 	public class MainTests
 	{
 		// TODO: This assumes that the test runner is run from the build directory.
