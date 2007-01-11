@@ -71,7 +71,7 @@ namespace bugreport
 		public void NoReportItems()
 		{
 			analyzer = new Analyzer(stream);
-			Assert.AreEqual(0, analyzer.ReportItems.Count);
+			Assert.AreEqual(0, analyzer.ActualReportItems.Count);
 		}
 
 		private void onEmulation(MachineState state, Byte[] code)
@@ -85,23 +85,19 @@ namespace bugreport
 			analyzer = new FakeAnalyzer(stream,1 ,1);
 			analyzer.OnEmulationComplete += onEmulation;
 			analyzer.Run();
-			Assert.AreEqual(1, analyzer.ReportItems.Count);
+			Assert.AreEqual(1, analyzer.ActualReportItems.Count);
 		}
 		
 		[Test]
 		public void VerifyExpectedAndActualReports()
 		{				
 			analyzer = new FakeAnalyzer(stream, 2, 2);
-			analyzer.Run();
-			Assert.IsTrue(analyzer.ReportExpectationMet);			
+			analyzer.Run();			
+			Assert.AreEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);	
 			
 			analyzer = new FakeAnalyzer(stream, 2, 3);
 			analyzer.Run();
-			Assert.IsFalse(analyzer.ReportExpectationMet);
-			
-			analyzer = new FakeAnalyzer(stream, 0, 1);
-			analyzer.Run();
-			Assert.IsTrue(analyzer.ReportExpectationMet);
+			Assert.AreNotEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);	
 		}
 	}
 }

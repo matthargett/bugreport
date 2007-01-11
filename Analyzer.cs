@@ -37,7 +37,7 @@ namespace bugreport
 			this.stream = stream;			
 		}
 
-		public IList<ReportItem> ReportItems
+		public List<ReportItem> ActualReportItems
 		{
 			get
 			{
@@ -45,18 +45,13 @@ namespace bugreport
 			}
 		}
 		
-		public Boolean ReportExpectationMet
+		public List<ReportItem> ExpectedReportItems
 		{
 			get
 			{
-				if (parser.ExpectedReportItem.Count == 0)
-				{
-					return true;
-				}
-				
-				return reportItems.Count == parser.ExpectedReportItem.Count;
+				return parser.ExpectedReportItem;
 			}
-		}		
+		}	
 				
 		private static RegisterCollection getRegistersForLinuxMain()
 		{

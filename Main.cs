@@ -20,28 +20,30 @@ namespace bugreport
 			if (args.Length < 1)
 			{
 				Console.WriteLine("Usage: bugreport.exe [--trace] file.test");
-				return;	
+				return;
 			}
 			
 			Boolean isTracing = getTracingOptionFromArguments(args);
-			String[] fileNames = getFileNamesFromArguments(args);	
+			String[] fileNames = getFileNamesFromArguments(args);
 			if (0 == fileNames.Length)
 			{
-			Console.WriteLine("No files found by name specified");
+				Console.WriteLine("No files found by name specified");
 				Environment.Exit(-1);
 			}
 
-			analyzeFiles(fileNames, isTracing);
+			analyzeFiles(fileNames, isTracing);		
 			
-			if (!analyzer.ReportExpectationMet)
-			 {
-			    Console.WriteLine("Expectations Were Not Met");
-			 }
+			if (analyzer.ExpectedReportItems.Count != 0 && (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count) )
+			{
+				Console.WriteLine("Expectations Were Not Met::");
+				Console.WriteLine("Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
+				Environment.Exit(-1);
+			}
 		}
 
 		public static Boolean getTracingOptionFromArguments(String[] _args)
 		{
-			if (_args[0].Equals("--trace")) 
+			if (_args[0].Equals("--trace"))
 			{
 				return true;
 			}
@@ -100,7 +102,7 @@ namespace bugreport
 		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)
 		{
 			foreach(String fileName in _fileNames)
-			{							
+			{
 				Console.WriteLine();
 				Console.WriteLine("Interpreting file: " + fileName);
 				FileStream fileStream;
@@ -124,16 +126,16 @@ namespace bugreport
 				}
 
 				analyzer.Run();
-				IList<ReportItem> reportItems = analyzer.ReportItems;
+				IList<ReportItem> reportItems = analyzer.ActualReportItems;
 				foreach (ReportItem item in reportItems)
 				{
 					String message = String.Empty;
 					if (item.IsTainted)
 						message += "Exploitable ";
 					message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
-					Console.WriteLine(message);					
+					Console.WriteLine(message);
 				}
 			}
 		}
-	} 
+	}
 }
