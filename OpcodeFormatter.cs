@@ -33,6 +33,12 @@ namespace bugreport
 		public static String GetOperands(Byte[] code)
 		{
 			String operands = String.Empty;
+						
+			if (OpcodeHelper.IsRegisterOnlyOperand(code))
+			{
+				String encoding = OpcodeHelper.GetEncoding(code).ToString().ToLower();
+				operands += "e" + encoding[1] + encoding[2];
+			}
 			
 			if (OpcodeHelper.HasModRM(code) )
 			{
