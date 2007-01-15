@@ -166,7 +166,5 @@ namespace bugreport
 			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 			Assert.IsTrue(ModRM.HasOffset(code));	
 		}
-
-
 	}
 }

@@ -274,7 +274,7 @@ namespace bugreport
 							machineState = machineState.DoOperation(ev, index, op, machineState.Registers[gv]);
 							if (value.PointsTo[index].IsOOB)
 								reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, machineState.Registers[gv].IsTainted));
-                        }
+						}
 
 					}
 					else

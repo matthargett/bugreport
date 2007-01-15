@@ -299,6 +299,5 @@ namespace bugreport
 			Assert.IsFalse(OpcodeHelper.HasImmediate(code));
 			OpcodeHelper.GetImmediate(code);
 		}
-
 	}
 }

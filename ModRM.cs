@@ -50,7 +50,7 @@ namespace bugreport
 		public static Byte GetIndex(Byte[] _code)
 		{
 			if (!HasIndex(_code))
-			    throw new InvalidOperationException("For ModRM that does not specify an index, usage of GetIndex is invalid.");
+				throw new InvalidOperationException("For ModRM that does not specify an index, usage of GetIndex is invalid.");
 
 			UInt32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
 			Byte modRM = getModRM(_code);
@@ -59,13 +59,13 @@ namespace bugreport
 			switch (mod)
 			{
 				case 1:
-				{
-					return _code[modRMIndex+1];
-				}
+					{
+						return _code[modRMIndex+1];
+					}
 				default:
-				{
-					throw new NotImplementedException(String.Format("Unsupported Mod: 0x{0:x2}", mod));
-				}
+					{
+						throw new NotImplementedException(String.Format("Unsupported Mod: 0x{0:x2}", mod));
+					}
 			}
 		}
 		
@@ -75,13 +75,15 @@ namespace bugreport
 
 			return !(getMod(modRM) == 3);
 		}
-                                                   
+		
 		public static Boolean HasOffset(Byte[] _code)
 		{
 			if (HasSIB(_code))
-			    return false;
+			{
+				return false;
+			}
 
-			Byte modRM = getModRM(_code);    
+			Byte modRM = getModRM(_code);
 			return (GetEv(_code) == RegisterName.EBP && getMod(modRM) == 0);
 		}
 
@@ -99,7 +101,7 @@ namespace bugreport
 			if (modRMIndex > _code.Length - 1)
 				throw new InvalidOperationException("No ModRM present: " + _code[0].ToString());
 			
-			return _code[modRMIndex];			
+			return _code[modRMIndex];
 		}
 	}
 }

@@ -37,6 +37,5 @@ namespace bugreport
 			Assert.IsFalse(ModRM.HasSIB(code));
 			SIB.GetBaseRegister(code);
 		}
-		
 	}
 }

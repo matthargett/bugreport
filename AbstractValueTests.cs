@@ -9,21 +9,21 @@ namespace bugreport
 {
 	[TestFixture]
 	public class AbstractValueTests
-	{	
+	{
 		AbstractValue pointer;
 		AbstractBuffer buffer;
 		
 		[Test]
-		public void NotInitialized() 
+		public void NotInitialized()
 		{
-			AbstractValue uninit = new AbstractValue();			
+			AbstractValue uninit = new AbstractValue();
 			Assert.IsFalse(uninit.IsInitialized);
 			Assert.AreEqual(AbstractValue.UNKNOWN, uninit.Value);
 			Assert.AreEqual("?", uninit.ToString());
 		}
 		
 		[Test]
-		public void Initialized() 
+		public void Initialized()
 		{
 			AbstractValue uninit = new AbstractValue(0xabcdef);
 			Assert.IsTrue(uninit.IsInitialized);
@@ -117,7 +117,7 @@ namespace bugreport
 		
 		[Test]
 		public void Pointer()
-		{	
+		{
 			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
 			pointer = new AbstractValue(buffer);
 			Assert.AreEqual(2, pointer.PointsTo[0].Value);
@@ -126,7 +126,7 @@ namespace bugreport
 
 		[Test]
 		public void PointerPointer()
-		{	
+		{
 			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
 			pointer = new AbstractValue(buffer);
 			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer});
@@ -136,7 +136,7 @@ namespace bugreport
 
 		[Test]
 		public void PointerPointerPointer()
-		{	
+		{
 			buffer = new AbstractBuffer(new AbstractValue[] {new AbstractValue(2)});
 			pointer = new AbstractValue(buffer);
 			AbstractValue pointerPointer = new AbstractValue(new AbstractValue[] {pointer});
@@ -168,5 +168,5 @@ namespace bugreport
 			
 			Assert.IsTrue(dest.IsOOB);
 		}
-    }
+	}
 }

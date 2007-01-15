@@ -12,14 +12,14 @@ namespace bugreport
 		AbstractBuffer pointsTo;
 		UInt32 storage;
 		Boolean tainted;
-        Boolean isOOB;
+		Boolean isOOB;
 
-        public const UInt32 UNKNOWN = 0xb4dc0d3d;
+		public const UInt32 UNKNOWN = 0xb4dc0d3d;
 		
-        public AbstractValue() {
-        	storage = UNKNOWN;        	
-        }               
-        
+		public AbstractValue() {
+			storage = UNKNOWN;
+		}
+		
 		public AbstractValue(AbstractValue[] _willPointTo)
 		{
 			if (_willPointTo.Length == 0)
@@ -40,7 +40,7 @@ namespace bugreport
 		{
 			this.Value = _copyMe.Value;
 			this.IsTainted = _copyMe.IsTainted;
-            this.IsOOB = _copyMe.IsOOB;
+			this.IsOOB = _copyMe.IsOOB;
 			this.PointsTo = _copyMe.PointsTo;
 		}
 
@@ -56,15 +56,15 @@ namespace bugreport
 			return this.Value == other.Value &&
 				this.IsOOB == other.IsOOB &&
 				this.IsTainted == other.IsTainted &&
-				this.PointsTo == other.PointsTo;			
+				this.PointsTo == other.PointsTo;
 		}
 		public static AbstractValue[] GetNewBuffer(uint size) {
 			AbstractValue[] buffer = new AbstractValue[size];
-			for (uint i = 0; i < size; i++) 
-			{ 
-				buffer[i] = new AbstractValue(); 
+			for (uint i = 0; i < size; i++)
+			{
+				buffer[i] = new AbstractValue();
 			}
-			return buffer;			
+			return buffer;
 		}
 		
 		public AbstractValue TruncateValueToByte()
@@ -110,16 +110,16 @@ namespace bugreport
 			private set { tainted = value; }
 		}
 
-        public Boolean IsOOB
-        {
-            get { return isOOB; }
-            set { isOOB = value; }
-        }
-        
-        public Boolean IsInitialized
-        {
-        	get { return storage != UNKNOWN; }
-        }
+		public Boolean IsOOB
+		{
+			get { return isOOB; }
+			set { isOOB = value; }
+		}
+		
+		public Boolean IsInitialized
+		{
+			get { return storage != UNKNOWN; }
+		}
 		
 		public UInt32 Value
 		{
@@ -139,9 +139,9 @@ namespace bugreport
 			
 			if (tainted)
 				result += "t";
-		
+			
 			UInt32 valueToPrint = this.Value;
-	
+			
 			if (pointsTo != null)
 			{
 				AbstractValue pointer = pointsTo[0];

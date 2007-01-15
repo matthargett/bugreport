@@ -16,7 +16,7 @@ namespace bugreport
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
 	/// </summary>
 	public static class OpcodeHelper
-	{ 
+	{
 		public static OpcodeEncoding GetEncoding(Byte[] _code)
 		{
 			switch (_code[0])
