@@ -230,5 +230,10 @@ namespace bugreport
 
 			return opcodeLength;
 		}
+		
+		public static Boolean IsRegisterOnlyOperand(Byte[] _code)
+		{
+			return (OpcodeHelper.GetEncoding(_code).ToString().StartsWith("r"));
+		}
 	}
 }

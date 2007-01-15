@@ -68,7 +68,8 @@ namespace bugreport
 		{
 			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
 			encoding = OpcodeHelper.GetEncoding(code);
-			Assert.AreEqual(OpcodeEncoding.Jz, encoding);			
+			Assert.AreEqual(OpcodeEncoding.Jz, encoding);	
+			Assert.IsFalse(OpcodeHelper.IsRegisterOnlyOperand(code));
 		}
 		
 		[Test]
@@ -78,6 +79,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
 		}
 		
 		[Test]
