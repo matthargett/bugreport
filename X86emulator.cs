@@ -175,6 +175,7 @@ namespace bugreport
 				case OpcodeEncoding.GvEv:
 				case OpcodeEncoding.GvEb:
 				{
+					AbstractValue sourceValue;
 					ev = ModRM.GetEv(_code);
 					gv = ModRM.GetGv(_code);
 					
@@ -189,10 +190,10 @@ namespace bugreport
 						return machineState;
 					}
 					
-					value = machineState.Registers[ev];
+					sourceValue =  machineState.Registers[ev];
 					if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
-						if (value == null)
+						if (sourceValue == null)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
 
 						index = 0;
@@ -200,15 +201,58 @@ namespace bugreport
 						if (ModRM.HasIndex(_code))
 							index = ModRM.GetIndex(_code);
 						
-						value = value.PointsTo[index];
-						if (value.IsOOB)
+						sourceValue = sourceValue.PointsTo[index];
+						if (sourceValue.IsOOB)
 						{
-							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, value.IsTainted));
+							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
 						}
 					}
 					
-					machineState = machineState.DoOperation(gv, op, value);
+					machineState = machineState.DoOperation(gv, op, sourceValue);
 					return machineState;
+				}
+
+				case OpcodeEncoding.EvGv:
+				case OpcodeEncoding.EbGb:
+				{
+					AbstractValue sourceValue;
+					if (ModRM.HasSIB(_code))
+					{
+						ev = SIB.GetBaseRegister(_code);
+					}
+					else
+						ev = ModRM.GetEv(_code);
+					
+					gv = ModRM.GetGv(_code);
+					sourceValue = machineState.Registers[gv];
+					
+					if (ModRM.IsEffectiveAddressDereferenced(_code))
+					{
+						if (sourceValue == null)
+							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
+
+						index = 0;
+						
+						if (ModRM.HasIndex(_code))
+							index = ModRM.GetIndex(_code);
+						
+						if (ModRM.HasOffset(_code))
+						{
+							throw new InvalidOpcodeException(_code);
+						}
+						else
+						{
+							machineState = machineState.DoOperation(ev, index, op, sourceValue);
+							if (machineState.Registers[ev].PointsTo[index].IsOOB)
+								reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
+						}
+
+					}
+					else
+					{
+						machineState = machineState.DoOperation(ev, op, (RegisterName)gv);
+					}
+					return machineState;							
 				}
 
 				case OpcodeEncoding.GvM:
@@ -242,48 +286,6 @@ namespace bugreport
 					return machineState;
 				}
 					
-				case OpcodeEncoding.EvGv:
-				case OpcodeEncoding.EbGb:
-				{
-					if (ModRM.HasSIB(_code))
-					{
-						ev = SIB.GetBaseRegister(_code);
-					}
-					else
-						ev = ModRM.GetEv(_code);
-					
-					gv = ModRM.GetGv(_code);
-					value = machineState.Registers[ev];
-					
-					if (ModRM.IsEffectiveAddressDereferenced(_code))
-					{
-						if (value == null)
-							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
-
-						index = 0;
-						
-						if (ModRM.HasIndex(_code))
-							index = ModRM.GetIndex(_code);
-						
-						if (ModRM.HasOffset(_code))
-						{
-							throw new InvalidOpcodeException(_code);
-						}
-						else
-						{
-							machineState = machineState.DoOperation(ev, index, op, machineState.Registers[gv]);
-							if (value.PointsTo[index].IsOOB)
-								reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, machineState.Registers[gv].IsTainted));
-						}
-
-					}
-					else
-					{
-						machineState = machineState.DoOperation((RegisterName)ev, op, (RegisterName)gv);
-					}
-					return machineState;							
-				}
-
 				case OpcodeEncoding.ObAL:
 				{
 					UInt32 offset;
