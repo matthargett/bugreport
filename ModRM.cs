@@ -84,7 +84,20 @@ namespace bugreport
 			}
 
 			Byte modRM = getModRM(_code);
-			return (GetEv(_code) == RegisterName.EBP && getMod(modRM) == 0);
+			return (GetRM(modRM) == 5 && getMod(modRM) == 0);
+		}
+		
+		public static UInt32 GetOffset(Byte[] code)
+		{
+			Byte offsetBeginsAt = OpcodeHelper.GetOpcodeLength(code);
+			offsetBeginsAt++; // for modRM byte
+			
+			if (HasSIB(code))
+			{
+			    offsetBeginsAt++;
+			}
+			
+			return BitMath.BytesToDword(code, offsetBeginsAt);
 		}
 
 		public static Boolean HasSIB(Byte[] _code)
