@@ -175,26 +175,21 @@ namespace bugreport
 				case OpcodeEncoding.GvEv:
 				case OpcodeEncoding.GvEb:
 				{
+					RegisterName sourceRegister, destinationRegister;
 					AbstractValue sourceValue;
-					ev = ModRM.GetEv(_code);
-					gv = ModRM.GetGv(_code);
+					sourceRegister = ModRM.GetEv(_code);
+					destinationRegister = ModRM.GetGv(_code);
+					sourceValue =  machineState.Registers[sourceRegister];
 					
 					if (ModRM.HasOffset(_code))
 					{
-						Byte offsetBeginsAt = OpcodeHelper.GetOpcodeLength(_code);
-						offsetBeginsAt++; // for modRM byte
-						
-						UInt32 offset = BitMath.BytesToDword(_code, offsetBeginsAt);
-						value = machineState.DataSegment[offset];
-						machineState = machineState.DoOperation(gv, op, value);
-						return machineState;
+						UInt32 offset = ModRM.GetOffset(_code);
+						sourceValue = machineState.DataSegment[offset];
 					}
-					
-					sourceValue =  machineState.Registers[ev];
-					if (ModRM.IsEffectiveAddressDereferenced(_code))
+					else if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						if (sourceValue == null)
-							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
+							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", sourceRegister));
 
 						index = 0;
 						
@@ -208,49 +203,46 @@ namespace bugreport
 						}
 					}
 					
-					machineState = machineState.DoOperation(gv, op, sourceValue);
+					machineState = machineState.DoOperation(destinationRegister, op, sourceValue);
 					return machineState;
 				}
 
 				case OpcodeEncoding.EvGv:
 				case OpcodeEncoding.EbGb:
 				{
+					RegisterName sourceRegister, destinationRegister;
 					AbstractValue sourceValue;
 					if (ModRM.HasSIB(_code))
 					{
-						ev = SIB.GetBaseRegister(_code);
+						destinationRegister = SIB.GetBaseRegister(_code);
 					}
 					else
-						ev = ModRM.GetEv(_code);
+						destinationRegister = ModRM.GetEv(_code);
 					
-					gv = ModRM.GetGv(_code);
-					sourceValue = machineState.Registers[gv];
-					
-					if (ModRM.IsEffectiveAddressDereferenced(_code))
+					sourceRegister = ModRM.GetGv(_code);
+					sourceValue = machineState.Registers[sourceRegister];
+					if (ModRM.HasOffset(_code))
+					{
+						UInt32 offset = ModRM.GetOffset(_code);
+						machineState.DataSegment[offset] = sourceValue;
+					}
+					else if (ModRM.IsEffectiveAddressDereferenced(_code))
 					{
 						if (sourceValue == null)
-							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", ev));
+							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", destinationRegister));
 
 						index = 0;
 						
 						if (ModRM.HasIndex(_code))
 							index = ModRM.GetIndex(_code);
 						
-						if (ModRM.HasOffset(_code))
-						{
-							throw new InvalidOpcodeException(_code);
-						}
-						else
-						{
-							machineState = machineState.DoOperation(ev, index, op, sourceValue);
-							if (machineState.Registers[ev].PointsTo[index].IsOOB)
-								reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
-						}
-
+						machineState = machineState.DoOperation(destinationRegister, index, op, sourceValue);
+						if (machineState.Registers[destinationRegister].PointsTo[index].IsOOB)
+							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
 					}
 					else
 					{
-						machineState = machineState.DoOperation(ev, op, (RegisterName)gv);
+						machineState = machineState.DoOperation(destinationRegister, op, sourceRegister);
 					}
 					return machineState;							
 				}
