@@ -3,6 +3,7 @@
 // See LICENSE.txt for details.
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 
 namespace bugreport
@@ -19,15 +20,15 @@ namespace bugreport
 		
 		public static String FormatOpcodes(params Byte[] _code)
 		{
-			String message = "Invalid opcode: ";
+			StringBuilder message = new StringBuilder("Invalid opcode: ");
 			
 			
 			foreach (Byte opcode in _code)
 			{
-				message += String.Format(" 0x{0:x2}", opcode);
+				message.Append(String.Format(" 0x{0:x2}", opcode));
 			}
 		
-			return message;
+			return message.ToString();
 		}
 	}
 

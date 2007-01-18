@@ -7,6 +7,27 @@ namespace bugreport
 	{
 		public AbstractValue Value;
 		public Boolean ZeroFlag;
+		
+		public override bool Equals(object obj)
+		{
+			OperationResult opResult = (OperationResult)obj;
+			return (this.Value == opResult.Value) && (this.ZeroFlag == opResult.ZeroFlag);
+		}
+		
+		public override int GetHashCode()
+		{
+			return this.Value.GetHashCode() ^ this.ZeroFlag.GetHashCode();
+		}
+		
+		public static bool operator== (OperationResult a, OperationResult b)
+		{
+			return a.Equals(b);
+		}
+		
+		public static bool operator!= (OperationResult a, OperationResult b)
+		{
+			return !a.Equals(b);
+		}
 	}
 	
 	public struct MachineState
@@ -31,6 +52,34 @@ namespace bugreport
 			this.dataSegment = new Dictionary<UInt32, AbstractValue>(_copyMe.dataSegment);
 			this.zeroFlag = _copyMe.zeroFlag;
 		}
+		
+		public override bool Equals(object obj)
+		{
+			MachineState machine = (MachineState)obj;
+			return (this.instructionPointer == machine.instructionPointer) &&
+				(this.registers == machine.registers) &&
+				(this.dataSegment == machine.dataSegment) &&
+				(this.zeroFlag == machine.zeroFlag);
+		}
+		
+		public override int GetHashCode()
+		{
+			return this.instructionPointer.GetHashCode() ^
+				this.registers.GetHashCode() ^
+				this.dataSegment.GetHashCode() ^
+				this.zeroFlag.GetHashCode();
+		}
+		
+		public static bool operator== (MachineState a, MachineState b)
+		{
+			return a.Equals(b);
+		}
+		
+		public static bool operator!= (MachineState a, MachineState b)
+		{
+			return !a.Equals(b);
+		}
+		
 		public Boolean ZeroFlag
 		{
 			get { return zeroFlag; }
@@ -301,6 +350,6 @@ namespace bugreport
 				default:
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
 			}
-		}		
+		}
 	}
 }
