@@ -3,6 +3,7 @@
 // See LICENSE.txt for details.
 
 using System;
+using System.Text;
 using NUnit.Framework;
 
 namespace bugreport
@@ -23,7 +24,7 @@ namespace bugreport
 		public AbstractValue(AbstractValue[] _willPointTo)
 		{
 			if (_willPointTo.Length == 0)
-				throw new ArgumentException("_willPointTo", "Empty buffer is not allowed");
+				throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
 			storage = 0xdeadbeef;
 			pointsTo = new AbstractBuffer(_willPointTo);
 		}
@@ -31,7 +32,7 @@ namespace bugreport
 		public AbstractValue(AbstractBuffer _willPointTo)
 		{
 			if (_willPointTo.Length == 0)
-				throw new ArgumentException("_willPointTo", "Empty buffer is not allowed");
+				throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
 			storage = 0xdeadbeef;
 			pointsTo = new AbstractBuffer(_willPointTo);
 		}
@@ -58,6 +59,13 @@ namespace bugreport
 				this.IsTainted == other.IsTainted &&
 				this.PointsTo == other.PointsTo;
 		}
+		
+		public override int GetHashCode()
+		{
+			return this.Value.GetHashCode() ^ this.IsOOB.GetHashCode() ^
+				this.IsTainted.GetHashCode() ^ this.PointsTo.GetHashCode();
+		}
+		
 		public static AbstractValue[] GetNewBuffer(uint size) {
 			AbstractValue[] buffer = new AbstractValue[size];
 			for (uint i = 0; i < size; i++)
@@ -145,9 +153,11 @@ namespace bugreport
 			if (pointsTo != null)
 			{
 				AbstractValue pointer = pointsTo[0];
+				
+				StringBuilder newResult = new StringBuilder(result);
 				while (pointer != null)
 				{
-					result += "*";
+					newResult.Append("*");
 					
 					if (pointer.PointsTo != null)
 					{
@@ -159,6 +169,7 @@ namespace bugreport
 						pointer = null;
 					}
 				}
+				result = newResult.ToString();
 			}
 			
 			if (valueToPrint != UNKNOWN)
