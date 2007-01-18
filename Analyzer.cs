@@ -18,6 +18,9 @@ namespace bugreport
 			this.InstructionPointer = instructionPointer;
 			this.IsTainted = isTainted;
 		}
+		
+		
+		
 	}
 
 	public class Analyzer
