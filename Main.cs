@@ -67,7 +67,7 @@ namespace bugreport
 			return fileNames;
 		}
 
-		public static void printInfo(MachineState state, Byte[] code)
+		public static void printInfo(object sender, EventArgs e, MachineState state, Byte[] code)
 		{
 			String address = String.Format("{0:x8}", state.InstructionPointer);
 			Console.Write(address + ":");

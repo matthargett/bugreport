@@ -11,11 +11,18 @@ using System.Collections.Generic;
 namespace bugreport
 {
 	[TestFixture]
-	public class AnalyzerTests
+	public class AnalyzerTests : IDisposable
 	{
 		Analyzer analyzer;
 		Byte[] code = new Byte[] { 0x90 }; 
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
+		
+		public void Dispose()
+		{
+				if(null != stream)
+					stream.Dispose();
+				return;
+		}
 		
 		private class FakeAnalyzer : Analyzer
 		{
@@ -23,7 +30,7 @@ namespace bugreport
 			ReportItem reportItem = new ReportItem(0, false);
 			private UInt32 expectedReportItemCount;
 			private UInt32 actualReportItemCount;			
-
+			
 			public FakeAnalyzer(Stream stream, UInt32 expectedReportItemCount, UInt32 actualReportItemCount) : base (stream) 
 			{
 				this.expectedReportItemCount = expectedReportItemCount;
@@ -74,7 +81,7 @@ namespace bugreport
 			Assert.AreEqual(0, analyzer.ActualReportItems.Count);
 		}
 
-		private void onEmulation(MachineState state, Byte[] code)
+		private void onEmulation(object sender, EventArgs e, MachineState state, Byte[] code)
 		{
 			Assert.AreEqual(0x90, code[0]);
 		}	

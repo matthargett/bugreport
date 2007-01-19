@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace bugreport
 {
@@ -25,7 +26,7 @@ namespace bugreport
 			return this.InstructionPointer == report.InstructionPointer &&
 				this.IsTainted == report.IsTainted;
 		}
-	
+		
 		public override int GetHashCode()
 		{
 			return this.InstructionPointer.GetHashCode() ^ this.IsTainted.GetHashCode();
@@ -44,49 +45,49 @@ namespace bugreport
 
 	public class Analyzer
 	{
-		public delegate void EmulationComplete(MachineState state, Byte[] code);
-		public event EmulationComplete OnEmulationComplete; 
+		public delegate void EmulationComplete(object sender, EventArgs e, MachineState state, Byte[] code);
+		public event EmulationComplete OnEmulationComplete;
 
 		protected List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
-		private IParsable parser;		
+		private IParsable parser;
 
 		public Analyzer(Stream stream)
 		{
 			if (null == stream)
 				throw new ArgumentNullException("stream");
 			
-			this.stream = stream;			
+			this.stream = stream;
 		}
 
-		public List<ReportItem> ActualReportItems
+		public ReadOnlyCollection<ReportItem> ActualReportItems
 		{
 			get
 			{
-				return reportItems;
+				return new ReadOnlyCollection<ReportItem>(reportItems);
 			}
 		}
 		
-		public List<ReportItem> ExpectedReportItems
+		public ReadOnlyCollection<ReportItem> ExpectedReportItems
 		{
 			get
 			{
-				return parser.ExpectedReportItem;
+				return new ReadOnlyCollection<ReportItem>(parser.ExpectedReportItem);
 			}
-		}	
-				
+		}
+		
 		private static RegisterCollection getRegistersForLinuxMain()
 		{
 			RegisterCollection linuxMainDefaultValues = new RegisterCollection();
-				
+			
 			AbstractValue arg0 = new AbstractValue(1).AddTaint();
 			
 			AbstractValue[] argvBuffer = new AbstractValue[] {arg0};
 			AbstractValue argvPointer = new AbstractValue(argvBuffer);
 			AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
 			AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
-			AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);				
-							
+			AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);
+			
 			AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
 			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
 			
@@ -94,7 +95,7 @@ namespace bugreport
 			modifiedBuffer[12] = argvPointerPointer;
 
 			// gcc generates code that accesses this at some optimization levels
-			modifiedBuffer[0xfc] = new AbstractValue(1); 
+			modifiedBuffer[0xfc] = new AbstractValue(1);
 			
 			AbstractValue stackPointer = new AbstractValue(modifiedBuffer);
 			linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
@@ -114,9 +115,9 @@ namespace bugreport
 			return new DumpFileParser(_stream);
 		}
 
-		public void Run() 
+		public void Run()
 		{
-			parser = createFileParser(stream);			
+			parser = createFileParser(stream);
 			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
 
@@ -127,7 +128,7 @@ namespace bugreport
 				machineState = runCode(machineState, instructionBytes);
 				if (null != this.OnEmulationComplete)
 				{
-					OnEmulationComplete(machineState, instructionBytes);
+					OnEmulationComplete(this, null, machineState, instructionBytes);
 				}
 			}
 		}
