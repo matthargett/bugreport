@@ -30,7 +30,7 @@ namespace bugreport
 		}
 	}
 	
-	public class DumpFileParser : IParsable
+	public class DumpFileParser : IParsable, IDisposable
 	{
 		private Stream stream;
 		private StreamReader reader;
@@ -46,10 +46,16 @@ namespace bugreport
 			stream = _stream;
 			stream.Position = 0;
 			reader = new StreamReader(stream);
-			inMain = false;
 			expectedReportItems = new List<ReportItem>();
 			lines = new List<string>();
 			opCodeList = parse();
+		}
+		
+		public void Dispose()
+		{
+			if(null != reader)
+				reader.Dispose();
+			return;
 		}
 		
 		public String CurrentLine

@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace bugreport.DumpFileParserTests
 {
-	public abstract class DumpFileParserFixture
+	public abstract class DumpFileParserFixture : IDisposable
 	{
 		protected StreamWriter writer;
 		protected DumpFileParser parser;
@@ -18,6 +18,17 @@ namespace bugreport.DumpFileParserTests
 		{
 			stream = new MemoryStream();
 			writer = new StreamWriter(stream);
+		}
+		
+		public void Dispose()
+		{
+			if(null != writer)
+				writer.Dispose();
+			
+			if(null != stream)
+				stream.Dispose();
+			
+			return;
 		}
 	}
 	
