@@ -11,18 +11,11 @@ using System.Collections.Generic;
 namespace bugreport
 {
 	[TestFixture]
-	public class AnalyzerTests : IDisposable
+	public sealed class AnalyzerTests : IDisposable
 	{
 		Analyzer analyzer;
 		Byte[] code = new Byte[] { 0x90 }; 
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
-		
-		public void Dispose()
-		{
-				if(null != stream)
-					stream.Dispose();
-				return;
-		}
 		
 		private class FakeAnalyzer : Analyzer
 		{
@@ -60,8 +53,8 @@ namespace bugreport
 				{
 					reportItemList.Add(reportItem);
 				}
-				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList, null);
-				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList, null);
+				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList.AsReadOnly(), null);
+				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList.AsReadOnly(), null);
 				return control.MockInstance as IParsable;
 			}
 		}
@@ -81,15 +74,15 @@ namespace bugreport
 			Assert.AreEqual(0, analyzer.ActualReportItems.Count);
 		}
 
-		private void onEmulation(object sender, EventArgs e, MachineState state, Byte[] code)
+		private void onEmulation(object sender, EmulationEventArgs e)
 		{
-			Assert.AreEqual(0x90, code[0]);
+			Assert.AreEqual(0x90, e.Code[0]);
 		}	
 
 		[Test]
 		public void WithReportItems()
 		{
-			analyzer = new FakeAnalyzer(stream,1 ,1);
+			analyzer = new FakeAnalyzer(stream, 1 ,1);
 			analyzer.OnEmulationComplete += onEmulation;
 			analyzer.Run();
 			Assert.AreEqual(1, analyzer.ActualReportItems.Count);
@@ -105,6 +98,14 @@ namespace bugreport
 			analyzer = new FakeAnalyzer(stream, 2, 3);
 			analyzer.Run();
 			Assert.AreNotEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);	
+		}
+		
+		public void Dispose()
+		{
+			if(null != stream)
+			{
+				stream.Dispose();
+			}
 		}
 	}
 }

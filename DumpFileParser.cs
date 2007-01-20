@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Globalization;
 
@@ -17,20 +18,15 @@ namespace bugreport
 			get;
 		}
 		
-		List<ReportItem> ExpectedReportItem
+		ReadOnlyCollection<ReportItem> ExpectedReportItem
 		{
 			get;
 		}
 		
 		Byte [] GetNextInstructionBytes();
-		
-		String CurrentLine
-		{
-			get;
-		}
 	}
 	
-	public class DumpFileParser : IParsable, IDisposable
+	public sealed class DumpFileParser : IParsable, IDisposable
 	{
 		private Stream stream;
 		private StreamReader reader;
@@ -39,7 +35,6 @@ namespace bugreport
 		private List<Byte[]> opCodeList;
 		private Int32 index = -1;
 		private List<ReportItem> expectedReportItems;
-		private List<string> lines;
 
 		public DumpFileParser(Stream _stream)
 		{
@@ -47,27 +42,14 @@ namespace bugreport
 			stream.Position = 0;
 			reader = new StreamReader(stream);
 			expectedReportItems = new List<ReportItem>();
-			lines = new List<string>();
 			opCodeList = parse();
 		}
 		
 		public void Dispose()
 		{
 			if(null != reader)
-				reader.Dispose();
-			return;
-		}
-		
-		public String CurrentLine
-		{
-			get
 			{
-				if (index == -1)
-				{
-					throw new InvalidOperationException("No Previous Line Read.");
-				}
-
-				return lines[index];
+				reader.Dispose();
 			}
 		}
 		
@@ -89,11 +71,11 @@ namespace bugreport
 			}
 		}
 
-		public List<ReportItem> ExpectedReportItem
+		public ReadOnlyCollection<ReportItem> ExpectedReportItem
 		{
 			get
 			{
-				return expectedReportItems;
+				return expectedReportItems.AsReadOnly();
 			}
 		}
 		
@@ -170,7 +152,7 @@ namespace bugreport
 		private List<Byte[]> parse()
 		{
 			Byte[] opCode;
-			List<Byte[]> opCodeList = new List<byte[]>();
+			List<Byte[]> opCodeList = new List<Byte[]>();
 
 			while (!reader.EndOfStream)
 			{
@@ -187,7 +169,6 @@ namespace bugreport
 					if (opCode != null)
 					{
 						opCodeList.Add(getHexFromString(currentLine));
-						lines.Add(currentLine);
 					}
 				}
 			}
@@ -207,7 +188,5 @@ namespace bugreport
 			Boolean exploitable = Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex)-"/>".Length));
 			return new ReportItem(location, exploitable);
 		}
-
 	}
-	
 }

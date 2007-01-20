@@ -20,6 +20,7 @@ namespace bugreport.DumpFileParserTests
 			writer = new StreamWriter(stream);
 		}
 		
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
 		public void Dispose()
 		{
 			if(null != writer)
@@ -41,15 +42,7 @@ namespace bugreport.DumpFileParserTests
 			base.SetUp();
 		}
 		
-		[Test]
-		[ExpectedException(typeof(InvalidOperationException))]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "none")]
-		public void CurrentLineBeforeFirstBytes()
-		{
-			parser = new DumpFileParser(stream);
-			String none = parser.CurrentLine;
-		}
-		
+
 		[Test]
 		public void EmptyLine()
 		{
@@ -91,19 +84,6 @@ namespace bugreport.DumpFileParserTests
 			Byte[] code = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0xc3, code[0]);
 			Assert.AreEqual(0, parser.ExpectedReportItem.Count);
-		}
-
-		[Test]
-		public void CurrentLine()
-		{
-			const String line = " 8048399:	c3                   	ret    ";
-			writer.WriteLine(line);
-			writer.WriteLine(" 8048400:	9A                   	nop    ");
-			writer.Flush();
-			parser = new DumpFileParser(stream);
-
-			parser.GetNextInstructionBytes();
-			Assert.AreEqual(line, parser.CurrentLine);
 		}
 
 		[Test]

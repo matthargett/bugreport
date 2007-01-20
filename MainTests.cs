@@ -90,7 +90,7 @@ namespace bugreport
 
 				try
 				{
-					if (String.Empty == expectedOutput) 
+					if (String.IsNullOrEmpty(expectedOutput))
 					{
 						Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
 					} 

@@ -6,7 +6,7 @@ using System;
 
 namespace bugreport
 {
-	public class OpcodeFormatter
+	public static class OpcodeFormatter
 	{
 		public static String GetInstructionName(Byte[] code)
 		{

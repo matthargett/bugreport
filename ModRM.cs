@@ -10,27 +10,29 @@ namespace bugreport
 	public static class ModRM
 	{
 		
-		private static Byte getMod(Byte _modrmByte)
+		private static Byte getMod(Byte modrm)
 		{
-			return (Byte)((_modrmByte >> 6) & 3);
+			return (Byte)((modrm >> 6) & 3);
 		}
 		
-		public static Byte GetRM(Byte _modrmByte)
+		public static Byte GetRM(Byte modrm)
 		{
-			return (Byte)(_modrmByte & 7);
+			return (Byte)(modrm & 7);
 		}
-		public static RegisterName GetEv(Byte[] _code)
+		public static RegisterName GetEv(Byte[] code)
 		{
-			if (HasSIB(_code))
+			if (HasSIB(code))
+			{
 				throw new InvalidOperationException("For ModRM that specifies SIB byte, usage of GetEv is invalid.");
+			}
 			
-			Byte modRM = getModRM(_code);
+			Byte modRM = getModRM(code);
 			return (RegisterName)(modRM & 7);
 		}
 
-		public static RegisterName GetGv(Byte[] _code)
+		public static RegisterName GetGv(Byte[] code)
 		{
-			Byte modRM = getModRM(_code);
+			Byte modRM = getModRM(code);
 			return (RegisterName)((modRM >> 3) & 7);
 		}
 		

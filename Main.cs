@@ -4,11 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace bugreport
 {
-	public class MainClass
+	public static class MainClass
 	{
 		const String VERSION = "0.1";
 		static Analyzer analyzer;
@@ -67,8 +68,11 @@ namespace bugreport
 			return fileNames;
 		}
 
-		public static void printInfo(object sender, EventArgs e, MachineState state, Byte[] code)
+		public static void printInfo(object sender, EmulationEventArgs e)
 		{
+			Byte[] code = new Byte[e.Code.Count];
+			e.Code.CopyTo(code, 0);
+			MachineState state = e.MachineState;
 			String address = String.Format("{0:x8}", state.InstructionPointer);
 			Console.Write(address + ":");
 			Console.Write("\t");

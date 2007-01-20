@@ -3,12 +3,12 @@
 // See LICENSE.txt for details.
 
 using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 
 namespace bugreport
 {
-	public class InvalidOpcodeException : ApplicationException
+	public class InvalidOpcodeException : Exception
 	{
 		public InvalidOpcodeException(String message, params Byte[] _code) : base(String.Concat(message, "  ", FormatOpcodes(_code)))
 		{
@@ -34,7 +34,7 @@ namespace bugreport
 
 	public static class X86emulator
 	{
-		public static MachineState Run(List<ReportItem> reportItemCollector, MachineState _machineState, Byte[] _code)
+		public static MachineState Run(ICollection<ReportItem> reportItemCollector, MachineState _machineState, Byte[] _code)
 		{
 			if (_code.Length == 0)
 				throw new ArgumentException("_code", "Empty array not allowed.");
@@ -44,7 +44,7 @@ namespace bugreport
 			return afterState;
 		}
 
-		private static MachineState emulateOpcode(List<ReportItem> reportItemCollector, MachineState _machineState, Byte[] _code)
+		private static MachineState emulateOpcode(ICollection<ReportItem> reportItemCollector, MachineState _machineState, Byte[] _code)
 		{
 			MachineState machineState = _machineState;
 			RegisterName ev, gv;
