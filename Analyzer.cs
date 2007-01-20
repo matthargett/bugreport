@@ -42,11 +42,32 @@ namespace bugreport
 			return !a.Equals(b);
 		}
 	}
+	
+	public class EmulationEventArgs : EventArgs
+	{
+		private MachineState state;
+		private ReadOnlyCollection<Byte> code;
+		
+		public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code) : base()
+		{
+			this.state = state;
+			this.code = code;
+		}
+		
+		public MachineState MachineState
+		{
+			get { return state; }
+		}
+		
+		public ReadOnlyCollection<Byte> Code
+		{
+			get { return code; }
+		}
+	}
 
 	public class Analyzer
 	{
-		public delegate void EmulationComplete(object sender, EventArgs e, MachineState state, Byte[] code);
-		public event EmulationComplete OnEmulationComplete;
+		public EventHandler<EmulationEventArgs> OnEmulationComplete;
 
 		protected List<ReportItem> reportItems = new List<ReportItem>();
 		private Stream stream;
@@ -64,7 +85,7 @@ namespace bugreport
 		{
 			get
 			{
-				return new ReadOnlyCollection<ReportItem>(reportItems);
+				return reportItems.AsReadOnly();
 			}
 		}
 		
@@ -72,7 +93,7 @@ namespace bugreport
 		{
 			get
 			{
-				return new ReadOnlyCollection<ReportItem>(parser.ExpectedReportItem);
+				return parser.ExpectedReportItem;
 			}
 		}
 		
@@ -128,7 +149,7 @@ namespace bugreport
 				machineState = runCode(machineState, instructionBytes);
 				if (null != this.OnEmulationComplete)
 				{
-					OnEmulationComplete(this, null, machineState, instructionBytes);
+					OnEmulationComplete(this, new EmulationEventArgs(machineState, new ReadOnlyCollection<Byte>(instructionBytes)));
 				}
 			}
 		}
