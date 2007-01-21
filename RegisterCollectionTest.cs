@@ -10,26 +10,40 @@ namespace bugreport
 	[TestFixture]
 	public class RegisterCollectionTest
 	{
-		RegisterCollection collection;
+		RegisterCollection registers;
 		
 		[SetUp]
 		public void SetUp()
 		{
-			 collection = new RegisterCollection();
+			 registers = new RegisterCollection();
+		}
+		
+		[Test]
+		public void Copy()
+		{
+			registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
+			RegisterCollection newRegisters = new RegisterCollection(registers);
+			foreach (RegisterName register in Enum.GetValues(typeof(RegisterName))) 
+			{
+				Assert.AreNotSame(newRegisters[register], registers[register]);
+			}
+			
+			Assert.AreNotSame(newRegisters[RegisterName.ESP].PointsTo, registers[RegisterName.ESP].PointsTo);
 		}
 		
 		[Test]
 		public void DefaultRegistersContainUninitializedValues() 
 		{
-			foreach (RegisterName register in RegisterName.GetValues(typeof(RegisterName))) {
-				Assert.IsFalse(collection[register].IsInitialized);
+			foreach (RegisterName register in RegisterName.GetValues(typeof(RegisterName))) 
+			{
+				Assert.IsFalse(registers[register].IsInitialized);
 			}			
 		}
 		
 		[Test]
 		public void ToStringOutput()
 		{
-			StringAssert.StartsWith("EAX=?", collection.ToString());
+			StringAssert.StartsWith("EAX=?", registers.ToString());
 		}
 	}
 }

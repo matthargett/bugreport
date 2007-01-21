@@ -9,25 +9,37 @@ namespace bugreport
 
 	public static class SIB
 	{
-		private static Byte getIndex(Byte[] _code)
+		private static Byte getIndex(Byte[] code)
 		{
-			return (Byte)((getSIB(_code) >> 3) & 7);
+			return (Byte)((getSIB(code) >> 3) & 7);
 		}
 		
-		private static Byte getSIB(Byte[] _code)
+		private static Byte getSIB(Byte[] code)
 		{
-			return _code[OpcodeHelper.GetOpcodeLength(_code) + 1];
+			return code[OpcodeHelper.GetOpcodeLength(code) + 1];
 		}
 		
-		public static RegisterName GetBaseRegister(Byte[] _code)
+		public static RegisterName GetBaseRegister(Byte[] code)
 		{
-			if (!ModRM.HasSIB(_code))
-			    throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
+			if (!ModRM.HasSIB(code))
+			{
+				throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
+			}
 
-			if (getIndex(_code) != 0x4)
+			if (getIndex(code) != 0x4)
+			{
 				throw new NotImplementedException("GetBaseRegister only supports scaler of none.");
-			Byte sib = getSIB(_code);
-			return (RegisterName)(sib & 7);
+			}
+			
+			Byte sib = getSIB(code);
+			RegisterName register = (RegisterName)(sib & 7);
+			
+			if (RegisterName.ESP != register)
+			{
+				// TODO: this check can be removed once tests are in place
+				throw new NotImplementedException("SIB currently only supports ESP, this register was attempted: " + register);
+			}
+			return register;
 		}
 	}
 }

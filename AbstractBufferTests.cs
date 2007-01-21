@@ -21,6 +21,20 @@ namespace bugreport
 		}
 
 		[Test]
+		public void Copy()
+		{
+			AbstractValue[] values = AbstractValue.GetNewBuffer(4);	
+			AbstractBuffer buffer = new AbstractBuffer(values);
+			AbstractBuffer newBuffer = new AbstractBuffer(buffer);
+			Assert.AreNotSame(newBuffer, buffer);
+			
+			for (Int32 index =0; index < newBuffer.Length; index++)
+			{
+				Assert.AreNotSame(newBuffer[index], buffer[index]);
+			}
+		}
+		
+		[Test]
 		public void PointerAdd()
 		{
 			AbstractValue one = new AbstractValue(0x1);

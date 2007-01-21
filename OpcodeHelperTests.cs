@@ -51,7 +51,8 @@ namespace bugreport
 		{
 			code = new Byte[] {0xb8, 0x00, 0x00, 0x00, 0x00};
 			encoding = OpcodeHelper.GetEncoding(code);
-			Assert.AreEqual(OpcodeEncoding.rAxIv, encoding);			
+			Assert.AreEqual(OpcodeEncoding.rAxIv, encoding);
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
 		}
 
 		[Test]
@@ -59,7 +60,8 @@ namespace bugreport
 		{
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			encoding = OpcodeHelper.GetEncoding(code);
-			Assert.AreEqual(OpcodeEncoding.EvIz, encoding);			
+			Assert.AreEqual(OpcodeEncoding.EvIz, encoding);
+			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetDestinationRegister(code));
 			Assert.AreEqual(0x10, OpcodeHelper.GetImmediate(code));
 		}
 		
@@ -79,6 +81,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetDestinationRegister(code));
 			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
 		}
 		
@@ -89,6 +92,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
 		}
 		
 		[Test]
@@ -98,6 +102,8 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EBX, OpcodeHelper.GetDestinationRegister(code));
+			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
 		}
 
 		[Test]
@@ -107,6 +113,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
 		}
 		
 		[Test]

@@ -9,30 +9,8 @@ namespace bugreport
 	{
 		MachineState state;
 		AbstractValue one = new AbstractValue(1), two = new AbstractValue(2).AddTaint();
-		
-		
-		[SetUp]
-		public void SetUp()
-		{
-			state = new MachineState(new RegisterCollection());
-		}
-		
-		[Ignore("TODO")]
-		[Test]
-		public void Equal()
-		{
-			MachineState a = new MachineState(new RegisterCollection());
-			MachineState b = new MachineState(new RegisterCollection());
-			Assert.AreEqual(a, b);
-		}
-	
-		[Test]
-		[Ignore("TODO")]
-		public void NotEqual()
-		{
-		}
-		
-		private AbstractValue eax 
+
+		private AbstractValue eax
 		{
 			get { return state.Registers[RegisterName.EAX]; }
 			set { state.Registers[RegisterName.EAX] = value; }
@@ -42,6 +20,24 @@ namespace bugreport
 		{
 			get { return state.Registers[RegisterName.EBX]; }
 			set { state.Registers[RegisterName.EBX] = value; }
+		}
+		
+		[SetUp]
+		public void SetUp()
+		{
+			state = new MachineState(new RegisterCollection());
+		}
+		
+		[Test]
+		public void Copy()
+		{
+			state.Registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
+			MachineState newState = new MachineState(state);
+			Assert.AreNotSame(newState, state);
+			Assert.AreNotSame(newState.Registers, state.Registers);
+			Assert.AreNotSame(newState.DataSegment, state.DataSegment);
+			Assert.AreNotSame(newState.ReturnValue, state.ReturnValue);
+			Assert.AreNotSame(newState.TopOfStack, state.TopOfStack);
 		}
 		
 		[Test]
@@ -153,7 +149,11 @@ namespace bugreport
 			Assert.AreEqual(one, eax.PointsTo[0]);
 			
 			AbstractValue andValue = new AbstractValue(0xfffffff0);
-			state = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
+			MachineState newState = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
+			Assert.AreNotSame(newState, state);
+			Assert.AreNotEqual(newState, state);
+			
+			state = newState;
 			Assert.AreEqual(one, eax.PointsTo[4]);		
 		}
 		
