@@ -34,19 +34,19 @@ namespace bugreport
 
 	public static class X86emulator
 	{
-		public static MachineState Run(ICollection<ReportItem> reportItemCollector, MachineState _machineState, Byte[] code)
+		public static MachineState Run(ICollection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
 		{
 			if (code.Length == 0)
 				throw new ArgumentException("code", "Empty array not allowed.");
 			
-			MachineState afterState = emulateOpcode(reportItemCollector, _machineState, code);
+			MachineState afterState = emulateOpcode(reportItemCollector, machineState, code);
 			afterState.InstructionPointer += (UInt32)code.Length;
 			return afterState;
 		}
 
-		private static MachineState emulateOpcode(ICollection<ReportItem> reportItemCollector, MachineState _machineState, Byte[] code)
+		private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, MachineState machineState, Byte[] code)
 		{
-			MachineState machineState = _machineState;
+			MachineState state = machineState;
 			RegisterName sourceRegister, destinationRegister;
 			AbstractValue sourceValue;
 			Byte index;
@@ -64,14 +64,14 @@ namespace bugreport
 				{
 					destinationRegister = OpcodeHelper.GetDestinationRegister(code);
 					UInt32 immediate = OpcodeHelper.GetImmediate(code);
-					machineState = machineState.DoOperation(destinationRegister, op, new AbstractValue(immediate));
-					return machineState;
+					state = state.DoOperation(destinationRegister, op, new AbstractValue(immediate));
+					return state;
 				}
 
 				case OpcodeEncoding.rAxOv:
 				{
-					machineState.Registers[RegisterName.EAX] = machineState.DataSegment[BitMath.BytesToDword(code, 1)];
-					return machineState;
+					state.Registers[RegisterName.EAX] = state.DataSegment[BitMath.BytesToDword(code, 1)];
+					return state;
 				}
 
 				case OpcodeEncoding.rBP:
@@ -82,47 +82,27 @@ namespace bugreport
 						case StackEffect.Pop:
 						{	
 							destinationRegister = OpcodeHelper.GetDestinationRegister(code);
-							machineState.Registers[destinationRegister] = machineState.TopOfStack;
+							state.Registers[destinationRegister] = state.TopOfStack;
 							break;
 						}
 						case StackEffect.Push:
 						{
 							sourceRegister = OpcodeHelper.GetDestinationRegister(code);
-							machineState.TopOfStack = machineState.Registers[sourceRegister];
+							state.TopOfStack = state.Registers[sourceRegister];
 							break;
 						}
-						default:
-							throw new NotImplementedException("rBX only supports push and pop");
 					}
 
-					return machineState;
+					return state;
 				}
+
 				case OpcodeEncoding.EvIz:
-				{
-					if (!ModRM.IsEffectiveAddressDereferenced(code))
-					{
-						// TODO: this can be removed when other cases are driven with tests
-						throw new NotImplementedException("EvIz currently supports only dereferenced Ev.");
-					}
-				
-					index = 0;
-					if (ModRM.HasIndex(code)) 
-					{
-						index = ModRM.GetIndex(code);
-					}
-					
-					destinationRegister = OpcodeHelper.GetDestinationRegister(code);
-					sourceValue = new AbstractValue(OpcodeHelper.GetImmediate(code));
-					
-					machineState = machineState.DoOperation(destinationRegister, index, OperatorEffect.Assignment, sourceValue);
-					
-					return machineState;
-				}
-					
 				case OpcodeEncoding.EvIb:				
 				case OpcodeEncoding.EbIb:
+				case OpcodeEncoding.EvGv:
+				case OpcodeEncoding.EbGb:
 				{
-					destinationRegister = ModRM.GetEv(code);
+					destinationRegister = OpcodeHelper.GetDestinationRegister(code);
 					index = 0;
 					
 					if (ModRM.HasIndex(code))
@@ -130,55 +110,70 @@ namespace bugreport
 						index = ModRM.GetIndex(code);
 					}
 
-					sourceValue = new AbstractValue(OpcodeHelper.GetImmediate(code));
+					if (OpcodeHelper.HasImmediate(code))
+					{
+						sourceValue = new AbstractValue(OpcodeHelper.GetImmediate(code));
+					}
+					else
+					{
+						sourceRegister = ModRM.GetGv(code);
+						sourceValue = state.Registers[sourceRegister];
+					}
+					
+					if (ModRM.HasOffset(code))
+					{
+						UInt32 offset = ModRM.GetOffset(code);
+						state.DataSegment[offset] = sourceValue;
+						return state;
+					}
 					
 					if (ModRM.IsEffectiveAddressDereferenced(code))
 					{
-						if (machineState.Registers[destinationRegister] == null)
+						if (!state.Registers[destinationRegister].IsPointer)
 						{
 							throw new InvalidOperationException(
-								String.Format("Trying to dereference null pointer in register {0}.", destinationRegister)
+								"Trying to dereference non-pointer in register " + destinationRegister
 							);
 						}
 						
-						machineState = machineState.DoOperation(destinationRegister, index, op, sourceValue);
-						if (machineState.Registers[destinationRegister].PointsTo[index].IsOOB)
+						state = state.DoOperation(destinationRegister, index, op, sourceValue);
+						if (state.Registers[destinationRegister].PointsTo[index].IsOOB)
 						{
-							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
+							reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
 						}
 					}
 					else
 					{
-						machineState = machineState.DoOperation(destinationRegister, op, sourceValue);
-						if (machineState.Registers[destinationRegister].IsOOB)
+						state = state.DoOperation(destinationRegister, op, sourceValue);
+						if (state.Registers[destinationRegister].IsOOB)
 						{
-							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
+							reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
 						}
 					}
 					
-					return machineState;
+					return state;
 				}
 
 				case OpcodeEncoding.Jz:
-					AbstractValue[] buffer = AbstractValue.GetNewBuffer(machineState.TopOfStack.Value); // hardcoded malloc emulation
-					machineState.ReturnValue = new AbstractValue(buffer);
-					return machineState;
+					AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); // hardcoded malloc emulation
+					state.ReturnValue = new AbstractValue(buffer);
+					return state;
 
 				case OpcodeEncoding.GvEv:
 				case OpcodeEncoding.GvEb:
 				{
 					sourceRegister = ModRM.GetEv(code);
 					destinationRegister = ModRM.GetGv(code);
-					sourceValue =  machineState.Registers[sourceRegister];
+					sourceValue =  state.Registers[sourceRegister];
 					
 					if (ModRM.HasOffset(code))
 					{
 						UInt32 offset = ModRM.GetOffset(code);
-						sourceValue = machineState.DataSegment[offset];
+						sourceValue = state.DataSegment[offset];
 					}
 					else if (ModRM.IsEffectiveAddressDereferenced(code))
 					{
-						if (sourceValue == null)
+						if (!sourceValue.IsPointer)
 							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", sourceRegister));
 
 						index = 0;
@@ -189,55 +184,17 @@ namespace bugreport
 						sourceValue = sourceValue.PointsTo[index];
 						if (sourceValue.IsOOB)
 						{
-							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
+							reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
 						}
 					}
 					
-					machineState = machineState.DoOperation(destinationRegister, op, sourceValue);
-					return machineState;
-				}
-
-				case OpcodeEncoding.EvGv:
-				case OpcodeEncoding.EbGb:
-				{
-					if (ModRM.HasSIB(code))
-					{
-						destinationRegister = SIB.GetBaseRegister(code);
-					}
-					else
-						destinationRegister = ModRM.GetEv(code);
-					
-					sourceRegister = ModRM.GetGv(code);
-					sourceValue = machineState.Registers[sourceRegister];
-					if (ModRM.HasOffset(code))
-					{
-						UInt32 offset = ModRM.GetOffset(code);
-						machineState.DataSegment[offset] = sourceValue;
-					}
-					else if (ModRM.IsEffectiveAddressDereferenced(code))
-					{
-						if (sourceValue == null)
-							throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", destinationRegister));
-
-						index = 0;
-						
-						if (ModRM.HasIndex(code))
-							index = ModRM.GetIndex(code);
-						
-						machineState = machineState.DoOperation(destinationRegister, index, op, sourceValue);
-						if (machineState.Registers[destinationRegister].PointsTo[index].IsOOB)
-							reportItemCollector.Add(new ReportItem(machineState.InstructionPointer, sourceValue.IsTainted));
-					}
-					else
-					{
-						machineState = machineState.DoOperation(destinationRegister, op, sourceRegister);
-					}
-					return machineState;							
+					state = state.DoOperation(destinationRegister, op, sourceValue);
+					return state;
 				}
 
 				case OpcodeEncoding.GvM:
 				{
-					// GvM, M must refer to [base register + offset]
+					// GvM, M may refer to [base register + offset]
 					if (!ModRM.IsEffectiveAddressDereferenced(code))
 					{
 						throw new InvalidOperationException("GvM must be dereferenced");
@@ -247,7 +204,7 @@ namespace bugreport
 					// TODO: handle memory-only and SIB cases
 					sourceRegister = ModRM.GetEv(code);
 					
-					if (machineState.Registers[sourceRegister].PointsTo == null)
+					if (!state.Registers[sourceRegister].IsPointer)
 					{
 						throw new InvalidOperationException("Trying to dereference a null pointer in register " + sourceRegister);
 					}
@@ -258,35 +215,35 @@ namespace bugreport
 						index = ModRM.GetIndex(code);
 					}
 					
-					AbstractValue rhs = machineState.DoOperation(
-						machineState.Registers[sourceRegister],
+					AbstractValue rhs = state.DoOperation(
+						state.Registers[sourceRegister],
 						OperatorEffect.Add,
 						new AbstractValue(index)
 					).Value;
-					machineState = machineState.DoOperation(destinationRegister, OperatorEffect.Assignment, rhs);
-					if (machineState.Registers[destinationRegister].IsOOB)
+					state = state.DoOperation(destinationRegister, OperatorEffect.Assignment, rhs);
+					if (state.Registers[destinationRegister].IsOOB)
 					{
-						ReportItem reportItem = new ReportItem(machineState.InstructionPointer, machineState.Registers[sourceRegister].IsTainted);
-						reportItemCollector.Add(reportItem);
+						ReportItem reportItem = new ReportItem(state.InstructionPointer, state.Registers[sourceRegister].IsTainted);
+						reportItems.Add(reportItem);
 					}
 					
-					return machineState;
+					return state;
 				}
 					
 				case OpcodeEncoding.ObAL:
 				{
 					UInt32 offset;
 					
-					AbstractValue dwordValue = machineState.Registers[RegisterName.EAX];
+					AbstractValue dwordValue = state.Registers[RegisterName.EAX];
 					AbstractValue byteValue = dwordValue.TruncateValueToByte();
 					
 					offset = BitMath.BytesToDword(code, 1); // This is 1 for ObAL
 
-					if (!machineState.DataSegment.ContainsKey(offset))
-						machineState.DataSegment[offset] = new AbstractValue();
+					if (!state.DataSegment.ContainsKey(offset))
+						state.DataSegment[offset] = new AbstractValue();
 					
-					machineState = machineState.DoOperation(offset, op, byteValue);
-					return machineState;	
+					state = state.DoOperation(offset, op, byteValue);
+					return state;	
 				}
 				
 				case OpcodeEncoding.Jb:
@@ -294,13 +251,13 @@ namespace bugreport
 					UInt32 offset;
 					offset = (UInt32) code[1];
 					
-					machineState = machineState.DoOperation(op, new AbstractValue(offset));
+					state = state.DoOperation(op, new AbstractValue(offset));
 					
-					return machineState;
+					return state;
 				}
 					
 				case OpcodeEncoding.None:
-					return machineState;
+					return state;
 
 				default:
 					throw new InvalidOpcodeException( code);
