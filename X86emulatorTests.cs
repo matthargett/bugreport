@@ -14,6 +14,7 @@ namespace bugreport
 		MachineState state;
 		Byte[] code;
 		List<ReportItem> reportItems;
+		AbstractValue one = new AbstractValue(1);
 		
 		[SetUp]
 		public void SetUp()
@@ -29,12 +30,11 @@ namespace bugreport
 		[Test]
 		public void InitialRegisters()
 		{
-			AbstractValue value = new AbstractValue(1);
 			RegisterCollection registers = new RegisterCollection();
-			registers[RegisterName.EAX] = value;
+			registers[RegisterName.EAX] = one;
 			state = new MachineState(registers);
 			MachineState newState = X86emulator.Run(reportItems, state, new byte[] { 0x90});
-			Assert.AreEqual(value, newState.Registers[RegisterName.EAX]);
+			Assert.AreEqual(one, newState.Registers[RegisterName.EAX]);
 			Assert.AreNotSame(state, newState);
 			Assert.AreNotEqual(state, newState);
 		}
@@ -129,11 +129,12 @@ namespace bugreport
 		
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
-		public void DerefRegisterWithNull()
+		public void DereferenceRegisterWithNonPointer()
 		{
 			//  mov    eax,DWORD PTR [eax]
 			code = new Byte[] {0x8b, 0x00};
-			state.Registers[RegisterName.EAX] = null;
+			state.Registers[RegisterName.EAX] = one;
+			Assert.IsFalse(one.IsPointer);
 			state = X86emulator.Run(reportItems, state, code);
 		}
 		
@@ -423,10 +424,11 @@ namespace bugreport
 
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
-		public void AddImmediateNullPointerDeref()
+		public void AddImmediateNonPointerDeref()
 		{ // add    [eax], 0x00
 			code = new Byte[] {0x83, 0x00, 0x00};
-			state.Registers[RegisterName.EAX] = null;
+			state.Registers[RegisterName.EAX] = one;
+			Assert.IsFalse(one.IsPointer);
 			state = X86emulator.Run(reportItems, state, code);
 		}
 
@@ -445,11 +447,12 @@ namespace bugreport
 		
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
-		public void SubNullPointerDeref()
+		public void SubNonPointerDeref()
 		{
 			// sub eax, [eax]
-			code = new Byte[] {0x29, 0x00};
-			state.Registers[RegisterName.EAX] = null;
+			code = new Byte[] {0x29, 0x00};			
+			state.Registers[RegisterName.EAX] = one;
+			Assert.IsFalse(one.IsPointer);
 			state = X86emulator.Run(reportItems, state, code);
 		}
 
