@@ -20,7 +20,7 @@ namespace bugreport
 		{
 			state = new MachineState(new RegisterCollection());
 			reportItems = new List<ReportItem>();
-			AbstractBuffer buffer = new AbstractBuffer(new AbstractValue[0x200]);
+			AbstractBuffer buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(0x200));
 			AbstractValue pointer = new AbstractValue(buffer);
 			state.Registers[RegisterName.ESP] = pointer;
 			state.Registers[RegisterName.EBP] = state.Registers[RegisterName.ESP];
@@ -33,8 +33,10 @@ namespace bugreport
 			RegisterCollection registers = new RegisterCollection();
 			registers[RegisterName.EAX] = value;
 			state = new MachineState(registers);
-			state = X86emulator.Run(reportItems, state, new byte[] { 0x90});
-			Assert.AreEqual(value, state.Registers[RegisterName.EAX]);
+			MachineState newState = X86emulator.Run(reportItems, state, new byte[] { 0x90});
+			Assert.AreEqual(value, newState.Registers[RegisterName.EAX]);
+			Assert.AreNotSame(state, newState);
+			Assert.AreNotEqual(state, newState);
 		}
 		
 		[Test]
@@ -225,16 +227,16 @@ namespace bugreport
 		{ // cmp    DWORD PTR [ebp+8],0x0
 			code = new Byte[] {0x83, 0x7d, 0x08, 0x0};
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-			buffer[8] = new AbstractValue(1);
 			
 			AbstractValue pointer = new AbstractValue(buffer);
 			state.Registers[RegisterName.EBP] = pointer;
+			state.Registers[RegisterName.EBP].PointsTo[8] = new AbstractValue(1);
 
 			state = X86emulator.Run(reportItems, state, code);
 			Assert.AreEqual(0x4, state.InstructionPointer);
 			Assert.IsFalse(state.ZeroFlag);
 
-			buffer[8] = new AbstractValue(0);
+			state.Registers[RegisterName.EBP].PointsTo[8] = new AbstractValue(0);
 			state = X86emulator.Run(reportItems, state, code);
 			Assert.AreEqual(0x8, state.InstructionPointer);
 			Assert.IsTrue(state.ZeroFlag);
@@ -243,10 +245,13 @@ namespace bugreport
 		[Test]
 		public void MovPtrEsp0x10()
 		{
-			code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
-			state = X86emulator.Run(reportItems, state, code);
-			Assert.AreEqual(0x7, state.InstructionPointer);
-			Assert.AreEqual(0x10, state.TopOfStack.Value);
+			Byte sixteen = 0x10;
+			code = new Byte[] {0xc7, 0x04, 0x24, sixteen, 0x00, 0x00, 0x00};
+			MachineState newState = X86emulator.Run(reportItems, state, code);
+			Assert.AreNotSame(newState, state);
+			Assert.AreNotEqual(newState, state);
+			Assert.AreEqual(0x7, newState.InstructionPointer);
+			Assert.AreEqual(sixteen, newState.TopOfStack.Value);
 		}
 
 		[Test]
@@ -452,13 +457,13 @@ namespace bugreport
 		public void MovEbpMinus8()
 		{ // mov    DWORD PTR [ebp-8],0xf
 		
+			Byte fifteen = 0x0f;
 			AbstractValue[] value = AbstractValue.GetNewBuffer(0x100);
 			state.Registers[RegisterName.EBP] = new AbstractValue(value);
-			code = new Byte[] {0xc7, 0x45, 0xf8, 0x0f, 0x00, 0x00, 0x00};
+			code = new Byte[] {0xc7, 0x45, 0xf8, fifteen, 0x00, 0x00, 0x00};
 			state = X86emulator.Run(reportItems, state, code);
 
-			AbstractValue fifteen = state.Registers[RegisterName.EBP].PointsTo[0xf8];
-			Assert.AreEqual(0xf, fifteen.Value);
+			Assert.AreEqual(fifteen, state.Registers[RegisterName.EBP].PointsTo[0xf8].Value);
 		}
 		
 		[Test]

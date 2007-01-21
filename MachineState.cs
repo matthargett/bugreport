@@ -187,12 +187,12 @@ namespace bugreport
 			{
 				case OperatorEffect.Assignment:
 				case OperatorEffect.Cmp:
-					{
-						OperationResult result = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
-						newState.Registers[lhs].PointsTo[index] = result.Value;
-						newState.ZeroFlag = result.ZeroFlag;
-						break;
-					}
+				{
+					OperationResult result = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
+					newState.Registers[lhs].PointsTo[index] = result.Value;
+					newState.ZeroFlag = result.ZeroFlag;
+					break;
+				}
 			}
 			
 			return newState;
@@ -236,119 +236,121 @@ namespace bugreport
 			switch(_operatorEffect)
 			{
 				case OperatorEffect.Assignment:
-					{
-						AbstractValue newValue = new AbstractValue(rhs);
-						if (rhs.IsInitialized && rhs.IsOOB)
-							newValue.IsOOB = true;
-						
-						result.Value = newValue;
-						
-						return result;
-					}
+				{
+					AbstractValue newValue = new AbstractValue(rhs);
+					if (rhs.IsInitialized && rhs.IsOOB)
+						newValue.IsOOB = true;
+					
+					result.Value = newValue;
+					
+					return result;
+				}
 					
 				case OperatorEffect.Add:
+				{
+					if (lhs.IsPointer)
 					{
-						if (lhs.IsPointer)
-						{
-							AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
-							result.Value = new AbstractValue(newBuffer);
-							return result;
-						}
-						
-						UInt32 sum = lhs.Value + rhs.Value;
-						AbstractValue sumValue = new AbstractValue(sum);
-						if (lhs.IsTainted || rhs.IsTainted)
-						{
-							sumValue = sumValue.AddTaint();
-						}
-						
-						result.Value = sumValue;
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Add, rhs);
+						result.Value = new AbstractValue(newBuffer);
 						return result;
 					}
+					
+					UInt32 sum = lhs.Value + rhs.Value;
+					AbstractValue sumValue = new AbstractValue(sum);
+					if (lhs.IsTainted || rhs.IsTainted)
+					{
+						sumValue = sumValue.AddTaint();
+					}
+					
+					result.Value = sumValue;
+					return result;
+				}
 					
 				case OperatorEffect.Sub:
+				{
+					if (lhs.IsPointer)
 					{
-						if (lhs.IsPointer)
-						{
-							AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
-							result.Value = new AbstractValue(newBuffer);
-							return result;
-						}
-						UInt32 total = lhs.Value - rhs.Value;
-						AbstractValue totalValue = new AbstractValue(total);
-						
-						if (lhs.IsTainted || rhs.IsTainted)
-						{
-							totalValue = totalValue.AddTaint();
-						}
-						
-						result.Value = totalValue;
-						
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Sub, rhs);
+						result.Value = new AbstractValue(newBuffer);
 						return result;
 					}
+					UInt32 total = lhs.Value - rhs.Value;
+					AbstractValue totalValue = new AbstractValue(total);
+					
+					if (lhs.IsTainted || rhs.IsTainted)
+					{
+						totalValue = totalValue.AddTaint();
+					}
+					
+					result.Value = totalValue;
+					
+					return result;
+				}
 					
 				case OperatorEffect.And:
+				{
+					if (lhs.IsPointer)
 					{
-						if (lhs.IsPointer)
-						{
-							AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
-							result.Value = new AbstractValue(newBuffer);
-							return result;
-						}
-						
-						UInt32 total = lhs.Value & rhs.Value;
-						AbstractValue totalValue = new AbstractValue(total);
-
-						if (lhs.IsTainted || rhs.IsTainted)
-						{
-							totalValue = totalValue.AddTaint();
-						}
-
-						result.Value = totalValue;
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.And, rhs);
+						result.Value = new AbstractValue(newBuffer);
 						return result;
 					}
+					
+					UInt32 total = lhs.Value & rhs.Value;
+					AbstractValue totalValue = new AbstractValue(total);
+
+					if (lhs.IsTainted || rhs.IsTainted)
+					{
+						totalValue = totalValue.AddTaint();
+					}
+
+					result.Value = totalValue;
+					return result;
+				}
 					
 				case OperatorEffect.Shr:
+				{
+					UInt32 total = lhs.Value >> (Byte)rhs.Value;
+					AbstractValue totalValue = new AbstractValue(total);
+
+					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						UInt32 total = lhs.Value >> (Byte)rhs.Value;
-						AbstractValue totalValue = new AbstractValue(total);
-
-						if (lhs.IsTainted || rhs.IsTainted)
-						{
-							totalValue = totalValue.AddTaint();
-						}
-
-						result.Value = totalValue;
-						return result;
+						totalValue = totalValue.AddTaint();
 					}
+
+					result.Value = totalValue;
+					return result;
+				}
 					
 				case OperatorEffect.Shl:
+				{
+					UInt32 total = lhs.Value << (Byte)rhs.Value;
+					AbstractValue totalValue = new AbstractValue(total);
+
+					if (lhs.IsTainted || rhs.IsTainted)
 					{
-						UInt32 total = lhs.Value << (Byte)rhs.Value;
-						AbstractValue totalValue = new AbstractValue(total);
-
-						if (lhs.IsTainted || rhs.IsTainted)
-						{
-							totalValue = totalValue.AddTaint();
-						}
-
-						result.Value = totalValue;
-						return result;
+						totalValue = totalValue.AddTaint();
 					}
+
+					result.Value = totalValue;
+					return result;
+				}
 					
 				case OperatorEffect.Cmp:
-					{
-						if ((lhs.Value - rhs.Value) == 0)
-							result.ZeroFlag = true;
-						else
-							result.ZeroFlag = false;
-						
-						result.Value = lhs;
-						return result;
-					}
+				{
+					if ((lhs.Value - rhs.Value) == 0)
+						result.ZeroFlag = true;
+					else
+						result.ZeroFlag = false;
+					
+					result.Value = lhs;
+					return result;
+				}
 					
 				default:
+				{
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+				}
 			}
 		}
 	}

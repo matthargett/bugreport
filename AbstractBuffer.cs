@@ -21,9 +21,14 @@ namespace bugreport
 
 		public AbstractBuffer(AbstractBuffer _copyMe)
 		{
-			storage = _copyMe.storage;
+			storage = new AbstractValue[_copyMe.storage.Length];
 			BaseIndex = _copyMe.BaseIndex;
-			allocatedLength = _copyMe.Length;
+			allocatedLength = _copyMe.allocatedLength;
+			
+			for (Int32 index = 0; index < _copyMe.storage.Length; index++)
+			{
+				storage[index] = new AbstractValue(_copyMe.storage[index]);
+			}
 		}
 
 		private void extend(UInt32 _newLength)

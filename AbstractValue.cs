@@ -39,10 +39,19 @@ namespace bugreport
 
 		public AbstractValue(AbstractValue _copyMe)
 		{
+			if (_copyMe == null)
+			{
+				throw new ArgumentNullException("_copyMe");
+			}
+			
 			this.Value = _copyMe.Value;
 			this.IsTainted = _copyMe.IsTainted;
 			this.IsOOB = _copyMe.IsOOB;
-			this.PointsTo = _copyMe.PointsTo;
+			
+			if (_copyMe.PointsTo != null)
+			{
+				this.PointsTo = new AbstractBuffer(_copyMe.PointsTo);
+			}
 		}
 
 		public AbstractValue(UInt32 _value)

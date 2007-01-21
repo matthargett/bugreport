@@ -17,9 +17,9 @@ namespace bugreport
 	/// </summary>
 	public static class OpcodeHelper
 	{
-		public static OpcodeEncoding GetEncoding(Byte[] _code)
+		public static OpcodeEncoding GetEncoding(Byte[] code)
 		{
-			switch (_code[0])
+			switch (code[0])
 			{
 				case 0xc9:
 				case 0xc3:
@@ -62,13 +62,13 @@ namespace bugreport
 				case 0xe8:
 					return OpcodeEncoding.Jz;
 				default:
-					throw new InvalidOpcodeException(_code);
+					throw new InvalidOpcodeException(code);
 			}			
 		}
 
-		public static Boolean HasModRM(Byte[] _code)
+		public static Boolean HasModRM(Byte[] code)
 		{
-			switch (GetEncoding(_code))
+			switch (GetEncoding(code))
 			{
 				case OpcodeEncoding.GvEb:
 				case OpcodeEncoding.GvEv:
@@ -83,9 +83,9 @@ namespace bugreport
 			}
 		}
 
-		public static Boolean HasImmediate(Byte[] _code)
+		public static Boolean HasImmediate(Byte[] code)
 		{
-			switch (GetEncoding(_code))
+			switch (GetEncoding(code))
 			{
 				case OpcodeEncoding.EvIb:
 				case OpcodeEncoding.EbIb:
@@ -100,50 +100,50 @@ namespace bugreport
 			}
 		}
 
-		public static UInt32 GetImmediate(Byte[] _code)
+		public static UInt32 GetImmediate(Byte[] code)
 		{
-			if (!HasImmediate(_code))
+			if (!HasImmediate(code))
 				throw new InvalidOperationException("Can't get immediate from an opcode that doesn't have one");
 
 			Byte valueIndex = 1;
-			if (HasModRM(_code))
+			if (HasModRM(code))
 			{
 				valueIndex++;
 
-				if (ModRM.HasIndex(_code))
+				if (ModRM.HasIndex(code))
 				{
 					valueIndex++;
 				}
 
-				if (ModRM.HasSIB(_code))
+				if (ModRM.HasSIB(code))
 				{
 					valueIndex++;
 				}
 			}
 
-			switch (GetEncoding(_code))
+			switch (GetEncoding(code))
 			{
 				case OpcodeEncoding.EvIb:
 				case OpcodeEncoding.EbIb:
 				case OpcodeEncoding.Jb:
 				{			
-					return _code[valueIndex];
+					return code[valueIndex];
 				}
 				case OpcodeEncoding.EvIz:
 				case OpcodeEncoding.rAxIz:
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.Jz:
-					return BitMath.BytesToDword(_code, valueIndex);
+					return BitMath.BytesToDword(code, valueIndex);
 
 				default:
-					throw new InvalidOpcodeException("Don't know how to get the immediate for this opcode: ", _code);
+					throw new InvalidOpcodeException("Don't know how to get the immediate for this opcode: ", code);
 			}
 		}
 		
-		public static StackEffect GetStackEffect(Byte[] _code)
+		public static StackEffect GetStackEffect(Byte[] code)
 		{
 		
-			switch(_code[0])
+			switch(code[0])
 			{
 				case 0x53:
 				case 0x55:
@@ -157,10 +157,53 @@ namespace bugreport
 			}
 		}
 		
-		public static OperatorEffect GetOperatorEffect(Byte[] _code)
+		public static RegisterName GetDestinationRegister(Byte[] code)
 		{
+			OpcodeEncoding opcodeEncoding = GetEncoding(code);
 
-			switch(_code[0])    	
+			switch (opcodeEncoding)
+			{
+				case OpcodeEncoding.rBP:
+				{
+					return RegisterName.EBP;
+				}
+
+				case OpcodeEncoding.rBX:
+				{
+					return RegisterName.EBX;
+				}
+					
+				case OpcodeEncoding.rAxIv:
+				case OpcodeEncoding.rAxIz:
+				{
+					return RegisterName.EAX;	
+				}
+				
+				case OpcodeEncoding.EbGb:
+				case OpcodeEncoding.EbIb:
+				case OpcodeEncoding.EvGv:
+				case OpcodeEncoding.EvIb:
+				case OpcodeEncoding.EvIz:
+				{
+					if (ModRM.HasSIB(code))
+					{
+						return SIB.GetBaseRegister(code);
+					}
+					else
+					{
+						return ModRM.GetEv(code);
+					}
+				}
+					
+				default:
+					throw new NotImplementedException("GetDestinationRegister is not currently supporting " + opcodeEncoding);
+			}
+
+		}
+		
+		public static OperatorEffect GetOperatorEffect(Byte[] code)
+		{
+			switch(code[0])
 			{
 				case 0x05:
 					return OperatorEffect.Add;
@@ -173,7 +216,7 @@ namespace bugreport
 				
 				case 0x83:
 				{
-					Byte rm = ModRM.GetOpcodeGroupIndex(_code);
+					Byte rm = ModRM.GetOpcodeGroupIndex(code);
 					
 					switch (rm) 
 					{
@@ -201,7 +244,7 @@ namespace bugreport
 	
 				case 0xc1:
 				{
-					Byte rm = ModRM.GetOpcodeGroupIndex(_code);
+					Byte rm = ModRM.GetOpcodeGroupIndex(code);
 					
 					switch (rm) 
 					{
@@ -222,18 +265,18 @@ namespace bugreport
 			}
 		}
 		
-		public static Byte GetOpcodeLength(Byte[] _code)
+		public static Byte GetOpcodeLength(Byte[] code)
 		{
 			Byte opcodeLength = 1;
-			if (_code[0] == 0x0f)
+			if (code[0] == 0x0f)
 				opcodeLength++;
 
 			return opcodeLength;
 		}
 		
-		public static Boolean IsRegisterOnlyOperand(Byte[] _code)
+		public static Boolean IsRegisterOnlyOperand(Byte[] code)
 		{
-			return (OpcodeHelper.GetEncoding(_code).ToString().StartsWith("r"));
+			return (OpcodeHelper.GetEncoding(code).ToString().StartsWith("r"));
 		}
 	}
 }
