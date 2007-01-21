@@ -8,7 +8,8 @@ using NUnit.Framework;
 
 namespace bugreport.DumpFileParserTests
 {
-	public abstract class DumpFileParserFixture : IDisposable
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
+	public abstract class DumpFileParserFixture
 	{
 		protected StreamWriter writer;
 		protected DumpFileParser parser;
@@ -18,18 +19,6 @@ namespace bugreport.DumpFileParserTests
 		{
 			stream = new MemoryStream();
 			writer = new StreamWriter(stream);
-		}
-		
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
-		public void Dispose()
-		{
-			if(null != writer)
-				writer.Dispose();
-			
-			if(null != stream)
-				stream.Dispose();
-			
-			return;
 		}
 	}
 	
@@ -83,7 +72,7 @@ namespace bugreport.DumpFileParserTests
 
 			Byte[] code = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0xc3, code[0]);
-			Assert.AreEqual(0, parser.ExpectedReportItem.Count);
+			Assert.AreEqual(0, parser.ExpectedReportItems.Count);
 		}
 
 		[Test]
@@ -102,7 +91,7 @@ namespace bugreport.DumpFileParserTests
 			
 			Assert.IsNull(parser.GetNextInstructionBytes());
 			Assert.IsTrue(parser.EndOfFunction);
-			Assert.AreEqual(0, parser.ExpectedReportItem.Count);
+			Assert.AreEqual(0, parser.ExpectedReportItems.Count);
 		}
 
 		[Test]
@@ -112,13 +101,13 @@ namespace bugreport.DumpFileParserTests
 			writer.WriteLine(" //<OutOfBoundsMemoryAccess Location=0x8000FFFA Exploitable=False/>");
 			writer.Flush();
 			parser = new DumpFileParser (stream);
-			Assert.AreEqual(2, parser.ExpectedReportItem.Count);
+			Assert.AreEqual(2, parser.ExpectedReportItems.Count);
 
-			Assert.AreEqual(0x8000ffff, parser.ExpectedReportItem[0].InstructionPointer);
-			Assert.AreEqual(true, parser.ExpectedReportItem[0].IsTainted);
+			Assert.AreEqual(0x8000ffff, parser.ExpectedReportItems[0].InstructionPointer);
+			Assert.AreEqual(true, parser.ExpectedReportItems[0].IsTainted);
 
-			Assert.AreEqual(0x8000FFFA, parser.ExpectedReportItem[1].InstructionPointer);
-			Assert.AreEqual(false, parser.ExpectedReportItem[1].IsTainted);
+			Assert.AreEqual(0x8000FFFA, parser.ExpectedReportItems[1].InstructionPointer);
+			Assert.AreEqual(false, parser.ExpectedReportItems[1].IsTainted);
 		}
 	}
 

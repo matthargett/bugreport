@@ -64,28 +64,62 @@ namespace bugreport
 			get { return code; }
 		}
 	}
+	
+	public class ReportEventArgs : EventArgs
+	{
+		private ReportItem reportItem;
+		
+		public ReportEventArgs(ReportItem reportItem) : base()
+		{
+			this.reportItem = reportItem;
+		}
+		
+		public ReportItem ReportItem
+		{
+			get { return reportItem; }
+		}
+	}
+	
+	public class ReportCollection : Collection<ReportItem>
+	{
+		public EventHandler<ReportEventArgs> OnReport;
+		
+		protected override void InsertItem(int index, ReportItem item)
+		{
+			base.InsertItem(index, item);
+
+			if (null != this.OnReport)
+			{
+				OnReport(this, new ReportEventArgs(item));
+			}
+		}
+	}
 
 	public class Analyzer
 	{
 		public EventHandler<EmulationEventArgs> OnEmulationComplete;
-
-		protected List<ReportItem> reportItems = new List<ReportItem>();
+		
+		protected ReportCollection reportItems;
 		private Stream stream;
 		private IParsable parser;
 
 		public Analyzer(Stream stream)
 		{
 			if (null == stream)
+			{
 				throw new ArgumentNullException("stream");
+			}
 			
 			this.stream = stream;
+			
+			reportItems = new ReportCollection();
 		}
 
 		public ReadOnlyCollection<ReportItem> ActualReportItems
 		{
 			get
 			{
-				return reportItems.AsReadOnly();
+				return new ReadOnlyCollection<ReportItem>(reportItems);
 			}
 		}
 		
@@ -93,9 +127,16 @@ namespace bugreport
 		{
 			get
 			{
-				return parser.ExpectedReportItem;
+				return parser.ExpectedReportItems;
 			}
 		}
+		
+		public EventHandler<ReportEventArgs> OnReport
+		{
+			get { return reportItems.OnReport; }
+			set { reportItems.OnReport = value; }
+		}
+
 		
 		private static RegisterCollection getRegistersForLinuxMain()
 		{
