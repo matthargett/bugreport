@@ -32,7 +32,7 @@ namespace bugreport
 				Environment.Exit(-1);
 			}
 
-			analyzeFiles(fileNames, isTracing);		
+			analyzeFiles(fileNames, isTracing);	
 			
 			if (analyzer.ExpectedReportItems.Count != 0 && (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count) )
 			{
@@ -124,22 +124,27 @@ namespace bugreport
 
 				analyzer = new Analyzer(fileStream);
 
+				analyzer.OnReport += printReportItem;
+				
 				if (_isTracing)
 				{
 					analyzer.OnEmulationComplete += printInfo;
 				}
 
 				analyzer.Run();
-				IList<ReportItem> reportItems = analyzer.ActualReportItems;
-				foreach (ReportItem item in reportItems)
-				{
-					String message = String.Empty;
-					if (item.IsTainted)
-						message += "Exploitable ";
-					message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
-					Console.WriteLine(message);
-				}
 			}
+		}
+	
+		private static void printReportItem(object sender, ReportEventArgs e)
+		{
+			ReportItem item = e.ReportItem;
+			
+			String message = "***";
+			if (item.IsTainted)
+				message += "Exploitable ";
+			message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
+			Console.WriteLine(message);
+			Console.WriteLine();
 		}
 	}
 }

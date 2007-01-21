@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace bugreport
@@ -34,7 +35,7 @@ namespace bugreport
 
 	public static class X86emulator
 	{
-		public static MachineState Run(ICollection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
+		public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
 		{
 			if (code.Length == 0)
 				throw new ArgumentException("code", "Empty array not allowed.");
@@ -44,7 +45,7 @@ namespace bugreport
 			return afterState;
 		}
 
-		private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, MachineState machineState, Byte[] code)
+		private static MachineState emulateOpcode(Collection<ReportItem> reportItems, MachineState machineState, Byte[] code)
 		{
 			MachineState state = machineState;
 			RegisterName sourceRegister, destinationRegister;
@@ -154,11 +155,6 @@ namespace bugreport
 					return state;
 				}
 
-				case OpcodeEncoding.Jz:
-					AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); // hardcoded malloc emulation
-					state.ReturnValue = new AbstractValue(buffer);
-					return state;
-
 				case OpcodeEncoding.GvEv:
 				case OpcodeEncoding.GvEb:
 				{
@@ -245,7 +241,14 @@ namespace bugreport
 					state = state.DoOperation(offset, op, byteValue);
 					return state;	
 				}
-				
+
+				case OpcodeEncoding.Jz:
+				{
+					AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); // hardcoded malloc emulation
+					state.ReturnValue = new AbstractValue(buffer);
+					return state;
+				}
+
 				case OpcodeEncoding.Jb:
 				{
 					UInt32 offset;
@@ -257,10 +260,14 @@ namespace bugreport
 				}
 					
 				case OpcodeEncoding.None:
+				{
 					return state;
+				}
 
 				default:
+				{
 					throw new InvalidOpcodeException( code);
+				}
 			}
 		}
 	}

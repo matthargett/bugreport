@@ -34,11 +34,6 @@ namespace bugreport
 			Byte sib = getSIB(code);
 			RegisterName register = (RegisterName)(sib & 7);
 			
-			if (RegisterName.ESP != register)
-			{
-				// TODO: this check can be removed once tests are in place
-				throw new NotImplementedException("SIB currently only supports ESP, this register was attempted: " + register);
-			}
 			return register;
 		}
 	}

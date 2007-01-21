@@ -93,10 +93,10 @@ namespace bugreport
 					if (String.IsNullOrEmpty(expectedOutput))
 					{
 						Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
-					} 
-					else 
+					}
+					else
 					{
-						Assert.Contains(expectedOutput, messages);
+						StringAssert.Contains(expectedOutput, messages[0]);
 					}
 				}
 				catch (AssertionException)

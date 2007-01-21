@@ -18,7 +18,7 @@ namespace bugreport
 			get;
 		}
 		
-		ReadOnlyCollection<ReportItem> ExpectedReportItem
+		ReadOnlyCollection<ReportItem> ExpectedReportItems
 		{
 			get;
 		}
@@ -71,7 +71,7 @@ namespace bugreport
 			}
 		}
 
-		public ReadOnlyCollection<ReportItem> ExpectedReportItem
+		public ReadOnlyCollection<ReportItem> ExpectedReportItems
 		{
 			get
 			{

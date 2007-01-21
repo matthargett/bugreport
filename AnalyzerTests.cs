@@ -20,7 +20,6 @@ namespace bugreport
 		private class FakeAnalyzer : Analyzer
 		{
 			Byte[] code = new Byte[] { 0x90 }; 
-			ReportItem reportItem = new ReportItem(0, false);
 			private UInt32 expectedReportItemCount;
 			private UInt32 actualReportItemCount;			
 			
@@ -30,11 +29,11 @@ namespace bugreport
 				this.actualReportItemCount = actualReportItemCount;
 			}
 			
-			protected override MachineState runCode(MachineState _machineState, byte[] _instructionBytes)
+			protected override MachineState runCode(MachineState _machineState, Byte[] _instructionBytes)
 			{
 				for (UInt32 i = 0; i < actualReportItemCount; i++)
 				{
-					reportItems.Add(reportItem);
+					reportItems.Add(new ReportItem(i, false));
 				}
 				
 				return _machineState;
@@ -42,7 +41,7 @@ namespace bugreport
 			
 			protected override IParsable createFileParser(Stream _stream)
 			{				
-				DynamicMock control= new DynamicMock(typeof(IParsable));
+				DynamicMock control = new DynamicMock(typeof(IParsable));
 				control.ExpectAndReturn("get_EndOfFunction", false, null);
 				control.ExpectAndReturn("GetNextInstructionBytes", code, null);
 				control.ExpectAndReturn("get_EndOfFunction", true, null);
@@ -51,10 +50,10 @@ namespace bugreport
 				
 				for (UInt32 i = 0; i < expectedReportItemCount; i++)
 				{
-					reportItemList.Add(reportItem);
+					reportItemList.Add(new ReportItem(i, false));
 				}
-				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList.AsReadOnly(), null);
-				control.ExpectAndReturn("get_ExpectedReportItem", reportItemList.AsReadOnly(), null);
+				control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
+				control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
 				return control.MockInstance as IParsable;
 			}
 		}
@@ -73,19 +72,25 @@ namespace bugreport
 			analyzer = new Analyzer(stream);
 			Assert.AreEqual(0, analyzer.ActualReportItems.Count);
 		}
-
-		private void onEmulation(object sender, EmulationEventArgs e)
-		{
-			Assert.AreEqual(0x90, e.Code[0]);
-		}	
-
+		
 		[Test]
 		public void WithReportItems()
 		{
-			analyzer = new FakeAnalyzer(stream, 1 ,1);
-			analyzer.OnEmulationComplete += onEmulation;
+			List<ReportItem> reportItems = new List<ReportItem>();
+			
+			analyzer = new FakeAnalyzer(stream, 2 ,2);
+			analyzer.OnEmulationComplete += 
+				delegate(object sender, EmulationEventArgs e) { Assert.AreEqual(0x90, e.Code[0]); };
+			
+			analyzer.OnReport += 
+				delegate(object sender, ReportEventArgs e) { reportItems.Add(e.ReportItem); };
+			
 			analyzer.Run();
-			Assert.AreEqual(1, analyzer.ActualReportItems.Count);
+			Assert.AreEqual(2, analyzer.ActualReportItems.Count);
+			Assert.AreEqual(2, analyzer.ExpectedReportItems.Count);
+			
+			Assert.AreEqual(0, reportItems[0].InstructionPointer);
+			Assert.AreEqual(1, reportItems[1].InstructionPointer);
 		}
 		
 		[Test]

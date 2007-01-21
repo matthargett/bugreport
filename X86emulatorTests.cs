@@ -13,14 +13,14 @@ namespace bugreport
 	{
 		MachineState state;
 		Byte[] code;
-		List<ReportItem> reportItems;
+		ReportCollection reportItems;
 		AbstractValue one = new AbstractValue(1);
 		
 		[SetUp]
 		public void SetUp()
 		{
 			state = new MachineState(new RegisterCollection());
-			reportItems = new List<ReportItem>();
+			reportItems = new ReportCollection();
 			AbstractBuffer buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(0x200));
 			AbstractValue pointer = new AbstractValue(buffer);
 			state.Registers[RegisterName.ESP] = pointer;
