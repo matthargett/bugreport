@@ -58,15 +58,15 @@ namespace bugreport.DumpFileParserTests
 		{
 			base.SetUp();
 			writer.WriteLine("0804837c <nomain>:");
-			writer.WriteLine(" 8048398:	c9                   	leave  ");
+			writer.WriteLine(" 0804837c:	c9                   	leave  ");
 			writer.WriteLine();
-			writer.WriteLine("0804837c <main>:");
+			writer.WriteLine("0804837d <main>:");
 		}
 		
 		[Test]
 		public void MainIsLastFunction()
 		{
-			writer.WriteLine(" 8048399:	c3                   	ret    ");
+			writer.WriteLine(" 804837d:	c3                   	ret    ");
 			writer.Flush();
 			parser = new DumpFileParser(stream);
 
@@ -78,12 +78,14 @@ namespace bugreport.DumpFileParserTests
 		[Test]
 		public void MainIsNotLastFunction()
 		{
-			writer.WriteLine(" 8048399:	c3                   	ret    ");
+			writer.WriteLine(" 804837d:	c3                   	ret    ");
 			writer.WriteLine();
-			writer.WriteLine("0804837c <nonmain2>:");
-			writer.WriteLine(" 8048398:	90                   	nop  ");
+			writer.WriteLine("0804837e <nonmain2>:");
+			writer.WriteLine(" 804837e:	90                   	nop  ");
 			writer.Flush();
 			parser = new DumpFileParser(stream);
+			
+			Assert.AreEqual(0x0804837d, parser.BaseAddress);
 
 			Byte[] code = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0xc3, code[0]);
@@ -108,7 +110,7 @@ namespace bugreport.DumpFileParserTests
 
 			Assert.AreEqual(0x8000FFFA, parser.ExpectedReportItems[1].InstructionPointer);
 			Assert.AreEqual(false, parser.ExpectedReportItems[1].IsTainted);
-		}
+		}		
 	}
 
 	[TestFixture]

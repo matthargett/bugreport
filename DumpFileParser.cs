@@ -35,6 +35,7 @@ namespace bugreport
 		private List<Byte[]> opCodeList;
 		private Int32 index = -1;
 		private List<ReportItem> expectedReportItems;
+		private UInt32 baseAddress;
 
 		public DumpFileParser(Stream _stream)
 		{
@@ -79,17 +80,29 @@ namespace bugreport
 			}
 		}
 		
-		private Boolean isInMain(String _line)
+		public UInt32 BaseAddress
 		{
-			if (_line.Length > 0 && _line[0] >= '0' && _line[0] <= '7')
+			get
 			{
-				if (_line.Contains("<main>:"))
-					inMain = true;
-				else
-					inMain = false;
+				return baseAddress;
 			}
-			
-			return inMain;
+		}
+		
+		private void updateMainInfo(String line)
+		{			
+			if (line.Length > 0 && line[0] >= '0' && line[0] <= '7')
+			{
+				if (line.Contains("<main>:"))
+				{
+					String address = line.Substring(0,8);
+					baseAddress = UInt32.Parse(address, System.Globalization.NumberStyles.HexNumber);
+					inMain = true;
+				}
+				else
+				{
+					inMain = false;
+				}
+			}
 		}
 		
 		private String getHexWithSpaces(String line)
@@ -97,9 +110,13 @@ namespace bugreport
 			Int32 colonIndex = line.IndexOf(':');
 			
 			if (colonIndex == -1)
+			{
 				return null;
+			}
 			else if (colonIndex != 8)
+			{
 				return null;
+			}				
 			
 			String afterColonToEnd = line.Substring(colonIndex+1).Trim();
 			Int32 doubleSpaceIndex = afterColonToEnd.IndexOf("  ");
@@ -107,12 +124,18 @@ namespace bugreport
 			Int32 endOfHexIndex;
 			
 			if ( doubleSpaceIndex >= 0 && spaceTabIndex >= 0)
+			{
 				endOfHexIndex = doubleSpaceIndex < spaceTabIndex ? doubleSpaceIndex : spaceTabIndex;
+			}
 			else
+			{
 				endOfHexIndex = doubleSpaceIndex > spaceTabIndex ? doubleSpaceIndex : spaceTabIndex;
+			}
 			
 			if (endOfHexIndex == -1)
+			{
 				return null;
+			}
 			
 			String hexString = afterColonToEnd.Substring(0, endOfHexIndex).Trim();
 
@@ -162,8 +185,10 @@ namespace bugreport
 					ReportItem item = getAnnotation(currentLine);
 					expectedReportItems.Add(item);
 				}
+				
+				updateMainInfo(currentLine);
 
-				if (isInMain(currentLine))
+				if (inMain)
 				{
 					opCode = getHexFromString(currentLine);
 					if (opCode != null)
