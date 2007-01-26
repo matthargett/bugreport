@@ -11,12 +11,13 @@ simple-malloc-via-immediate-stack-taint_gcc403-O2-g.dump,
 simple-malloc-via-immediate-oob-stack-taint_gcc403-O0-g.dump,Exploitable OOB at EIP 0x80483bc
 simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x804839d
 simple-malloc-via-heap-oob_gcc403-O2-g.dump,OOB at EIP 0x80483a6
+##### these report one instruction too early:
 simple-malloc-via-stack-calculation-oob_gcc403-O0-g.dump,OOB at EIP 0x80483b6
-simple-malloc-via-stack-calculation-oob_gcc403-O2-g.dump,OOB at EIP 0x8048394
 simple-malloc-via-stack-calculation-oob2_gcc403-O0-g.dump,OOB at EIP 0x80483b6
+#####
+simple-malloc-via-stack-calculation-oob_gcc403-O2-g.dump,OOB at EIP 0x8048394
 simple-malloc-via-stack-calculation-oob2_gcc403-O2-g.dump,OOB at EIP 0x8048394
-# GetEv on SIB:
-# simple-malloc-via-stack-calculation_gcc403-O0-g.dump,
-# simple-malloc-via-stack-calculation2_gcc403-O0-g.dump,
+simple-malloc-via-stack-calculation_gcc403-O0-g.dump,
+simple-malloc-via-stack-calculation2_gcc403-O0-g.dump,
 simple-malloc-via-stack-calculation_gcc403-O2-g.dump,
 simple-malloc-via-stack-calculation2_gcc403-O2-g.dump,

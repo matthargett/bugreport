@@ -117,10 +117,18 @@ namespace bugreport
 		}
 
 		[Test]
+		public void GvMWithSIB()
+		{
+			code = new Byte[] {0x8d, 0x04, 0x02};
+			Assert.IsTrue(ModRM.HasSIB(code));
+			Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));
+		}
+
+		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
 		public void GetIndexWithNoIndex()
 		{
-			code = new Byte[] { 0x89, 0xe5} ;
+			code = new Byte[] {0x89, 0xe5} ;
 			Assert.IsFalse(ModRM.HasIndex(code));
 			ModRM.GetIndex(code);
 		}

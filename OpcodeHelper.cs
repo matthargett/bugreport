@@ -163,6 +163,11 @@ namespace bugreport
 
 			switch (opcodeEncoding)
 			{
+				case OpcodeEncoding.GvM:
+				{
+					return ModRM.GetGv(code);
+				}
+
 				case OpcodeEncoding.rBP:
 				{
 					return RegisterName.EBP;

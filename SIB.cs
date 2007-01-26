@@ -26,15 +26,37 @@ namespace bugreport
 				throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
 			}
 
-			if (getIndex(code) != 0x4)
-			{
-				throw new NotImplementedException("GetBaseRegister only supports scaler of none.");
-			}
-			
 			Byte sib = getSIB(code);
 			RegisterName register = (RegisterName)(sib & 7);
 			
 			return register;
+		}
+		
+		public static RegisterName GetScaledRegister(Byte[] code)
+		{
+			if (!ModRM.HasSIB(code))
+			{
+				throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
+			}
+
+			RegisterName register = (RegisterName) getIndex(code);
+			if (register == RegisterName.ESP)
+			{
+				register = RegisterName.None;
+			}
+			
+			return register;
+		}
+		
+		public static UInt32 GetScaler(Byte[] code)
+		{
+			if (!ModRM.HasSIB(code))
+			{
+				throw new InvalidOperationException("For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
+			}
+
+			Byte S = (Byte)((getSIB(code) >> 6) & 3);
+			return (UInt32)Math.Pow(2, S);
 		}
 	}
 }

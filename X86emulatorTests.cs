@@ -53,7 +53,6 @@ namespace bugreport
 		[Test]
 		public void PushEbpThenPopEbp()
 		{
-			
 			Byte [] pushCode = new Byte[] {0x55};
 			Byte [] popCode = new Byte[] {0x5d};
 			state = X86emulator.Run(reportItems, state, pushCode);
@@ -500,6 +499,23 @@ namespace bugreport
 			AbstractValue edx = state.Registers[RegisterName.EDX];
 			Assert.IsNotNull(edx);
 			Assert.AreEqual(one, edx.PointsTo[0]);
+		}
+		
+		[Test]
+		public void LeaEaxFromEdxPlusEax()
+		{ //  lea    eax,[edx+eax]
+			Byte[] code = new Byte[] {0x8d, 0x04, 0x02};
+
+			AbstractValue zero = new AbstractValue(0);
+			AbstractValue two = new AbstractValue(2);
+			AbstractValue[] values = new AbstractValue [] {zero, two};
+			AbstractBuffer buffer = new AbstractBuffer(values);
+			state.Registers[RegisterName.EDX] = new AbstractValue(buffer);
+			state.Registers[RegisterName.EAX] = new AbstractValue(1);
+
+			state = X86emulator.Run(reportItems, state, code);
+			AbstractValue eax = state.Registers[RegisterName.EAX];
+			Assert.AreEqual(two.Value, eax.PointsTo[0].Value);
 		}
 		
 		[Test]
