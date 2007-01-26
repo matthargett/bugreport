@@ -164,6 +164,8 @@ namespace bugreport
 			switch (opcodeEncoding)
 			{
 				case OpcodeEncoding.GvM:
+				case OpcodeEncoding.GvEv:
+				case OpcodeEncoding.GvEb:
 				{
 					return ModRM.GetGv(code);
 				}
@@ -201,9 +203,15 @@ namespace bugreport
 				}
 					
 				default:
-					throw new NotImplementedException("GetDestinationRegister is not currently supporting " + opcodeEncoding);
+				{
+					return RegisterName.None;
+				}
 			}
-
+		}
+		
+		public static Boolean HasDestinationRegister(Byte[] code)
+		{
+			return GetDestinationRegister(code) != RegisterName.None;
 		}
 		
 		public static OperatorEffect GetOperatorEffect(Byte[] code)
@@ -274,14 +282,26 @@ namespace bugreport
 		{
 			Byte opcodeLength = 1;
 			if (code[0] == 0x0f)
+			{
 				opcodeLength++;
+			}
 
 			return opcodeLength;
 		}
 		
-		public static Boolean IsRegisterOnlyOperand(Byte[] code)
+		public static Boolean HasOnlyOneOperand(Byte[] code)
 		{
-			return (OpcodeHelper.GetEncoding(code).ToString().StartsWith("r"));
+			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(code);
+			switch (encoding)
+			{
+				case OpcodeEncoding.Jz:
+				case OpcodeEncoding.Jb:
+				case OpcodeEncoding.rBP:
+				case OpcodeEncoding.rBX:
+					return true;
+				default:
+					return false;
+			}
 		}
 	}
 }
