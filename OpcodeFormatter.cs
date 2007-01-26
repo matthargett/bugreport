@@ -33,23 +33,25 @@ namespace bugreport
 
 		public static String GetOperands(Byte[] code)
 		{
-			String operands = String.Empty;
-						
-			if (OpcodeHelper.IsRegisterOnlyOperand(code))
+			String operands = String.Empty;						
+			String destinationRegister = String.Empty;
+			
+			if (OpcodeHelper.HasDestinationRegister(code))
 			{
-				String encoding = OpcodeHelper.GetEncoding(code).ToString().ToLower();
-				operands += "e" + encoding[1] + encoding[2];
+				destinationRegister = OpcodeHelper.GetDestinationRegister(code).ToString().ToLower();
 			}
 			
-			if (OpcodeHelper.HasModRM(code) )
+			if (OpcodeHelper.HasModRM(code))
 			{
 				if (!ModRM.HasSIB(code))
 				{
 					Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
 					if (evDereferenced)
+					{
 						operands += "[";
-		
-					operands += ModRM.GetEv(code).ToString().ToLower();
+					}
+
+					operands += destinationRegister;
 
 					if (ModRM.HasIndex(code))
 					{
@@ -57,18 +59,41 @@ namespace bugreport
 					}
 	
 					if (evDereferenced)
+					{
 						operands += "]";
+					}
 				}
 				else
 				{
-					operands += "[" + SIB.GetBaseRegister(code).ToString().ToLower() + "]";
+					operands += "[" + SIB.GetBaseRegister(code).ToString().ToLower();
+					String scaled = SIB.GetScaledRegister(code).ToString().ToLower() +
+						"*" + SIB.GetScaler(code);
+					if (!(SIB.GetScaler(code) == 1 && SIB.GetScaledRegister(code) == RegisterName.None))
+					{
+						operands += "+" + scaled;
+					}
+					
+					operands += "]";
 				}
-	
+			}
+			else
+			{
+				operands += destinationRegister;
+			}
+
+			if (!OpcodeHelper.HasOnlyOneOperand(code) && OpcodeHelper.GetEncoding(code) != OpcodeEncoding.None)
+			{
 				operands += ", ";
 			}
-	
+
 			if (OpcodeHelper.HasImmediate(code))
+			{
 				operands += String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code));
+			}
+			else
+			{
+				// add the source register
+			}
 				
 			return operands;
 		}

@@ -71,7 +71,7 @@ namespace bugreport
 			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.Jz, encoding);	
-			Assert.IsFalse(OpcodeHelper.IsRegisterOnlyOperand(code));
+			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
 		[Test]
@@ -82,7 +82,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
 			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetDestinationRegister(code));
-			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
+			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
 		[Test]
@@ -92,7 +92,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
-			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
+			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
 		[Test]
@@ -103,7 +103,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
 			Assert.AreEqual(RegisterName.EBX, OpcodeHelper.GetDestinationRegister(code));
-			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
+			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 
 		[Test]
@@ -113,7 +113,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
-			Assert.IsTrue(OpcodeHelper.IsRegisterOnlyOperand(code));
+			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
 		[Test]
