@@ -18,7 +18,15 @@ namespace bugreport
 			code = new Byte[] {0x89, 0x04, 0x24};
 			Assert.IsTrue(ModRM.HasSIB(code));
 			Assert.AreEqual(RegisterName.ESP, SIB.GetBaseRegister(code));
-			
+		}
+		
+		[Test]
+		public void GvMSIBRegisterIndex()
+		{
+			code = new Byte[] {0x8d, 0x04, 0x02};
+			Assert.AreEqual(RegisterName.EDX, SIB.GetBaseRegister(code));
+			Assert.AreEqual(RegisterName.EAX, SIB.GetScaledRegister(code));
+			Assert.AreEqual(1, SIB.GetScaler(code));
 		}
 		
 		[Test]

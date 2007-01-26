@@ -270,6 +270,18 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void AnotherGvM()
+		{
+			code = new Byte[] {0x8d, 0x04, 0x02};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.GvM, encoding);		
+
+			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
+			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
+		}
+		
+		[Test]
 		public void rAxIz()
 		{
 			code = new Byte[] {0x05, 0x04, 0x01, 0x00, 0x00};

@@ -50,7 +50,7 @@ namespace bugreport
 			MachineState state = machineState;
 			RegisterName sourceRegister, destinationRegister;
 			AbstractValue sourceValue;
-			Byte index;
+			Int32 index;
 
 			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(code);
 			OperatorEffect op = OpcodeHelper.GetOperatorEffect(code);
@@ -197,29 +197,40 @@ namespace bugreport
 					}
 					
 					destinationRegister = ModRM.GetGv(code);
-					// TODO: handle memory-only and SIB cases
-					sourceRegister = ModRM.GetEv(code);
-					
-					if (!state.Registers[sourceRegister].IsPointer)
-					{
-						throw new InvalidOperationException("Trying to dereference a null pointer in register " + sourceRegister);
-					}
-					
+					AbstractValue baseRegisterValue;
 					index = 0;
-					if (ModRM.HasIndex(code))
+				
+					// TODO: handle the [dword] special case
+					if (ModRM.HasSIB(code))
 					{
-						index = ModRM.GetIndex(code);
+						UInt32 scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
+						UInt32 scaler = SIB.GetScaler(code);
+						baseRegisterValue = state.Registers[SIB.GetBaseRegister(code)];
+						index = (Int32)(scaledRegisterValue * scaler);
 					}
+					else
+					{
+						sourceRegister = ModRM.GetEv(code);
+						if (ModRM.HasIndex(code))
+						{
+							index = ModRM.GetIndex(code);
+						}
+						
+						baseRegisterValue = state.Registers[sourceRegister];
+					}
+
+					// TODO: review these casts of index for possible elimination
+					sourceValue = new AbstractValue(
+						baseRegisterValue.PointsTo.DoOperation(
+							OperatorEffect.Add,
+							new AbstractValue((UInt32)index)
+						)
+					);
 					
-					AbstractValue rhs = state.DoOperation(
-						state.Registers[sourceRegister],
-						OperatorEffect.Add,
-						new AbstractValue(index)
-					).Value;
-					state = state.DoOperation(destinationRegister, OperatorEffect.Assignment, rhs);
+					state = state.DoOperation(destinationRegister, OperatorEffect.Assignment, sourceValue);
 					if (state.Registers[destinationRegister].IsOOB)
 					{
-						ReportItem reportItem = new ReportItem(state.InstructionPointer, state.Registers[sourceRegister].IsTainted);
+						ReportItem reportItem = new ReportItem(state.InstructionPointer, sourceValue.IsTainted);
 						reportItems.Add(reportItem);
 					}
 					

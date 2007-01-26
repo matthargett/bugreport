@@ -23,8 +23,9 @@ namespace bugreport
 		{
 			registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
 			RegisterCollection newRegisters = new RegisterCollection(registers);
-			foreach (RegisterName register in Enum.GetValues(typeof(RegisterName))) 
+			for (UInt32 i = 0; i < 7; i++) 
 			{
+				RegisterName register = (RegisterName)i;
 				Assert.AreNotSame(newRegisters[register], registers[register]);
 			}
 			
@@ -34,8 +35,9 @@ namespace bugreport
 		[Test]
 		public void DefaultRegistersContainUninitializedValues() 
 		{
-			foreach (RegisterName register in RegisterName.GetValues(typeof(RegisterName))) 
+			for (UInt32 i = 0; i < 7; i++) 
 			{
+				RegisterName register = (RegisterName)i;
 				Assert.IsFalse(registers[register].IsInitialized);
 			}			
 		}

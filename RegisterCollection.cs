@@ -7,7 +7,7 @@ using System.Text;
 
 namespace bugreport
 {	
-	public enum RegisterName : int {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI};
+	public enum RegisterName : int {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, Unknown, None};
 	
 	public class RegisterCollection
 	{
@@ -16,7 +16,8 @@ namespace bugreport
 		public RegisterCollection()
 		{
 			registers = new AbstractValue[8];
-			for (UInt32 i = 0; i < registers.Length; ++i) {
+			for (UInt32 i = 0; i < registers.Length; ++i) 
+			{
 				registers[i] = new AbstractValue();
 			}
 		}
@@ -24,11 +25,12 @@ namespace bugreport
 		public RegisterCollection(RegisterCollection _copyMe)
 		{
 			registers = new AbstractValue[8];
-			for (UInt32 i = 0; i < registers.Length; ++i) {
+			for (UInt32 i = 0; i < registers.Length; ++i) 
+			{
 				registers[i] = new AbstractValue(_copyMe.registers[i]);
-			}
-			
+			}	
 		}
+		
 		public AbstractValue this[RegisterName index]
 		{
 			get { return registers[(Int32)index]; }

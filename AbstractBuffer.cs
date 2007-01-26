@@ -62,39 +62,39 @@ namespace bugreport
 			switch(_operatorEffect)
 			{
 				case OperatorEffect.Assignment:
-					{
-						AbstractBuffer result = new AbstractBuffer(lhs);
+				{
+					AbstractBuffer result = new AbstractBuffer(lhs);
 
-						return result;
-					}
+					return result;
+				}
 				case OperatorEffect.Add:
-					{
-						AbstractBuffer result = new AbstractBuffer(lhs);
-						result.baseIndex += _rhs.Value;
+				{
+					AbstractBuffer result = new AbstractBuffer(lhs);
+					result.baseIndex += _rhs.Value;
 
-						return result;
-					}
+					return result;
+				}
+
 				case OperatorEffect.Sub:
+				{
+					AbstractBuffer result = new AbstractBuffer(lhs);
+
+					if (result.baseIndex < _rhs.Value)
 					{
-						AbstractBuffer result = new AbstractBuffer(lhs);
-
-						if (result.baseIndex < _rhs.Value)
-							throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _rhs.Value));
-
-						result.baseIndex -= _rhs.Value;
-						return result;
+						throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _rhs.Value));
 					}
+
+					result.baseIndex -= _rhs.Value;
+					return result;
+				}
 					
 				case OperatorEffect.And:
-					{
-						AbstractBuffer result = new AbstractBuffer(lhs);
+				{
+					AbstractBuffer result = new AbstractBuffer(lhs);
 
-						if ((result.baseIndex & _rhs.Value) < 0)
-							throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _andValue {1:x4}", result.baseIndex, _rhs));
-
-						result.baseIndex &= _rhs.Value;
-						return result;
-					}
+					result.baseIndex &= _rhs.Value;
+					return result;
+				}
 
 				default:
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
