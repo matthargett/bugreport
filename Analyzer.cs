@@ -183,6 +183,7 @@ namespace bugreport
 			parser = createFileParser(stream);
 			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
+			machineState.InstructionPointer = parser.BaseAddress;
 
 			while (!parser.EndOfFunction)
 			{
