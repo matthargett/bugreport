@@ -21,6 +21,11 @@ namespace bugreport
 		ReadOnlyCollection<ReportItem> ExpectedReportItems
 		{
 			get;
+		}		
+		
+		UInt32 BaseAddress
+		{
+			get;
 		}
 		
 		Byte [] GetNextInstructionBytes();
