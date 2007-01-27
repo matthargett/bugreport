@@ -10,40 +10,6 @@ using System.Collections.ObjectModel;
 
 namespace bugreport
 {
-	public struct ReportItem
-	{
-		public UInt32 InstructionPointer;
-		public Boolean IsTainted;
-
-		public ReportItem(UInt32 instructionPointer, Boolean isTainted)
-		{
-			this.InstructionPointer = instructionPointer;
-			this.IsTainted = isTainted;
-		}
-		
-		public override bool Equals(object obj)
-		{
-			ReportItem report = (ReportItem)obj;
-			return this.InstructionPointer == report.InstructionPointer &&
-				this.IsTainted == report.IsTainted;
-		}
-		
-		public override int GetHashCode()
-		{
-			return this.InstructionPointer.GetHashCode() ^ this.IsTainted.GetHashCode();
-		}
-		
-		public static bool operator== (ReportItem a, ReportItem b)
-		{
-			return a.Equals(b);
-		}
-		
-		public static bool operator!= (ReportItem a, ReportItem b)
-		{
-			return !a.Equals(b);
-		}
-	}
-	
 	public class EmulationEventArgs : EventArgs
 	{
 		private MachineState state;
@@ -80,7 +46,7 @@ namespace bugreport
 			get { return reportItem; }
 		}
 	}
-	
+
 	public class ReportCollection : Collection<ReportItem>
 	{
 		public EventHandler<ReportEventArgs> OnReport;

@@ -59,9 +59,14 @@ namespace bugreport
 			storage = _value;
 		}
 		
-		public override bool Equals(object obj)
+		public override Boolean Equals(object obj)
 		{
-			AbstractValue other = (AbstractValue)obj;
+			AbstractValue other = obj as AbstractValue;
+			
+			if (null == other)
+			{
+				return false;
+			}
 
 			return this.Value == other.Value &&
 				this.IsOOB == other.IsOOB &&
@@ -69,15 +74,22 @@ namespace bugreport
 				this.PointsTo == other.PointsTo;
 		}
 		
-		public override int GetHashCode()
+		public override Int32 GetHashCode()
 		{
-			return this.Value.GetHashCode() ^ this.IsOOB.GetHashCode() ^
-				this.IsTainted.GetHashCode() ^ this.PointsTo.GetHashCode();
+			Int32 hashCode = this.Value.GetHashCode() ^ this.IsOOB.GetHashCode() ^
+				this.IsTainted.GetHashCode();
+			
+			if (this.PointsTo != null)
+			{
+				hashCode ^= this.PointsTo.GetHashCode();
+			}
+			
+			return hashCode;
 		}
 		
-		public static AbstractValue[] GetNewBuffer(uint size) {
+		public static AbstractValue[] GetNewBuffer(UInt32 size) {
 			AbstractValue[] buffer = new AbstractValue[size];
-			for (uint i = 0; i < size; i++)
+			for (UInt32 i = 0; i < size; i++)
 			{
 				buffer[i] = new AbstractValue();
 			}
@@ -150,7 +162,7 @@ namespace bugreport
 			get { return pointsTo != null; }
 		}
 		
-		public override string ToString()
+		public override String ToString()
 		{
 			String result = String.Empty;
 			

@@ -39,11 +39,29 @@ namespace bugreport
 		
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
-		public void GetSIBWhenNoSIBPresent()
+		public void GetBaseRegisterWhenNoSIBPresent()
 		{ // mov    ebp,esp
 			code = new Byte[] { 0x89, 0xe5} ;
 			Assert.IsFalse(ModRM.HasSIB(code));
 			SIB.GetBaseRegister(code);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void GetScaledRegisterWhenNoSIBPresent()
+		{ // mov    ebp,esp
+			code = new Byte[] { 0x89, 0xe5} ;
+			Assert.IsFalse(ModRM.HasSIB(code));
+			SIB.GetScaledRegister(code);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(InvalidOperationException))]
+		public void GetScalerWhenNoSIBPresent()
+		{ // mov    ebp,esp
+			code = new Byte[] { 0x89, 0xe5} ;
+			Assert.IsFalse(ModRM.HasSIB(code));
+			SIB.GetScaler(code);
 		}
 	}
 }

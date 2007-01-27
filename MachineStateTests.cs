@@ -171,5 +171,46 @@ namespace bugreport
 			state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));		
 			Assert.AreEqual(offset, state.InstructionPointer);
 		}
+		
+		[Test]
+		public void OperationResultEquality()
+		{
+			OperationResult same = new OperationResult(new AbstractValue(1), false);
+			OperationResult same2 = new OperationResult(new AbstractValue(1), false);
+			OperationResult different = new OperationResult(new AbstractValue(2), true);
+			
+			Assert.IsTrue(same.Equals(same2));
+			Assert.IsFalse(same.Equals(different));
+			
+			Assert.IsTrue(same == same2);
+			Assert.IsTrue(same != different);
+			
+			Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
+			Assert.AreNotEqual(same.GetHashCode(), different.GetHashCode());
+		}
+		
+		[Test]
+		public void Equality()
+		{
+			MachineState same = new MachineState(new RegisterCollection());
+			same.DataSegment[0] = new AbstractValue(2);
+			MachineState same2 = new MachineState(new RegisterCollection());
+			same2.DataSegment[0] = new AbstractValue(2);
+			
+			RegisterCollection registers = new RegisterCollection();
+			registers[RegisterName.EAX] = new AbstractValue(1);
+			MachineState different = new MachineState(registers);
+			different.DataSegment[0] = new AbstractValue(2);
+			
+			Assert.IsTrue(same.Equals(same2));
+			Assert.IsFalse(different.Equals(same));
+			
+			Assert.IsTrue(same == same2);
+			Assert.IsTrue(same != different);
+			
+			Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
+			Assert.AreNotEqual(same.GetHashCode(), different.GetHashCode());
+		}
+
 	}
 }

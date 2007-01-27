@@ -81,7 +81,11 @@ namespace bugreport
 			
 			analyzer = new FakeAnalyzer(stream, 2 ,2);
 			analyzer.OnEmulationComplete += 
-				delegate(object sender, EmulationEventArgs e) { Assert.AreEqual(0x90, e.Code[0]); };
+				delegate(object sender, EmulationEventArgs e)
+				{
+					Assert.AreEqual(0x90, e.Code[0]);
+					Assert.IsNotNull(e.MachineState);
+				};
 			
 			analyzer.OnReport += 
 				delegate(object sender, ReportEventArgs e) { reportItems.Add(e.ReportItem); };
