@@ -133,10 +133,14 @@ namespace bugreport
 				case OpcodeEncoding.rAxIz:
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.Jz:
+				{
 					return BitMath.BytesToDword(code, valueIndex);
+				}
 
 				default:
-					throw new InvalidOpcodeException("Don't know how to get the immediate for this opcode: ", code);
+				{
+					throw new NotImplementedException("Don't know how to get the immediate for this opcode: " + code[0]);
+				}
 			}
 		}
 		

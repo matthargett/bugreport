@@ -61,6 +61,7 @@ namespace bugreport
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.EvIz, encoding);
+			Assert.IsTrue(OpcodeHelper.HasDestinationRegister(code));
 			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetDestinationRegister(code));
 			Assert.AreEqual(0x10, OpcodeHelper.GetImmediate(code));
 		}

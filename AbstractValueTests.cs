@@ -57,6 +57,13 @@ namespace bugreport
 		}
 		
 		[Test]
+		[ExpectedException(typeof(ArgumentNullException))]
+		public void NullCopyCtor()
+		{
+			pointer = new AbstractValue((AbstractValue)null);
+		}
+		
+		[Test]
 		public void TruncateValue()
 		{
 			AbstractValue dwordValue = new AbstractValue(0xdeadbeef);

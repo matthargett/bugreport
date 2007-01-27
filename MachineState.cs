@@ -8,23 +8,29 @@ namespace bugreport
 		public AbstractValue Value;
 		public Boolean ZeroFlag;
 		
-		public override bool Equals(object obj)
+		public OperationResult(AbstractValue value, Boolean zeroFlag)
 		{
-			OperationResult opResult = (OperationResult)obj;
-			return (this.Value == opResult.Value) && (this.ZeroFlag == opResult.ZeroFlag);
+			this.Value = value;
+			this.ZeroFlag = zeroFlag;
 		}
 		
-		public override int GetHashCode()
+		public override Boolean Equals(object obj)
+		{
+			OperationResult opResult = (OperationResult)obj;
+			return (this.Value.Equals(opResult.Value)) && (this.ZeroFlag == opResult.ZeroFlag);
+		}
+		
+		public override Int32 GetHashCode()
 		{
 			return this.Value.GetHashCode() ^ this.ZeroFlag.GetHashCode();
 		}
 		
-		public static bool operator== (OperationResult a, OperationResult b)
+		public static Boolean operator== (OperationResult a, OperationResult b)
 		{
 			return a.Equals(b);
 		}
 		
-		public static bool operator!= (OperationResult a, OperationResult b)
+		public static Boolean operator!= (OperationResult a, OperationResult b)
 		{
 			return !a.Equals(b);
 		}
@@ -53,29 +59,53 @@ namespace bugreport
 			this.zeroFlag = _copyMe.zeroFlag;
 		}
 		
-		public override bool Equals(object obj)
+		public override Boolean Equals(object obj)
 		{
-			MachineState machine = (MachineState)obj;
-			return (this.instructionPointer == machine.instructionPointer) &&
-				(this.registers == machine.registers) &&
-				(this.dataSegment == machine.dataSegment) &&
-				(this.zeroFlag == machine.zeroFlag);
+			MachineState other = (MachineState)obj;
+			
+			if (!(this.instructionPointer == other.instructionPointer &&
+				this.registers.Equals(other.registers) &&
+				this.zeroFlag == other.zeroFlag))
+			{
+				return false;
+			}
+			
+			foreach (UInt32 key in this.dataSegment.Keys)
+			{
+				if (!other.dataSegment.ContainsKey(key))
+				{
+					return false;
+				}
+				
+				if (!this.dataSegment[key].Equals(other.dataSegment[key]))
+				{
+					return false;
+				}
+			}
+			
+			return true;
 		}
-		
-		public override int GetHashCode()
+
+		public override Int32 GetHashCode()
 		{
-			return this.instructionPointer.GetHashCode() ^
+			Int32 hashCode = this.instructionPointer.GetHashCode() ^
 				this.registers.GetHashCode() ^
-				this.dataSegment.GetHashCode() ^
 				this.zeroFlag.GetHashCode();
+			
+			foreach (UInt32 key in this.dataSegment.Keys)
+			{
+				hashCode ^= this.dataSegment[key].GetHashCode();
+			}
+			
+			return hashCode;
 		}
 		
-		public static bool operator== (MachineState a, MachineState b)
+		public static Boolean operator== (MachineState a, MachineState b)
 		{
 			return a.Equals(b);
 		}
 		
-		public static bool operator!= (MachineState a, MachineState b)
+		public static Boolean operator!= (MachineState a, MachineState b)
 		{
 			return !a.Equals(b);
 		}

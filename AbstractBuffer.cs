@@ -101,7 +101,7 @@ namespace bugreport
 			}
 		}
 		
-		private bool IsIndexPastBounds(Int32 index)
+		private Boolean IsIndexPastBounds(Int32 index)
 		{
 			return (((baseIndex + index) >= this.allocatedLength) && ((baseIndex + index) >= this.storage.Length));
 		}
@@ -113,7 +113,7 @@ namespace bugreport
 				// We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
 				if (this.IsIndexPastBounds(index))
 				{
-					this.extend(baseIndex + (uint)index);
+					this.extend(baseIndex + (UInt32)index);
 					return this.storage[baseIndex + index];
 				}
 				else
@@ -127,7 +127,7 @@ namespace bugreport
 
 				if (this.IsIndexPastBounds(index))
 				{
-					this.extend(baseIndex + (uint)index);
+					this.extend(baseIndex + (UInt32)index);
 					this.storage[baseIndex + index] = value;
 
 				}

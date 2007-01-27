@@ -11,10 +11,6 @@ namespace bugreport
 {
 	public class InvalidOpcodeException : Exception
 	{
-		public InvalidOpcodeException(String message, params Byte[] code) : base(String.Concat(message, "  ", FormatOpcodes(code)))
-		{
-		}
-		
 		public InvalidOpcodeException(params Byte[] code) : base(FormatOpcodes(code))
 		{
 		}

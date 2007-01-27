@@ -37,7 +37,39 @@ namespace bugreport
 			set { registers[(Int32)index] = value; }
 		}
 		
-		public override string ToString()
+		public override Boolean Equals(object obj)
+		{
+			RegisterCollection other = obj as RegisterCollection;
+			
+			if (null == other)
+			{
+				return false;
+			}
+			
+			for (Int32 i=0; i < this.registers.Length; i++)
+			{
+				if (!this.registers[i].Equals(other.registers[i]))
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		public override Int32 GetHashCode()
+		{
+			Int32 hashCode = 0;
+			
+			for (Int32 i=0; i < this.registers.Length; i++)
+			{
+				hashCode ^= registers[i].GetHashCode();
+			}
+			
+			return hashCode;
+		}
+		
+		public override String ToString()
 		{
 			StringBuilder result = new StringBuilder(String.Empty);
 			for(UInt32 i = 0; i < registers.Length; ++i)
