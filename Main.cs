@@ -15,19 +15,20 @@ namespace bugreport
 		const String VERSION = "0.1";
 		static Analyzer analyzer;
 
-		public static void Main(String[] args)
+		public static void Main(String[] arguments)
 		{
 			Console.WriteLine("bugreport " + VERSION);
 
-			if (args.Length < 1)
+			if (arguments.Length < 1)
 			{
 				Console.WriteLine("Usage: bugreport.exe [--trace] file.test");
 				return;
 			}
-			
-			Boolean isTracing = getTracingOptionFromArguments(args);
-			String[] fileNames = getFileNamesFromArguments(args);
-			if (0 == fileNames.Length)
+
+			Args args = new Args(arguments);
+			Boolean isTracing = args.IsTracing;
+			ICollection<String> fileNames = args.Filenames;
+			if (0 == fileNames.Count)
 			{
 				Console.WriteLine("No files found by name specified");
 				Environment.Exit(-1);
@@ -41,32 +42,6 @@ namespace bugreport
 				Console.WriteLine("Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
 				Environment.Exit(-1);
 			}
-		}
-
-		public static Boolean getTracingOptionFromArguments(String[] _args)
-		{
-			if (_args[0].Equals("--trace"))
-			{
-				return true;
-			}
-
-			return false;
-		}
-
-		public static String[] getFileNamesFromArguments(String[] _args)
-		{
-			String fileArgument = _args[_args.Length - 1];
-			String[] fileNames;
-			if (fileArgument.Contains("*"))
-			{
-				fileNames = Directory.GetFiles(Environment.CurrentDirectory, fileArgument);
-			}
-			else
-			{
-				fileNames = new String[] { fileArgument };
-			}
-
-			return fileNames;
 		}
 
 		public static void printInfo(object sender, EmulationEventArgs e)
@@ -104,7 +79,7 @@ namespace bugreport
 			Console.WriteLine();
 		}
 
-		private static void analyzeFiles(String[] _fileNames, Boolean _isTracing)
+		private static void analyzeFiles(ICollection<String> _fileNames, Boolean _isTracing)
 		{
 			foreach(String fileName in _fileNames)
 			{
