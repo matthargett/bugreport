@@ -37,7 +37,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(String.Empty);
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -45,7 +45,7 @@ namespace bugreport.DumpFileParserTests
 		[Test]
 		public void NoLines()
 		{
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
 	}
@@ -58,7 +58,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			base.SetUp();
 			writer.WriteLine("0804837c <nomain>:");
-			writer.WriteLine(" 0804837c:	c9                   	leave  ");
+			writer.WriteLine(" 804837c:	c9                   	leave  ");
 			writer.WriteLine();
 			writer.WriteLine("0804837d <main>:");
 		}
@@ -68,7 +68,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 804837d:	c3                   	ret    ");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Byte[] code = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0xc3, code[0]);
@@ -83,7 +83,7 @@ namespace bugreport.DumpFileParserTests
 			writer.WriteLine("0804837e <nonmain2>:");
 			writer.WriteLine(" 804837e:	90                   	nop  ");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 			
 			Assert.AreEqual(0x0804837d, parser.BaseAddress);
 
@@ -97,12 +97,27 @@ namespace bugreport.DumpFileParserTests
 		}
 
 		[Test]
+		public void ParseNonMain()
+		{
+			writer.WriteLine(" 804837d:	c3                   	ret    ");
+			writer.WriteLine();
+			writer.Flush();
+			parser = new DumpFileParser(stream, "nomain");
+			
+			Assert.AreEqual(0x0804837c, parser.BaseAddress);
+
+			Byte[] code = parser.GetNextInstructionBytes();
+			Assert.AreEqual(0xc9, code[0]);
+			Assert.IsTrue(parser.EndOfFunction);
+		}
+
+		[Test]
 		public void WithExpectedReportItmes()
 		{
 			writer.WriteLine(" //<OutOfBoundsMemoryAccess Location=0x8000ffff Exploitable=True/>");
 			writer.WriteLine(" //<OutOfBoundsMemoryAccess Location=0x8000FFFA Exploitable=False/>");
 			writer.Flush();
-			parser = new DumpFileParser (stream);
+			parser = new DumpFileParser (stream, "main");
 			Assert.AreEqual(2, parser.ExpectedReportItems.Count);
 
 			Assert.AreEqual(0x8000ffff, parser.ExpectedReportItems[0].InstructionPointer);
@@ -128,7 +143,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 804837c:       55                      push   ebp");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -149,7 +164,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine("        : ");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -159,7 +174,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(":");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 			
 			Assert.IsNull(parser.GetNextInstructionBytes());
 		}
@@ -170,7 +185,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 804837c:       55                      push   ebp");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Byte[] result = parser.GetNextInstructionBytes();
 			Assert.AreEqual(0x55, result[0]);
@@ -181,7 +196,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 8048385:       83 ec 10                sub    esp,0x10");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};
 			Byte[] result = parser.GetNextInstructionBytes();
@@ -193,7 +208,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 8048388:       c7 04 24 10 00 00 00    mov    DWORD PTR [esp],0x10");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Byte[] expectedResult = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			Byte[] result = parser.GetNextInstructionBytes();
@@ -206,7 +221,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 8048385:       83 ej 10                sub    esp,0x10");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			parser.GetNextInstructionBytes();
 		}
@@ -217,7 +232,7 @@ namespace bugreport.DumpFileParserTests
 			writer.WriteLine("BADLINE");
 			writer.WriteLine(" 8048385:       83 ec 10                sub    esp,0x10");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 			
 			Byte[] result = parser.GetNextInstructionBytes();
 			Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};
@@ -230,7 +245,7 @@ namespace bugreport.DumpFileParserTests
 		{
 			writer.WriteLine(" 8048388:       c7 04 24 10 00 00 00 \tmov    DWORD PTR [esp],0x10");
 			writer.Flush();
-			parser = new DumpFileParser(stream);
+			parser = new DumpFileParser(stream, "main");
 
 			Byte[] expectedResult = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			Byte[] result = parser.GetNextInstructionBytes();

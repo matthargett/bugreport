@@ -141,7 +141,7 @@ namespace bugreport
 		
 		protected virtual IParsable createFileParser(Stream _stream)
 		{
-			return new DumpFileParser(_stream);
+			return new DumpFileParser(_stream, Options.FunctionToAnalyze);
 		}
 
 		public void Run()

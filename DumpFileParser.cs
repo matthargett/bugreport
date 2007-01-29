@@ -41,9 +41,11 @@ namespace bugreport
 		private Int32 index = -1;
 		private List<ReportItem> expectedReportItems;
 		private UInt32 baseAddress;
+		private String functionNameToParse = "main";
 
-		public DumpFileParser(Stream _stream)
+		public DumpFileParser(Stream _stream, String functionNameToParse)
 		{
+			this.functionNameToParse = functionNameToParse;
 			stream = _stream;
 			stream.Position = 0;
 			reader = new StreamReader(stream);
@@ -94,10 +96,10 @@ namespace bugreport
 		}
 		
 		private void updateMainInfo(String line)
-		{			
+		{
 			if (line.Length > 0 && line[0] >= '0' && line[0] <= '7')
 			{
-				if (line.Contains("<main>:"))
+				if (line.Contains("<" + functionNameToParse +">:"))
 				{
 					String address = line.Substring(0,8);
 					baseAddress = UInt32.Parse(address, System.Globalization.NumberStyles.HexNumber);
