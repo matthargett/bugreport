@@ -5,16 +5,50 @@ using System.Collections.Generic;
 
 namespace bugreport
 {
-	public class Args
+			
+	internal class FileResolver
 	{
-		private String[] arguments;
-		
-		public Args(String[] arguments)
+		public virtual ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
 		{
-			this.arguments = arguments;
+			return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
+		}
+	}
+
+	public static class Options
+	{
+		private static String[] arguments;
+		private static FileResolver fileResolver = new FileResolver();
+		
+		internal static FileResolver FileResolver
+		{
+			set
+			{
+				fileResolver = value;
+			}
 		}
 		
-		public ReadOnlyCollection<String> Filenames
+		public static void ParseArguments(String[] commandLine)
+		{
+			arguments = commandLine;
+		}
+		
+		public static String FunctionToAnalyze
+		{
+			get
+			{
+				for (Int32 i=0; i < arguments.Length - 1; i++)
+				{
+					if (arguments[i] == "--function")
+					{
+						return arguments[i + 1];
+					}
+				}
+				
+				return "main";
+			}
+		}
+		
+		public static ReadOnlyCollection<String> Filenames
 		{
 			get
 			{
@@ -34,7 +68,7 @@ namespace bugreport
 
 					String fileName = Path.GetFileName(fileArgument);	
 					
-					return getFilesFromDirectory(path, fileName);
+					return fileResolver.GetFilesFromDirectory(path, fileName);
 				}
 				else
 				{
@@ -52,7 +86,7 @@ namespace bugreport
 			}
 		}	
 		
-		public Boolean IsTracing
+		public static Boolean IsTracing
 		{
 			get
 			{
@@ -63,11 +97,6 @@ namespace bugreport
 	
 				return false;
 			}
-		}
-
-		protected virtual ReadOnlyCollection<String> getFilesFromDirectory(String path, String fileName)
-		{
-			return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
 		}
 	}
 }

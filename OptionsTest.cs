@@ -6,21 +6,21 @@ using System.IO;
 namespace bugreport
 {
 	[TestFixture]
-	public class ArgsTest
+	public class OptionsTest
 	{
-		internal class FakeArgs : Args
+		internal class FakeFileResolver : FileResolver
 		{
 			String expectedPath, expectedFileName;
 			Int32 numberOfFilesFound;
 			
-			public FakeArgs(String[] arguments, String expectedPath, String expectedFileName, Int32 numberOfFilesFound) : base(arguments)
+			public FakeFileResolver(String expectedPath, String expectedFileName, Int32 numberOfFilesFound)
 			{
 				this.expectedPath = expectedPath;
 				this.expectedFileName = expectedFileName;
 				this.numberOfFilesFound = numberOfFilesFound;
 			}
 			
-			protected override ReadOnlyCollection<String> getFilesFromDirectory(String path, String fileName)
+			public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
 			{
 				if (path == expectedPath && fileName == expectedFileName)
 				{
@@ -33,20 +33,21 @@ namespace bugreport
 			}
 		}
 		
-		Args args;
+		FakeFileResolver fileResolver;
 		String[] commandLine;
 		
 		[Test]
 		public void WildcardInFileName()
 		{
-			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
-			args = new FakeArgs(
-				commandLine,
+			fileResolver = new FakeFileResolver(
 				@"c:\cygwin\home\matt\bugreport\tests\simple\heap",
 				@"simple-malloc-via-immediate*.dump",
 				12
 			);
-			Assert.AreEqual(12, args.Filenames.Count);
+			Options.FileResolver = fileResolver;
+			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
+			Options.ParseArguments(commandLine);
+			Assert.AreEqual(12, Options.Filenames.Count);
 
 			commandLine = new String[] {"simple-malloc-via-immediate*.dump"};
 
@@ -54,13 +55,14 @@ namespace bugreport
 			try
 			{
 				Directory.SetCurrentDirectory(Environment.SystemDirectory);
-				args = new FakeArgs(
-					commandLine,
+				fileResolver = new FakeFileResolver(
 					Environment.SystemDirectory,
 					@"simple-malloc-via-immediate*.dump",
 					12
 				);
-				Assert.AreEqual(12, args.Filenames.Count);
+				Options.FileResolver = fileResolver;
+				Options.ParseArguments(commandLine);
+				Assert.AreEqual(12, Options.Filenames.Count);
 			}
 			
 			finally
@@ -73,20 +75,32 @@ namespace bugreport
 		public void TraceOption()
 		{
 			commandLine = new String[] {"--trace", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
-			args = new Args(commandLine);
-			Assert.IsTrue(args.IsTracing);
+			Options.ParseArguments(commandLine);
+			Assert.IsTrue(Options.IsTracing);
 
 			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
-			args = new Args(commandLine);
-			Assert.IsFalse(args.IsTracing);
+			Options.ParseArguments(commandLine);
+			Assert.IsFalse(Options.IsTracing);
 		}
 		
 		[Test]
 		public void MultipleFilenames()
 		{
 			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
-			args = new Args(commandLine);
-			Assert.AreEqual(2, args.Filenames.Count);
+			Options.ParseArguments(commandLine);
+			Assert.AreEqual(2, Options.Filenames.Count);
+		}
+		
+		[Test]
+		public void FunctionName()
+		{
+			commandLine = new String[] {"--function", "nomain", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
+			Options.ParseArguments(commandLine);
+			Assert.AreEqual("nomain", Options.FunctionToAnalyze);
+
+			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
+			Options.ParseArguments(commandLine);
+			Assert.AreEqual("main", Options.FunctionToAnalyze);
 		}
 	}
 }

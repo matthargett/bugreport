@@ -25,16 +25,14 @@ namespace bugreport
 				return;
 			}
 
-			Args args = new Args(arguments);
-			Boolean isTracing = args.IsTracing;
-			ICollection<String> fileNames = args.Filenames;
-			if (0 == fileNames.Count)
+			Options.ParseArguments(arguments);
+			if (0 == Options.Filenames.Count)
 			{
 				Console.WriteLine("No files found by name specified");
 				Environment.Exit(-1);
 			}
 
-			analyzeFiles(fileNames, isTracing);	
+			analyzeFiles(Options.Filenames, Options.IsTracing);	
 			
 			if (analyzer.ExpectedReportItems.Count != 0 && (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count) )
 			{
