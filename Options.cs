@@ -36,11 +36,17 @@ namespace bugreport
 		{
 			get
 			{
-				for (Int32 i=0; i < arguments.Length - 1; i++)
+				for (Int32 i=0; i < arguments.Length; i++)
 				{
-					if (arguments[i] == "--function")
+					if (arguments[i].StartsWith("--function"))
 					{
-						return arguments[i + 1];
+						Int32 indexOfEquals = arguments[i].IndexOf("=");
+						
+						if (indexOfEquals == -1)
+						{
+							throw new ArgumentException("--function malformed, should be in the form of --function=name");
+						}
+						return arguments[i].Substring(indexOfEquals + 1);
 					}
 				}
 				
@@ -90,9 +96,12 @@ namespace bugreport
 		{
 			get
 			{
-				if (arguments[0].Equals("--trace"))
+				foreach (String argument in arguments)
 				{
-					return true;
+					if (argument == "--trace")
+					{
+						return true;
+					}
 				}
 	
 				return false;

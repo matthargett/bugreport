@@ -20,6 +20,18 @@ namespace bugreport.DumpFileParserTests
 			stream = new MemoryStream();
 			writer = new StreamWriter(stream);
 		}
+		
+		[TearDown]
+		public void TearDown()
+		{
+			if (parser != null)
+			{
+				parser.Dispose();
+				parser = null;
+			}
+		}
+		
+
 	}
 	
 	[TestFixture]

@@ -42,41 +42,6 @@ namespace bugreport
 			}
 		}
 
-		public static void printInfo(object sender, EmulationEventArgs e)
-		{
-			Byte[] code = new Byte[e.Code.Count];
-			e.Code.CopyTo(code, 0);
-			MachineState state = e.MachineState;
-			String address = String.Format("{0:x8}", state.InstructionPointer);
-			Console.Write(address + ":");
-			Console.Write("\t");
-
-			foreach (Byte codeByte in code)
-			{
-				Console.Write(String.Format("{0:x2}", codeByte) + " ");
-			}
-
-			// magic numbers that happen to look good :)
-			Int32 numberOfTabs = 3 - code.Length / 3;
-			for (Int32 i = 0; i < numberOfTabs; i++)
-				Console.Write("\t");
-
-			Console.Write(OpcodeFormatter.GetInstructionName(code));
-			Console.Write("\t");
-
-			String operands = OpcodeFormatter.GetOperands(code);
-			Console.Write(operands);
-			if (operands.Length < 8)
-				Console.Write("\t");
-
-			String encoding = OpcodeFormatter.GetEncoding(code);
-			Console.Write("\t");
-			Console.WriteLine(encoding);
-
-			Console.WriteLine(state.Registers);
-			Console.WriteLine();
-		}
-
 		private static void analyzeFiles(ICollection<String> _fileNames, Boolean _isTracing)
 		{
 			foreach(String fileName in _fileNames)
@@ -118,6 +83,41 @@ namespace bugreport
 				message += "Exploitable ";
 			message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
 			Console.WriteLine(message);
+			Console.WriteLine();
+		}
+		
+		public static void printInfo(object sender, EmulationEventArgs e)
+		{
+			Byte[] code = new Byte[e.Code.Count];
+			e.Code.CopyTo(code, 0);
+			MachineState state = e.MachineState;
+			String address = String.Format("{0:x8}", state.InstructionPointer);
+			Console.Write(address + ":");
+			Console.Write("\t");
+
+			foreach (Byte codeByte in code)
+			{
+				Console.Write(String.Format("{0:x2}", codeByte) + " ");
+			}
+
+			// magic numbers that happen to look good :)
+			Int32 numberOfTabs = 3 - code.Length / 3;
+			for (Int32 i = 0; i < numberOfTabs; i++)
+				Console.Write("\t");
+
+			Console.Write(OpcodeFormatter.GetInstructionName(code));
+			Console.Write("\t");
+
+			String operands = OpcodeFormatter.GetOperands(code);
+			Console.Write(operands);
+			if (operands.Length < 8)
+				Console.Write("\t");
+
+			String encoding = OpcodeFormatter.GetEncoding(code);
+			Console.Write("\t");
+			Console.WriteLine(encoding);
+
+			Console.WriteLine(state.Registers);
 			Console.WriteLine();
 		}
 	}

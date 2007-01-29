@@ -45,7 +45,9 @@ namespace bugreport
 				12
 			);
 			Options.FileResolver = fileResolver;
-			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
+			commandLine = new String[] {
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"
+			};
 			Options.ParseArguments(commandLine);
 			Assert.AreEqual(12, Options.Filenames.Count);
 
@@ -74,11 +76,23 @@ namespace bugreport
 		[Test]
 		public void TraceOption()
 		{
-			commandLine = new String[] {"--trace", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
+			commandLine = new String[] {
+				"--trace", 
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"
+			};
 			Options.ParseArguments(commandLine);
 			Assert.IsTrue(Options.IsTracing);
 
-			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
+			commandLine = new String[] {
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump",
+				"--trace"
+			};
+			Options.ParseArguments(commandLine);
+			Assert.IsTrue(Options.IsTracing);
+
+			commandLine = new String[] {
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"
+			};
 			Options.ParseArguments(commandLine);
 			Assert.IsFalse(Options.IsTracing);
 		}
@@ -86,7 +100,10 @@ namespace bugreport
 		[Test]
 		public void MultipleFilenames()
 		{
-			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
+			commandLine = new String[] {
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", 
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"
+			};
 			Options.ParseArguments(commandLine);
 			Assert.AreEqual(2, Options.Filenames.Count);
 		}
@@ -94,13 +111,41 @@ namespace bugreport
 		[Test]
 		public void FunctionName()
 		{
-			commandLine = new String[] {"--function", "nomain", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
+			commandLine = new String[] {
+				"--function=nomain", 
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", 
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"
+			};
 			Options.ParseArguments(commandLine);
 			Assert.AreEqual("nomain", Options.FunctionToAnalyze);
+			Assert.AreEqual(2, Options.Filenames.Count);
 
-			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
+			
+			commandLine = new String[] {
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump"
+			};
 			Options.ParseArguments(commandLine);
 			Assert.AreEqual("main", Options.FunctionToAnalyze);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(ArgumentException))]
+		public void FunctionNameWithoutEquals()
+		{
+			commandLine = new String[] {
+				"--function", 
+				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"
+			};
+			Options.ParseArguments(commandLine);
+			Assert.AreEqual("nomain", Options.FunctionToAnalyze);
+		}
+		
+		[Test]
+		public void FileResolver()
+		{
+			FileResolver realFileResolver = new FileResolver();
+			ReadOnlyCollection<String> files = realFileResolver.GetFilesFromDirectory(Environment.CurrentDirectory, "*");
+			Assert.IsNotNull(files);
 		}
 	}
 }
