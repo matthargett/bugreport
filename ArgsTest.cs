@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace bugreport
@@ -19,11 +20,11 @@ namespace bugreport
 				this.numberOfFilesFound = numberOfFilesFound;
 			}
 			
-			protected override String[] getFilesFromDirectory(String path, String fileName)
+			protected override ReadOnlyCollection<String> getFilesFromDirectory(String path, String fileName)
 			{
 				if (path == expectedPath && fileName == expectedFileName)
 				{
-					return new String[numberOfFilesFound];
+					return new ReadOnlyCollection<String>(new String[numberOfFilesFound]);
 				}
 				
 				throw new ArgumentException(
@@ -78,6 +79,14 @@ namespace bugreport
 			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate*.dump"};
 			args = new Args(commandLine);
 			Assert.IsFalse(args.IsTracing);
+		}
+		
+		[Test]
+		public void MultipleFilenames()
+		{
+			commandLine = new String[] {@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate_gcc403-02-g.dump", @"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"};
+			args = new Args(commandLine);
+			Assert.AreEqual(2, args.Filenames.Count);
 		}
 	}
 }

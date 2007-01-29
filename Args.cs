@@ -14,12 +14,11 @@ namespace bugreport
 			this.arguments = arguments;
 		}
 		
-		public ICollection<String> Filenames
+		public ReadOnlyCollection<String> Filenames
 		{
 			get
 			{
 				String fileArgument = arguments[arguments.Length - 1];
-				String[] fileNames;
 				if (fileArgument.Contains("*"))
 				{
 					String path;
@@ -33,17 +32,23 @@ namespace bugreport
 						path = Environment.CurrentDirectory;
 					}
 
-					String fileName = Path.GetFileName(fileArgument);
+					String fileName = Path.GetFileName(fileArgument);	
 					
-					
-					fileNames = getFilesFromDirectory(path, fileName);
+					return getFilesFromDirectory(path, fileName);
 				}
 				else
 				{
-					fileNames = new String[] { fileArgument };
+					List<String> fileNames = new List<String>();
+					foreach (String argument in arguments)
+					{
+						if (!argument.StartsWith("--"))
+						{
+							fileNames.Add(argument);
+						}
+					}
+					
+					return fileNames.AsReadOnly();
 				}
-	
-				return new List<String>(fileNames);
 			}
 		}	
 		
@@ -60,9 +65,9 @@ namespace bugreport
 			}
 		}
 
-		protected virtual String[] getFilesFromDirectory(String path, String fileName)
+		protected virtual ReadOnlyCollection<String> getFilesFromDirectory(String path, String fileName)
 		{
-			return Directory.GetFiles(path, fileName);
+			return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
 		}
 	}
 }
