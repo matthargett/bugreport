@@ -90,6 +90,17 @@ namespace bugreport
 			Assert.AreEqual(0x50, eax.Value);
 			Assert.IsTrue(eax.IsTainted);
 		}
+		
+		[Test]
+		public void Xor()
+		{
+			eax = new AbstractValue(0xff).AddTaint();
+			ebx = new AbstractValue(0xff);
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Xor, RegisterName.EBX);
+			
+			Assert.AreEqual(0x0, eax.Value);
+			Assert.IsTrue(eax.IsTainted);
+		}
 
 		[Test]
 		public void Shr()

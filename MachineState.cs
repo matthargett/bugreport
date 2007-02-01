@@ -338,6 +338,27 @@ namespace bugreport
 					return result;
 				}
 					
+				case OperatorEffect.Xor:
+				{
+					if (lhs.IsPointer)
+					{
+						AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(OperatorEffect.Xor, rhs);
+						result.Value = new AbstractValue(newBuffer);
+						return result;
+					}
+					
+					UInt32 total = lhs.Value ^ rhs.Value;
+					AbstractValue totalValue = new AbstractValue(total);
+
+					if (lhs.IsTainted || rhs.IsTainted)
+					{
+						totalValue = totalValue.AddTaint();
+					}
+
+					result.Value = totalValue;
+					return result;
+				}
+					
 				case OperatorEffect.Shr:
 				{
 					UInt32 total = lhs.Value >> (Byte)rhs.Value;

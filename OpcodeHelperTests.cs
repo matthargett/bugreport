@@ -20,6 +20,17 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
 		}
+		
+		[Test]
+		public void XorEvGv()
+		{
+			//Xor EBP,EBP
+			code = new Byte[] { 0x31, 0xed };
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
+			Assert.AreEqual(OperatorEffect.Xor, OpcodeHelper.GetOperatorEffect(code));
+			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetDestinationRegister(code));
+		}
 
 		[Test]
 		public void GvEv()
