@@ -8,7 +8,7 @@ namespace bugreport
 {
 	public enum StackEffect {None, Push, Pop};
 	
-	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump};
+	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump, Xor};
 
 	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
@@ -43,6 +43,7 @@ namespace bugreport
 				case 0x88:
 					return OpcodeEncoding.EbGb;
 				case 0x29:
+				case 0x31:
 				case 0x89:
 					return OpcodeEncoding.EvGv;
 				case 0x8b:
@@ -227,6 +228,9 @@ namespace bugreport
 					
 				case 0x29:
 					return OperatorEffect.Sub;
+				
+				case 0x31:
+					return OperatorEffect.Xor;
 					
 				case 0x75:
 					return OperatorEffect.Jnz;
