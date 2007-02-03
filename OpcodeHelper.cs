@@ -10,7 +10,7 @@ namespace bugreport
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump, Xor};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
+	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, rAX, rSI, rSP, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -24,7 +24,10 @@ namespace bugreport
 				case 0xc9:
 				case 0xc3:
 				case 0x90:
-					return OpcodeEncoding.None;
+					return OpcodeEncoding.None;				
+				case 0x5e:
+				case 0x56:
+					return OpcodeEncoding.rSI;
 				case 0x05:
 					return OpcodeEncoding.rAxIz;
 				case 0x0f:
@@ -35,6 +38,9 @@ namespace bugreport
 				case 0x5d:
 				case 0x55:
 					return OpcodeEncoding.rBP;
+				case 0x54:
+				case 0x5c:
+					return OpcodeEncoding.rSP;
 				case 0x75:
 					return OpcodeEncoding.Jb;
 				case 0x83:
@@ -56,6 +62,9 @@ namespace bugreport
 					return OpcodeEncoding.rAxIv;
 				case 0xa1:
 					return OpcodeEncoding.rAxOv;
+				case 0x50:
+				case 0x58:
+					return OpcodeEncoding.rAX;
 				case 0xc6:
 					return OpcodeEncoding.EbIb;
 				case 0xc7:
@@ -151,10 +160,16 @@ namespace bugreport
 			switch(code[0])
 			{
 				case 0x53:
+				case 0x54:
 				case 0x55:
+				case 0x56:
+				case 0x50:				
 					return StackEffect.Push;
 				case 0x5b:
+				case 0x5c:
 				case 0x5d:
+				case 0x5e:
+				case 0x58:
 					return StackEffect.Pop;
 
 				default:
@@ -179,14 +194,25 @@ namespace bugreport
 				{
 					return RegisterName.EBP;
 				}
+					
+				case OpcodeEncoding.rSI:
+				{
+					return RegisterName.ESI;
+				}
+					
+				case OpcodeEncoding.rSP:
+				{
+					return RegisterName.ESP;
+				}
 
 				case OpcodeEncoding.rBX:
 				{
 					return RegisterName.EBX;
 				}
 					
+				case OpcodeEncoding.rAX:
 				case OpcodeEncoding.rAxIv:
-				case OpcodeEncoding.rAxIz:
+				case OpcodeEncoding.rAxIz:				
 				{
 					return RegisterName.EAX;	
 				}
