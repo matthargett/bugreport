@@ -31,6 +31,72 @@ namespace bugreport
 			Assert.AreEqual(OperatorEffect.Xor, OpcodeHelper.GetOperatorEffect(code));
 			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetDestinationRegister(code));
 		}
+		
+		[Test]
+		public void PoPrSI()
+		{
+			//Pop rSI
+			code = new Byte[] { 0x5e};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rSI, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetDestinationRegister(code));
+		}
+		
+		[Test]
+		public void PushrSI()
+		{
+			//Push rSI
+			code = new Byte[] { 0x56};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rSI, encoding);
+			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetDestinationRegister(code));
+		}
+		
+		[Test]
+		public void PushrAX()
+		{
+			//Push rAX
+			code = new Byte[] { 0x50};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rAX, encoding);
+			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
+		}
+		
+		[Test]
+		public void PoprAX()
+		{
+			//Pop rAX
+			code = new Byte[] { 0x58};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rAX, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
+		}
+		
+		[Test]
+		public void PushrSP()
+		{
+			//Push ESP
+			code = new Byte[] { 0x54};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rSP, encoding);
+			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetDestinationRegister(code));
+		}
+		
+		[Test]
+		public void PoprSP()
+		{
+			//Push ESP
+			code = new Byte[] { 0x5c};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rSP, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetDestinationRegister(code));
+		}
 
 		[Test]
 		public void GvEv()

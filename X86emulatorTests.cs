@@ -82,6 +82,48 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void PushESIThenPopESI()
+		{
+			Byte [] pushCode = new Byte[] {0x56};
+			Byte [] popCode = new Byte[] {0x5e};
+			state = X86emulator.Run(reportItems, state, pushCode);
+
+			Assert.AreEqual(0x1, state.InstructionPointer);
+			state.Registers[RegisterName.ESI] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(0x2, state.InstructionPointer);
+			Assert.AreEqual(state.Registers[RegisterName.ESI], state.Registers[RegisterName.ESI]);
+		}
+		
+		[Test]
+		public void PushEAXThenPopEAX()
+		{
+			Byte [] pushCode = new Byte[] {0x50};
+			Byte [] popCode = new Byte[] {0x58};
+			state = X86emulator.Run(reportItems, state, pushCode);
+
+			Assert.AreEqual(0x1, state.InstructionPointer);
+			state.Registers[RegisterName.EAX] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(0x2, state.InstructionPointer);
+			Assert.AreEqual(state.Registers[RegisterName.EAX], state.Registers[RegisterName.EAX]);
+		}
+		
+		[Test] [Ignore("in progress --cullen")]
+		public void PushESPThenPopESP()
+		{
+			Byte [] pushCode = new Byte[] {0x54};
+			Byte [] popCode = new Byte[] {0x5c};
+			state = X86emulator.Run(reportItems, state, pushCode);
+
+			Assert.AreEqual(0x1, state.InstructionPointer);
+			state.Registers[RegisterName.ESP] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(0x2, state.InstructionPointer);
+			Assert.AreEqual(state.Registers[RegisterName.ESP], state.Registers[RegisterName.ESP]);
+		}
+		
+		[Test]
 		public void PushEbx()
 		{
 			code = new Byte[] {0x53};
