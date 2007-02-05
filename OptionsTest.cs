@@ -138,11 +138,11 @@ namespace bugreport
 		public void FunctionNameWithoutEquals()
 		{
 			commandLine = new String[] {
-				"--function", 
+				"--function",
+				"alternatefuntionname",
 				@"c:\cygwin\home\matt\bugreport\tests\simple\heap\simple-malloc-via-immediate2_gcc403-02-g.dump"
 			};
 			Options.ParseArguments(commandLine);
-			Assert.AreEqual("nomain", Options.FunctionToAnalyze);
 		}
 		
 		[Test]
