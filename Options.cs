@@ -21,41 +21,87 @@ namespace bugreport
 
 	public static class Options
 	{
-		private static String[] arguments;
 		private static FileResolver fileResolver = new FileResolver();
+		
+		private static String functionToAnalyze;
+		private static ReadOnlyCollection<String> filenames;
+		private static Boolean isTracing;
 		
 		internal static FileResolver FileResolver
 		{
 			set
 			{
 				fileResolver = value;
-			}
+			} 
 		}
 		
 		public static void ParseArguments(String[] commandLine)
 		{
-			arguments = commandLine;
+			functionToAnalyze = getFunctionToAnalyze(commandLine);
+			filenames = getFilenames(commandLine);
+			isTracing = getIsTracing(commandLine);	 
+		}
+		
+		private static String getFunctionToAnalyze(String[] arguments)
+		{
+			for (Int32 i=0; i < arguments.Length; i++)
+			{
+				if (arguments[i].StartsWith("--function"))
+				{
+					Int32 indexOfEquals = arguments[i].IndexOf("=");
+					
+					if (indexOfEquals == -1)
+					{
+						throw new ArgumentException("--function malformed, should be in the form of --function=name");
+					}
+					return arguments[i].Substring(indexOfEquals + 1);
+				}
+			}
+			
+			return "main";
 		}
 		
 		public static String FunctionToAnalyze
 		{
 			get
 			{
-				for (Int32 i=0; i < arguments.Length; i++)
+				return functionToAnalyze;
+			}
+		}
+		
+		private static ReadOnlyCollection<String> getFilenames(String[] arguments)
+		{
+			String fileArgument = arguments[arguments.Length - 1];
+			
+			if (fileArgument.Contains("*"))
+			{
+				String path;
+				
+				if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()))
 				{
-					if (arguments[i].StartsWith("--function"))
+					path = fileArgument.Substring(0, fileArgument.LastIndexOf(Path.DirectorySeparatorChar));
+				}
+				else
+				{
+					path = Environment.CurrentDirectory;
+				}
+
+				String fileName = Path.GetFileName(fileArgument);	
+				
+				return fileResolver.GetFilesFromDirectory(path, fileName);
+			}
+			else
+			{
+				List<String> fileNames = new List<String>();
+				foreach (String argument in arguments)
+				{
+					if (!argument.StartsWith("--"))
 					{
-						Int32 indexOfEquals = arguments[i].IndexOf("=");
-						
-						if (indexOfEquals == -1)
-						{
-							throw new ArgumentException("--function malformed, should be in the form of --function=name");
-						}
-						return arguments[i].Substring(indexOfEquals + 1);
+						fileNames.Add(argument);
 					}
 				}
 				
-				return "main";
+			return fileNames.AsReadOnly();
 			}
 		}
 		
@@ -63,53 +109,28 @@ namespace bugreport
 		{
 			get
 			{
-				String fileArgument = arguments[arguments.Length - 1];
-				if (fileArgument.Contains("*"))
-				{
-					String path;
-					
-					if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()))
-					{
-						path = fileArgument.Substring(0, fileArgument.LastIndexOf(Path.DirectorySeparatorChar));
-					}
-					else
-					{
-						path = Environment.CurrentDirectory;
-					}
-
-					String fileName = Path.GetFileName(fileArgument);	
-					
-					return fileResolver.GetFilesFromDirectory(path, fileName);
-				}
-				else
-				{
-					List<String> fileNames = new List<String>();
-					foreach (String argument in arguments)
-					{
-						if (!argument.StartsWith("--"))
-						{
-							fileNames.Add(argument);
-						}
-					}
-					
-					return fileNames.AsReadOnly();
-				}
+				return filenames;
 			}
 		}	
+		
+		private static Boolean getIsTracing(String[] arguments)
+		{
+			foreach (String argument in arguments)
+			{
+				if (argument == "--trace")
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
 		
 		public static Boolean IsTracing
 		{
 			get
 			{
-				foreach (String argument in arguments)
-				{
-					if (argument == "--trace")
-					{
-						return true;
-					}
-				}
-	
-				return false;
+				return isTracing;
 			}
 		}
 	}

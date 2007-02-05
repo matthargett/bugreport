@@ -21,11 +21,21 @@ namespace bugreport
 
 			if (arguments.Length < 1)
 			{
-				Console.WriteLine("Usage: bugreport.exe [--trace] file.test");
+				printUsage();
 				return;
 			}
 
-			Options.ParseArguments(arguments);
+			try 
+			{
+				Options.ParseArguments(arguments);
+			}
+			catch(ArgumentException e)
+			{
+				Console.WriteLine(e.Message);
+				printUsage();
+				Environment.Exit(-1);
+			}
+			
 			if (0 == Options.Filenames.Count)
 			{
 				Console.WriteLine("No files found by name specified");
@@ -119,6 +129,11 @@ namespace bugreport
 
 			Console.WriteLine(state.Registers);
 			Console.WriteLine();
+		}
+		
+		private static void printUsage()
+		{
+			Console.WriteLine("Usage: bugreport.exe [--trace] [--function=funcname] file.test");
 		}
 	}
 }
