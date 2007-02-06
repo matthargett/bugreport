@@ -46,7 +46,7 @@ namespace bugreport
 			
 			if (analyzer.ExpectedReportItems.Count != 0 && (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count) )
 			{
-				Console.WriteLine("Expectations Were Not Met::");
+				Console.WriteLine("Expectations Were Not Met:");
 				Console.WriteLine("Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
 				Environment.Exit(-1);
 			}
@@ -70,11 +70,8 @@ namespace bugreport
 					Environment.Exit(-1);
 					return; // needed to hush up a false warning in mono
 				}
-#if TESTING
+				
 				analyzer = new Analyzer(fileStream);
-#else
-				analyzer = new Analyzer(new MemoryStream());
-#endif
 				analyzer.OnReport += printReportItem;
 				
 				if (_isTracing)
