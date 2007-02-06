@@ -15,7 +15,6 @@ namespace bugreport
 	public sealed class AnalyzerTests : IDisposable
 	{
 		Analyzer analyzer;
-		Byte[] code = new Byte[] { 0x90 }; 
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 		
 		private class FakeAnalyzer : Analyzer
