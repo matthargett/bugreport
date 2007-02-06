@@ -77,7 +77,7 @@ namespace bugreport
 			{
 				String path;
 				
-				if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()))
+				if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) || fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
 				{
 					path = fileArgument.Substring(0, fileArgument.LastIndexOf(Path.DirectorySeparatorChar));
 				}

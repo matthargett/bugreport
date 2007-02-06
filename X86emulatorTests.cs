@@ -1,4 +1,5 @@
-﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
+﻿// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert,
+// Cullen Bryan
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -33,7 +34,7 @@ namespace bugreport
 			RegisterCollection registers = new RegisterCollection();
 			registers[RegisterName.EAX] = one;
 			state = new MachineState(registers);
-			MachineState newState = X86emulator.Run(reportItems, state, new byte[] { 0x90});
+			MachineState newState = X86emulator.Run(reportItems, state, new byte[] {0x90});
 			Assert.AreEqual(one, newState.Registers[RegisterName.EAX]);
 			Assert.AreNotSame(state, newState);
 			Assert.AreNotEqual(state, newState);
@@ -109,7 +110,8 @@ namespace bugreport
 			Assert.AreEqual(state.Registers[RegisterName.EAX], state.Registers[RegisterName.EAX]);
 		}
 		
-		[Test] [Ignore("in progress --cullen")]
+		[Test]
+		[Ignore("In progress, currently causes infinite recursion. --Cullen")]
 		public void PushESPThenPopESP()
 		{
 			Byte [] pushCode = new Byte[] {0x54};
@@ -142,7 +144,7 @@ namespace bugreport
 		[Test]
 		public void MovEbpEsp()
 		{ // mov    ebp,esp
-			code = new Byte[] { 0x89, 0xe5} ;
+			code = new Byte[] {0x89, 0xe5} ;
 			UInt32 value = 0x31337;
 			AbstractValue abstractValue = new AbstractValue(value);
 			state.Registers[RegisterName.ESP] = abstractValue;
