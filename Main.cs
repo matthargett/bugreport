@@ -70,9 +70,11 @@ namespace bugreport
 					Environment.Exit(-1);
 					return; // needed to hush up a false warning in mono
 				}
-
+#if TESTING
 				analyzer = new Analyzer(fileStream);
-
+#else
+				analyzer = new Analyzer(new MemoryStream());
+#endif
 				analyzer.OnReport += printReportItem;
 				
 				if (_isTracing)
