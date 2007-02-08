@@ -79,7 +79,13 @@ namespace bugreport
 				
 				if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) || fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
 				{
-					path = fileArgument.Substring(0, fileArgument.LastIndexOf(Path.DirectorySeparatorChar));
+					Int32 directorySeparatorIndex = fileArgument.LastIndexOf(Path.DirectorySeparatorChar);
+					if (-1 == directorySeparatorIndex)
+					{
+						directorySeparatorIndex = fileArgument.LastIndexOf(Path.AltDirectorySeparatorChar);
+					}
+					
+					path = fileArgument.Substring(0, directorySeparatorIndex);
 				}
 				else
 				{

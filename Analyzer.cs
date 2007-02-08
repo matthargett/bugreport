@@ -67,17 +67,16 @@ namespace bugreport
 		public EventHandler<EmulationEventArgs> OnEmulationComplete;
 		
 		protected ReportCollection reportItems;
-		private Stream stream;
 		private IParsable parser;
 
-		public Analyzer(Stream stream)
+		public Analyzer(IParsable parser)
 		{
-			if (null == stream)
+			if (null == parser)
 			{
-				throw new ArgumentNullException("stream");
+				throw new ArgumentNullException("parser");
 			}
 			
-			this.stream = stream;
+			this.parser = parser;
 			
 			reportItems = new ReportCollection();
 		}
@@ -138,27 +137,21 @@ namespace bugreport
 			return X86emulator.Run(reportItems, _machineState, _instructionBytes);
 		}
 
-		
-		protected virtual IParsable createFileParser(Stream _stream)
-		{
-			return new DumpFileParser(_stream, Options.FunctionToAnalyze);
-		}
-
 		public void Run()
 		{
-			parser = createFileParser(stream);
-			
 			MachineState machineState = new MachineState(getRegistersForLinuxMain());
 			machineState.InstructionPointer = parser.BaseAddress;
 
 			while (!parser.EndOfFunction)
 			{
-				Byte[] instructionBytes = parser.GetNextInstructionBytes();
+				MachineState savedState;
 				
+				Byte[] instructionBytes = parser.GetNextInstructionBytes();
+				savedState = machineState;
 				machineState = runCode(machineState, instructionBytes);
 				if (null != this.OnEmulationComplete)
 				{
-					OnEmulationComplete(this, new EmulationEventArgs(machineState, new ReadOnlyCollection<Byte>(instructionBytes)));
+					OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instructionBytes)));
 				}
 			}
 		}

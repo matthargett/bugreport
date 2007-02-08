@@ -16,16 +16,16 @@ namespace bugreport
 	{
 		Analyzer analyzer;
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
+		Byte[] code = new Byte[] {0x90};
+
 		
 		private class FakeAnalyzer : Analyzer
 		{
 			Byte[] code = new Byte[] { 0x90 }; 
-			private UInt32 expectedReportItemCount;
 			private UInt32 actualReportItemCount;			
 			
-			public FakeAnalyzer(Stream stream, UInt32 expectedReportItemCount, UInt32 actualReportItemCount) : base (stream) 
+			public FakeAnalyzer(IParsable parser, UInt32 actualReportItemCount) : base (parser) 
 			{
-				this.expectedReportItemCount = expectedReportItemCount;
 				this.actualReportItemCount = actualReportItemCount;
 			}
 			
@@ -36,26 +36,29 @@ namespace bugreport
 					reportItems.Add(new ReportItem(i, false));
 				}
 				
+				_machineState.InstructionPointer += (UInt32)_instructionBytes.Length;
+				
 				return _machineState;
 			}
 			
-			protected override IParsable createFileParser(Stream _stream)
-			{				
-				DynamicMock control = new DynamicMock(typeof(IParsable));
-				control.ExpectAndReturn("get_EndOfFunction", false, null);
-				control.ExpectAndReturn("GetNextInstructionBytes", code, null);
-				control.ExpectAndReturn("get_EndOfFunction", true, null);
-				
-				List<ReportItem> reportItemList = new List<ReportItem>();
-				
-				for (UInt32 i = 0; i < expectedReportItemCount; i++)
-				{
-					reportItemList.Add(new ReportItem(i, false));
-				}
-				control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
-				control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
-				return control.MockInstance as IParsable;
+		}
+
+		IParsable createMockParser(UInt32 expectedReportItemCount)
+		{				
+			DynamicMock control = new DynamicMock(typeof(IParsable));
+			control.ExpectAndReturn("get_EndOfFunction", false, null);
+			control.ExpectAndReturn("GetNextInstructionBytes", code, null);
+			control.ExpectAndReturn("get_EndOfFunction", true, null);
+			
+			List<ReportItem> reportItemList = new List<ReportItem>();
+			
+			for (UInt32 i = 0; i < expectedReportItemCount; i++)
+			{
+				reportItemList.Add(new ReportItem(i, false));
 			}
+			control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
+			control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
+			return control.MockInstance as IParsable;
 		}
 
 		[Test]
@@ -69,7 +72,7 @@ namespace bugreport
 		[Test]
 		public void NoReportItems()
 		{
-			analyzer = new Analyzer(stream);
+			analyzer = new Analyzer(createMockParser(0));
 			Assert.AreEqual(0, analyzer.ActualReportItems.Count);
 		}
 		
@@ -78,16 +81,19 @@ namespace bugreport
 		{
 			List<ReportItem> reportItems = new List<ReportItem>();
 			
-			analyzer = new FakeAnalyzer(stream, 2 ,2);
+			analyzer = new FakeAnalyzer(createMockParser(2), 2);
 			analyzer.OnEmulationComplete += 
 				delegate(object sender, EmulationEventArgs e)
 				{
-					Assert.AreEqual(0x90, e.Code[0]);
-					Assert.IsNotNull(e.MachineState);
+					Assert.AreEqual(code[0], e.Code[0]);
+					Assert.AreEqual(0, e.MachineState.InstructionPointer);
 				};
 			
 			analyzer.OnReport += 
-				delegate(object sender, ReportEventArgs e) { reportItems.Add(e.ReportItem); };
+				delegate(object sender, ReportEventArgs e) 
+				{ 
+					reportItems.Add(e.ReportItem); 
+				};
 			
 			analyzer.Run();
 			Assert.AreEqual(2, analyzer.ActualReportItems.Count);
@@ -100,11 +106,11 @@ namespace bugreport
 		[Test]
 		public void VerifyExpectedAndActualReports()
 		{				
-			analyzer = new FakeAnalyzer(stream, 2, 2);
+			analyzer = new FakeAnalyzer(createMockParser(2), 2);
 			analyzer.Run();			
 			Assert.AreEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);	
 			
-			analyzer = new FakeAnalyzer(stream, 2, 3);
+			analyzer = new FakeAnalyzer(createMockParser(2), 3);
 			analyzer.Run();
 			Assert.AreNotEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);	
 		}
