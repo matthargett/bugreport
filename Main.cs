@@ -71,7 +71,9 @@ namespace bugreport
 					return; // needed to hush up a false warning in mono
 				}
 				
-				analyzer = new Analyzer(fileStream);
+				IParsable parser = new DumpFileParser(fileStream, Options.FunctionToAnalyze);
+				
+				analyzer = new Analyzer(parser);
 				analyzer.OnReport += printReportItem;
 				
 				if (_isTracing)
