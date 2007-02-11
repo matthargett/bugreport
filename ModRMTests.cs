@@ -174,5 +174,19 @@ namespace bugreport
 			Assert.IsTrue(ModRM.IsEffectiveAddressDereferenced(code));
 			Assert.IsTrue(ModRM.HasOffset(code));	
 		}
+		
+		[Test]
+		public void IsEvDwordFalse()
+		{
+			code = new Byte[] {0x31, 0x07};
+			Assert.IsFalse(ModRM.IsEvDword(code));
+		}
+
+		[Test]
+		public void IsEvDwordTrue()
+		{
+			code = new Byte[] {0x31, 0x05};
+			Assert.IsTrue(ModRM.IsEvDword(code));			
+		}
 	}
 }

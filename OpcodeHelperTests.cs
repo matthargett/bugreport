@@ -30,6 +30,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
 			Assert.AreEqual(OperatorEffect.Xor, OpcodeHelper.GetOperatorEffect(code));
 			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetDestinationRegister(code));
+			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetSourceRegister(code));
 		}
 		
 		[Test]
@@ -40,6 +41,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSI, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetSourceRegister(code));
 			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetDestinationRegister(code));
 		}
 		
@@ -51,6 +53,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSI, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetSourceRegister(code));
 			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetDestinationRegister(code));
 		}
 		
@@ -62,6 +65,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rAX, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetSourceRegister(code));
 			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
 		}
 		
@@ -73,6 +77,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rAX, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetSourceRegister(code));
 			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
 		}
 		
@@ -84,6 +89,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSP, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetSourceRegister(code));
 			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetDestinationRegister(code));
 		}
 		
@@ -95,17 +101,41 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSP, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetSourceRegister(code));
 			Assert.AreEqual(RegisterName.ESP, OpcodeHelper.GetDestinationRegister(code));
 		}
 
 		[Test]
 		public void GvEv()
-		{
+		{ // mov eax, [eax]
 			code = new Byte[] { 0x8b, 0x00 };
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.GvEv, encoding);
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetSourceRegister(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
 		}
-	
+
+		[Test]
+		public void GvEvDword()
+		{ // mov eax, [0x11223344]
+			code = new Byte[] { 0x8b, 0x05, 0x44, 0x33, 0x22, 0x11 };
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.GvEv, encoding);
+			Assert.AreEqual(RegisterName.None, OpcodeHelper.GetSourceRegister(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
+		}
+
+		[Test]
+		public void GvEvSIB()
+		{ // mov eax, [base_register+scale_register*scaler
+			code = new Byte[] { 0x8b, 0x04, 0x24 };
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.GvEv, encoding);
+			Assert.AreEqual(RegisterName.None, OpcodeHelper.GetSourceRegister(code));
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
+		}
+
+
 		[Test]
 		[ExpectedException(typeof(InvalidOpcodeException))]
 		public void UnknownOpcode()
@@ -160,6 +190,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
 			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetDestinationRegister(code));
+			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetSourceRegister(code));
 			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
@@ -170,6 +201,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBP, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetSourceRegister(code));
 			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
@@ -181,6 +213,7 @@ namespace bugreport
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
 			Assert.AreEqual(RegisterName.EBX, OpcodeHelper.GetDestinationRegister(code));
+			Assert.AreEqual(RegisterName.EBX, OpcodeHelper.GetSourceRegister(code));
 			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 
@@ -191,6 +224,7 @@ namespace bugreport
 			encoding = OpcodeHelper.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rBX, encoding);
 			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.AreEqual(RegisterName.EBX, OpcodeHelper.GetSourceRegister(code));
 			Assert.IsTrue(OpcodeHelper.HasOnlyOneOperand(code));
 		}
 		
@@ -213,6 +247,7 @@ namespace bugreport
 			
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
 			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
+			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetSourceRegister(code));			
 		}
 		
 		[Test]
@@ -224,6 +259,7 @@ namespace bugreport
 
 			OperatorEffect operatorEffect = OpcodeHelper.GetOperatorEffect(code);
 			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
+			Assert.AreEqual(RegisterName.EBX, OpcodeHelper.GetSourceRegister(code));
 		}
 		
 		[Test]
