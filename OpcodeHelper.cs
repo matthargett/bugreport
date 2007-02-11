@@ -177,6 +177,72 @@ namespace bugreport
 			}
 		}
 		
+		public static RegisterName GetSourceRegister(Byte[] code)
+		{
+			OpcodeEncoding opcodeEncoding = GetEncoding(code);
+			
+			// GetSourceRegister and GetDestinationRegister both 
+			// return register names used for single register instructions regardless
+			// of direction. ex. push ebp vs. pop ebp
+			
+			switch (opcodeEncoding)
+			{
+				case OpcodeEncoding.rSI:
+				{
+					return RegisterName.ESI;
+				}
+				case OpcodeEncoding.rBP:
+				{
+					return RegisterName.EBP;
+				}
+					
+				case OpcodeEncoding.rSP:
+				{
+					return RegisterName.ESP;
+				}
+
+				case OpcodeEncoding.rBX:
+				{
+					return RegisterName.EBX;
+				}	
+				
+				case OpcodeEncoding.rAX:
+				{
+					return RegisterName.EAX;	
+				}
+
+				case OpcodeEncoding.EbGb:
+				case OpcodeEncoding.EvGv:
+				{
+					return ModRM.GetGv(code);
+				}
+				
+				case OpcodeEncoding.GvEb:
+				case OpcodeEncoding.GvEv:
+				{
+					if (ModRM.HasSIB(code))
+					{
+						// MOV EAX,DWORD PTR DS:[EDX+EAX*4]
+						// Since SIB does not have a single source register
+						// it currently returns RegisterName.None
+						return RegisterName.None;
+					}
+					else if (ModRM.IsEvDword(code))
+					{
+						return RegisterName.None;
+					}
+					else
+					{
+						return ModRM.GetEv(code);
+					}
+				}
+				default:
+				{
+					return RegisterName.None;
+				}
+			}
+		}
+		
 		public static RegisterName GetDestinationRegister(Byte[] code)
 		{
 			OpcodeEncoding opcodeEncoding = GetEncoding(code);

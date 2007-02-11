@@ -109,6 +109,15 @@ namespace bugreport
 			return ((GetRM(modRM) == 4) && (IsEffectiveAddressDereferenced(_code)));
 		}
 
+		public static Boolean IsEvDword(Byte[] _code)
+		{
+			Byte modRM = getModRM(_code);
+			if (((modRM >> 6) == 0) && ((modRM & 7) == 5))
+				return true;
+			else 
+				return false;
+		}
+		
 		private static Byte getModRM(Byte[] _code)
 		{
 			Int32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
