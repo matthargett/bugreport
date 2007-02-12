@@ -15,7 +15,7 @@ namespace bugreport
 		MachineState state;
 		Byte[] code;
 		ReportCollection reportItems;
-		AbstractValue one = new AbstractValue(1);
+		AbstractValue one = new AbstractValue(1);		
 		
 		[SetUp]
 		public void SetUp()
@@ -56,14 +56,14 @@ namespace bugreport
 		{
 			Byte [] pushCode = new Byte[] {0x55};
 			Byte [] popCode = new Byte[] {0x5d};
+			
+			state.Registers[RegisterName.EBP] = one;
 			state = X86emulator.Run(reportItems, state, pushCode);
-
 			Assert.AreEqual(0x1, state.InstructionPointer);
 			state.Registers[RegisterName.EBP] = null;
 			state = X86emulator.Run(reportItems, state, popCode);
-			Assert.AreEqual(0x2, state.InstructionPointer);
-			Assert.AreEqual(state.Registers[RegisterName.ESP], state.Registers[RegisterName.EBP]);
-			
+			Assert.AreEqual(0x2, state.InstructionPointer);			
+			Assert.AreEqual(one, state.Registers[RegisterName.EBP]);
 		}
 
 		[Test]
@@ -72,14 +72,14 @@ namespace bugreport
 			
 			Byte [] pushCode = new Byte[] {0x53};
 			Byte [] popCode = new Byte[] {0x5b};
-			state.Registers[RegisterName.EBX] = new AbstractValue(0x31337);
+			
+			state.Registers[RegisterName.EBX] = one;
 			state = X86emulator.Run(reportItems, state, pushCode);
-
 			Assert.AreEqual(0x1, state.InstructionPointer);
 			state.Registers[RegisterName.EBX] = null;
 			state = X86emulator.Run(reportItems, state, popCode);
 			Assert.AreEqual(0x2, state.InstructionPointer);
-			Assert.AreEqual(0x31337, state.Registers[RegisterName.EBX].Value);
+			Assert.AreEqual(one, state.Registers[RegisterName.EBX]);
 		}
 		
 		[Test]
@@ -87,13 +87,14 @@ namespace bugreport
 		{
 			Byte [] pushCode = new Byte[] {0x56};
 			Byte [] popCode = new Byte[] {0x5e};
+			
+			state.Registers[RegisterName.ESI] = one;
 			state = X86emulator.Run(reportItems, state, pushCode);
-
 			Assert.AreEqual(0x1, state.InstructionPointer);
 			state.Registers[RegisterName.ESI] = null;
 			state = X86emulator.Run(reportItems, state, popCode);
 			Assert.AreEqual(0x2, state.InstructionPointer);
-			Assert.AreEqual(state.Registers[RegisterName.ESI], state.Registers[RegisterName.ESI]);
+			Assert.AreEqual(one, state.Registers[RegisterName.ESI]);
 		}
 		
 		[Test]
@@ -101,13 +102,14 @@ namespace bugreport
 		{
 			Byte [] pushCode = new Byte[] {0x50};
 			Byte [] popCode = new Byte[] {0x58};
+			
+			state.Registers[RegisterName.EAX] = one;
 			state = X86emulator.Run(reportItems, state, pushCode);
-
 			Assert.AreEqual(0x1, state.InstructionPointer);
 			state.Registers[RegisterName.EAX] = null;
-			state = X86emulator.Run(reportItems, state, popCode);
+			state = X86emulator.Run(reportItems, state, popCode);			
 			Assert.AreEqual(0x2, state.InstructionPointer);
-			Assert.AreEqual(state.Registers[RegisterName.EAX], state.Registers[RegisterName.EAX]);
+			Assert.AreEqual(one, state.Registers[RegisterName.EAX]);			
 		}
 		
 		[Test]
@@ -115,7 +117,7 @@ namespace bugreport
 		public void PushESPThenPopESP()
 		{
 			Byte [] pushCode = new Byte[] {0x54};
-			Byte [] popCode = new Byte[] {0x5c};
+			Byte [] popCode = new Byte[] {0x5c};			
 			state = X86emulator.Run(reportItems, state, pushCode);
 
 			Assert.AreEqual(0x1, state.InstructionPointer);
@@ -123,6 +125,26 @@ namespace bugreport
 			state = X86emulator.Run(reportItems, state, popCode);
 			Assert.AreEqual(0x2, state.InstructionPointer);
 			Assert.AreEqual(state.Registers[RegisterName.ESP], state.Registers[RegisterName.ESP]);
+		}
+		
+		[Test]
+		[Ignore("In progress.... --Cullen")]
+		public void DoublePushEAXThenPopEAX()
+		{
+			Byte [] pushCode = new Byte[] {0x50};
+			Byte [] popCode = new Byte[] {0x58};			
+			
+			AbstractValue two = new AbstractValue(2);
+			state.Registers[RegisterName.EAX] = one;
+			state = X86emulator.Run(reportItems, state, pushCode);
+			state.Registers[RegisterName.EAX] = two;
+			state = X86emulator.Run(reportItems, state, pushCode);
+			state.Registers[RegisterName.EAX] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(two, state.Registers[RegisterName.EAX]);			
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(one, state.Registers[RegisterName.EAX]);
+			
 		}
 		
 		[Test]
