@@ -49,6 +49,32 @@ namespace bugreport
 			Assert.AreEqual("(rBP)",	OpcodeFormatter.GetEncoding(code));
 		}
 	
+		[Test]
+		public void PopEbp()
+		{
+			code = new Byte[] { 0x5d };
+			Assert.AreEqual("pop",		OpcodeFormatter.GetInstructionName(code));
+			Assert.AreEqual("ebp",		OpcodeFormatter.GetOperands(code));
+			Assert.AreEqual("(rBP)",	OpcodeFormatter.GetEncoding(code));
+		}
+		
+		[Test]
+		public void MovEbpEsp()
+		{
+			code = new Byte[] { 0x89, 0xe5};
+			Assert.AreEqual("mov",			OpcodeFormatter.GetInstructionName(code));
+			Assert.AreEqual("ebp, esp",		OpcodeFormatter.GetOperands(code));
+			Assert.AreEqual("(EvGv)",		OpcodeFormatter.GetEncoding(code));
+		}
+		
+		[Test]
+		public void JzImmediate()
+		{
+			code = new Byte[] { 0xe8, 0x02, 0xff, 0xff, 0xff };
+			Assert.AreEqual("jump",			OpcodeFormatter.GetInstructionName(code));
+			Assert.AreEqual("0xffffff02",	OpcodeFormatter.GetOperands(code));
+			Assert.AreEqual("(Jz)", 		OpcodeFormatter.GetEncoding(code));
+		}
 
 	}
 }

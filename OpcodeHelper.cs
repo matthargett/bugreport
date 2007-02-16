@@ -176,6 +176,16 @@ namespace bugreport
 					return StackEffect.None;
 			}
 		}
+
+		public static Boolean HasSourceRegister(Byte[] code)
+		{
+			return GetSourceRegister(code) != RegisterName.None;
+		}
+		
+		public static Boolean HasDestinationRegister(Byte[] code)
+		{
+			return GetDestinationRegister(code) != RegisterName.None;
+		}
 		
 		public static RegisterName GetSourceRegister(Byte[] code)
 		{
@@ -187,30 +197,52 @@ namespace bugreport
 			
 			switch (opcodeEncoding)
 			{
+
+				case OpcodeEncoding.rBP:
+				{	
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.EBP;
+					}
+					return RegisterName.None;
+				}
+					
 				case OpcodeEncoding.rSI:
 				{
-					return RegisterName.ESI;
-				}
-				case OpcodeEncoding.rBP:
-				{
-					return RegisterName.EBP;
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.ESI;
+					}
+					return RegisterName.None;
 				}
 					
 				case OpcodeEncoding.rSP:
 				{
-					return RegisterName.ESP;
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.ESP;
+					}
+					return RegisterName.None;
 				}
 
 				case OpcodeEncoding.rBX:
 				{
-					return RegisterName.EBX;
-				}	
-				
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.EBX;
+					}
+					return RegisterName.None;
+				}
+					
 				case OpcodeEncoding.rAX:
 				{
-					return RegisterName.EAX;	
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.EAX;	
+					}
+					return RegisterName.None;
 				}
-
+					
 				case OpcodeEncoding.EbGb:
 				case OpcodeEncoding.EvGv:
 				{
@@ -246,7 +278,8 @@ namespace bugreport
 		public static RegisterName GetDestinationRegister(Byte[] code)
 		{
 			OpcodeEncoding opcodeEncoding = GetEncoding(code);
-
+			
+			
 			switch (opcodeEncoding)
 			{
 				case OpcodeEncoding.GvM:
@@ -257,32 +290,56 @@ namespace bugreport
 				}
 
 				case OpcodeEncoding.rBP:
-				{
-					return RegisterName.EBP;
+				{	
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+					{
+						return RegisterName.EBP;
+					}
+					return RegisterName.None;
 				}
 					
 				case OpcodeEncoding.rSI:
 				{
-					return RegisterName.ESI;
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+					{
+						return RegisterName.ESI;
+					}
+					return RegisterName.None;
 				}
 					
 				case OpcodeEncoding.rSP:
 				{
-					return RegisterName.ESP;
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+					{
+						return RegisterName.ESP;
+					}
+					return RegisterName.None;
 				}
 
 				case OpcodeEncoding.rBX:
 				{
-					return RegisterName.EBX;
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+					{
+						return RegisterName.EBX;
+					}
+					return RegisterName.None;
 				}
 					
 				case OpcodeEncoding.rAX:
+				{
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+					{
+						return RegisterName.EAX;	
+					}
+					return RegisterName.None;
+				}
+
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.rAxIz:				
 				{
-					return RegisterName.EAX;	
+					return RegisterName.EAX;
 				}
-				
+					
 				case OpcodeEncoding.EbGb:
 				case OpcodeEncoding.EbIb:
 				case OpcodeEncoding.EvGv:
@@ -304,11 +361,6 @@ namespace bugreport
 					return RegisterName.None;
 				}
 			}
-		}
-		
-		public static Boolean HasDestinationRegister(Byte[] code)
-		{
-			return GetDestinationRegister(code) != RegisterName.None;
 		}
 		
 		public static OperatorEffect GetOperatorEffect(Byte[] code)
@@ -387,21 +439,6 @@ namespace bugreport
 			}
 
 			return opcodeLength;
-		}
-		
-		public static Boolean HasOnlyOneOperand(Byte[] code)
-		{
-			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(code);
-			switch (encoding)
-			{
-				case OpcodeEncoding.Jz:
-				case OpcodeEncoding.Jb:
-				case OpcodeEncoding.rBP:
-				case OpcodeEncoding.rBX:
-					return true;
-				default:
-					return false;
-			}
-		}
+		}	
 	}
 }
