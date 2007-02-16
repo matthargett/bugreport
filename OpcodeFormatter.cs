@@ -36,6 +36,11 @@ namespace bugreport
 			String operands = String.Empty;						
 			String destinationRegister = String.Empty;
 			
+			if (OpcodeHelper.HasSourceRegister(code) && !OpcodeHelper.HasDestinationRegister(code))
+			{
+				return OpcodeHelper.GetSourceRegister(code).ToString().ToLower();
+			}
+			
 			if (OpcodeHelper.HasDestinationRegister(code))
 			{
 				destinationRegister = OpcodeHelper.GetDestinationRegister(code).ToString().ToLower();
@@ -81,18 +86,18 @@ namespace bugreport
 				operands += destinationRegister;
 			}
 
-			if (!OpcodeHelper.HasOnlyOneOperand(code) && OpcodeHelper.GetEncoding(code) != OpcodeEncoding.None)
-			{
-				operands += ", ";
-			}
-
 			if (OpcodeHelper.HasImmediate(code))
 			{
+				if (OpcodeHelper.HasDestinationRegister(code))
+				{
+					operands += ", ";
+				}
+				
 				operands += String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code));
 			}
-			else
+			else if (OpcodeHelper.HasSourceRegister(code) && OpcodeHelper.HasDestinationRegister(code))
 			{
-				// add the source register
+				operands += String.Format(", {0}", OpcodeHelper.GetSourceRegister(code).ToString().ToLower());
 			}
 				
 			return operands;

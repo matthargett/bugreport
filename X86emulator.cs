@@ -87,7 +87,7 @@ namespace bugreport
 						}
 						case StackEffect.Push:
 						{
-							sourceRegister = OpcodeHelper.GetDestinationRegister(code);
+							sourceRegister = OpcodeHelper.GetSourceRegister(code);
 							state.TopOfStack = state.Registers[sourceRegister];
 							break;
 						}
