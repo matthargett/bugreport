@@ -112,23 +112,20 @@ namespace bugreport
 			Assert.AreEqual(one, state.Registers[RegisterName.EAX]);			
 		}
 		
-		[Test]
-		[Ignore("In progress, currently causes infinite recursion. --Cullen")]
+		[Test]		
 		public void PushESPThenPopESP()
 		{
 			Byte [] pushCode = new Byte[] {0x54};
 			Byte [] popCode = new Byte[] {0x5c};			
 			state = X86emulator.Run(reportItems, state, pushCode);
 
-			Assert.AreEqual(0x1, state.InstructionPointer);
-			state.Registers[RegisterName.ESP] = null;
+			Assert.AreEqual(0x1, state.InstructionPointer);			
 			state = X86emulator.Run(reportItems, state, popCode);
 			Assert.AreEqual(0x2, state.InstructionPointer);
 			Assert.AreEqual(state.Registers[RegisterName.ESP], state.Registers[RegisterName.ESP]);
 		}
 		
-		[Test]
-		[Ignore("In progress.... --Cullen")]
+		[Test]		
 		public void DoublePushEAXThenPopEAX()
 		{
 			Byte [] pushCode = new Byte[] {0x50};
@@ -143,8 +140,7 @@ namespace bugreport
 			state = X86emulator.Run(reportItems, state, popCode);
 			Assert.AreEqual(two, state.Registers[RegisterName.EAX]);			
 			state = X86emulator.Run(reportItems, state, popCode);
-			Assert.AreEqual(one, state.Registers[RegisterName.EAX]);
-			
+			Assert.AreEqual(one, state.Registers[RegisterName.EAX]);			
 		}
 		
 		[Test]

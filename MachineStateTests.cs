@@ -37,7 +37,7 @@ namespace bugreport
 			Assert.AreNotSame(newState.Registers, state.Registers);
 			Assert.AreNotSame(newState.DataSegment, state.DataSegment);
 			Assert.AreNotSame(newState.ReturnValue, state.ReturnValue);
-			Assert.AreNotSame(newState.TopOfStack, state.TopOfStack);
+			Assert.AreSame(newState.TopOfStack, state.TopOfStack);
 		}
 		
 		[Test]

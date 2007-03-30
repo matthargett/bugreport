@@ -21,13 +21,13 @@ namespace bugreport
 
 		public AbstractBuffer(AbstractBuffer _copyMe)
 		{
-			storage = new AbstractValue[_copyMe.storage.Length];
+			storage = new AbstractValue[_copyMe.storage.Length];			
 			BaseIndex = _copyMe.BaseIndex;
 			allocatedLength = _copyMe.allocatedLength;
 			
 			for (Int32 index = 0; index < _copyMe.storage.Length; index++)
 			{
-				storage[index] = new AbstractValue(_copyMe.storage[index]);
+				storage[index] = _copyMe.storage[index];
 			}
 		}
 
