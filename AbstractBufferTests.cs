@@ -30,7 +30,7 @@ namespace bugreport
 			
 			for (Int32 index =0; index < newBuffer.Length; index++)
 			{
-				Assert.AreNotSame(newBuffer[index], buffer[index]);
+				Assert.AreSame(newBuffer[index], buffer[index]);
 			}
 		}
 		

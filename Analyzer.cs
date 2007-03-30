@@ -119,8 +119,8 @@ namespace bugreport
 			AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
 			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
 			
-			// linux ABI dictates **argv is ebp+12
-			modifiedBuffer[12] = argvPointerPointer;
+			// linux ABI dictates 
+			modifiedBuffer[13] = argvPointerPointer;
 
 			// gcc generates code that accesses this at some optimization levels
 			modifiedBuffer[0xfc] = new AbstractValue(1);

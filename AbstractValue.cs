@@ -26,7 +26,7 @@ namespace bugreport
 			if (_willPointTo.Length == 0)
 				throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
 			storage = 0xdeadbeef;
-			pointsTo = new AbstractBuffer(_willPointTo);
+			pointsTo = new AbstractBuffer(_willPointTo);			
 		}
 
 		public AbstractValue(AbstractBuffer _willPointTo)
@@ -34,7 +34,7 @@ namespace bugreport
 			if (_willPointTo.Length == 0)
 				throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
 			storage = 0xdeadbeef;
-			pointsTo = new AbstractBuffer(_willPointTo);
+			pointsTo = new AbstractBuffer(_willPointTo);			
 		}
 
 		public AbstractValue(AbstractValue _copyMe)
@@ -50,7 +50,7 @@ namespace bugreport
 			
 			if (_copyMe.PointsTo != null)
 			{
-				this.PointsTo = new AbstractBuffer(_copyMe.PointsTo);
+				this.PointsTo = new AbstractBuffer(_copyMe.PointsTo);				
 			}
 		}
 

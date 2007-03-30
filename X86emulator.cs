@@ -81,14 +81,16 @@ namespace bugreport
 					{
 						case StackEffect.Pop:
 						{	
-							destinationRegister = OpcodeHelper.GetDestinationRegister(code);
-							state.Registers[destinationRegister] = state.TopOfStack;
+							destinationRegister = OpcodeHelper.GetDestinationRegister(code);							
+							state.Registers[destinationRegister] = state.Registers[RegisterName.ESP].PointsTo[0];
+							state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));							
 							break;
 						}
 						case StackEffect.Push:
 						{
-							sourceRegister = OpcodeHelper.GetSourceRegister(code);
-							state.TopOfStack = state.Registers[sourceRegister];
+							sourceRegister = OpcodeHelper.GetSourceRegister(code);							
+							state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
+							state.Registers[RegisterName.ESP].PointsTo[0] = state.Registers[sourceRegister];							
 							break;
 						}
 					}
