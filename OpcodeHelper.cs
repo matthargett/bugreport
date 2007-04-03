@@ -10,7 +10,7 @@ namespace bugreport
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump, Xor};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, rAX, rSI, rSP, EvIz, EbIb, Jz, rBP, rBX, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
+	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, rAX, rBX, rDX, rSI, rSP, EvIz, EbIb, Jz, rBP, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -32,9 +32,15 @@ namespace bugreport
 					return OpcodeEncoding.rAxIz;
 				case 0x0f:
 					return OpcodeEncoding.GvEb;
+				case 0x50:
+				case 0x58:
+					return OpcodeEncoding.rAX;
 				case 0x53:
 				case 0x5b:
 					return OpcodeEncoding.rBX;
+				case 0x52:
+				case 0x5a:
+					return OpcodeEncoding.rDX;
 				case 0x5d:
 				case 0x55:
 					return OpcodeEncoding.rBP;
@@ -62,9 +68,6 @@ namespace bugreport
 					return OpcodeEncoding.rAxIv;
 				case 0xa1:
 					return OpcodeEncoding.rAxOv;
-				case 0x50:
-				case 0x58:
-					return OpcodeEncoding.rAX;
 				case 0xc6:
 					return OpcodeEncoding.EbIb;
 				case 0xc7:
@@ -160,11 +163,13 @@ namespace bugreport
 			switch(code[0])
 			{
 				case 0x53:
+				case 0x52:
 				case 0x54:
 				case 0x55:
 				case 0x56:
 				case 0x50:				
 					return StackEffect.Push;
+				case 0x5a:
 				case 0x5b:
 				case 0x5c:
 				case 0x5d:
@@ -225,15 +230,6 @@ namespace bugreport
 					return RegisterName.None;
 				}
 
-				case OpcodeEncoding.rBX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
-					{
-						return RegisterName.EBX;
-					}
-					return RegisterName.None;
-				}
-					
 				case OpcodeEncoding.rAX:
 				{
 					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
@@ -242,7 +238,25 @@ namespace bugreport
 					}
 					return RegisterName.None;
 				}
-					
+
+				case OpcodeEncoding.rBX:
+				{
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.EBX;
+					}
+					return RegisterName.None;
+				}
+
+				case OpcodeEncoding.rDX:
+				{
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					{
+						return RegisterName.EDX;	
+					}
+					return RegisterName.None;
+				}
+
 				case OpcodeEncoding.EbGb:
 				case OpcodeEncoding.EvGv:
 				{
@@ -315,6 +329,15 @@ namespace bugreport
 					}
 					return RegisterName.None;
 				}
+					
+				case OpcodeEncoding.rAX:
+				{
+					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+					{
+						return RegisterName.EAX;	
+					}
+					return RegisterName.None;
+				}
 
 				case OpcodeEncoding.rBX:
 				{
@@ -324,12 +347,12 @@ namespace bugreport
 					}
 					return RegisterName.None;
 				}
-					
-				case OpcodeEncoding.rAX:
+
+				case OpcodeEncoding.rDX:
 				{
 					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
 					{
-						return RegisterName.EAX;	
+						return RegisterName.EDX;
 					}
 					return RegisterName.None;
 				}

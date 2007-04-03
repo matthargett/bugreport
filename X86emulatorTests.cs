@@ -69,7 +69,6 @@ namespace bugreport
 		[Test]
 		public void PushEbxThenPopEbx()
 		{
-			
 			Byte [] pushCode = new Byte[] {0x53};
 			Byte [] popCode = new Byte[] {0x5b};
 			
@@ -80,6 +79,21 @@ namespace bugreport
 			state = X86emulator.Run(reportItems, state, popCode);
 			Assert.AreEqual(0x2, state.InstructionPointer);
 			Assert.AreEqual(one, state.Registers[RegisterName.EBX]);
+		}
+		
+		[Test]
+		public void PushEdxThenPopEdx()
+		{
+			Byte [] pushCode = new Byte[] {0x52};
+			Byte [] popCode = new Byte[] {0x5a};
+			
+			state.Registers[RegisterName.EDX] = one;
+			state = X86emulator.Run(reportItems, state, pushCode);
+			Assert.AreEqual(0x1, state.InstructionPointer);
+			state.Registers[RegisterName.EDX] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(0x2, state.InstructionPointer);
+			Assert.AreEqual(one, state.Registers[RegisterName.EDX]);
 		}
 		
 		[Test]

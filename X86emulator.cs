@@ -76,6 +76,7 @@ namespace bugreport
 				case OpcodeEncoding.rSP:
 				case OpcodeEncoding.rAX:
 				case OpcodeEncoding.rBX:
+				case OpcodeEncoding.rDX:
 				{
 					switch (OpcodeHelper.GetStackEffect(code))
 					{
