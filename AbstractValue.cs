@@ -176,7 +176,10 @@ namespace bugreport
 				AbstractValue pointer = pointsTo[0];
 				
 				StringBuilder newResult = new StringBuilder(result);
-				while (pointer != null)
+				
+				const Byte maximumPointerDepth = 100;
+				Int32 count = maximumPointerDepth; 
+				while ((pointer != null) && (count-- > 0))
 				{
 					newResult.Append("*");
 					

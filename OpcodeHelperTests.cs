@@ -73,6 +73,18 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void PushrDX()
+		{
+			code = new Byte[] {0x52};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rDX, encoding);
+			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.IsTrue(OpcodeHelper.HasSourceRegister(code));
+			Assert.IsFalse(OpcodeHelper.HasDestinationRegister(code));
+			Assert.AreEqual(RegisterName.EDX, OpcodeHelper.GetSourceRegister(code));
+		}
+		
+		[Test]
 		public void PoprAX()
 		{
 			//Pop rAX
@@ -85,6 +97,18 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.EAX, OpcodeHelper.GetDestinationRegister(code));
 		}
 		
+		[Test]
+		public void PoprDX()
+		{
+			code = new Byte[] {0x5a};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rDX, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.IsFalse(OpcodeHelper.HasSourceRegister(code));
+			Assert.IsTrue(OpcodeHelper.HasDestinationRegister(code));
+			Assert.AreEqual(RegisterName.EDX, OpcodeHelper.GetDestinationRegister(code));
+		}
+
 		[Test]
 		public void PushrSP()
 		{
