@@ -77,6 +77,7 @@ namespace bugreport
 				case OpcodeEncoding.rAX:
 				case OpcodeEncoding.rBX:
 				case OpcodeEncoding.rDX:
+				case OpcodeEncoding.Iz:
 				{
 					switch (OpcodeHelper.GetStackEffect(code))
 					{
@@ -89,9 +90,24 @@ namespace bugreport
 						}
 						case StackEffect.Push:
 						{
-							sourceRegister = OpcodeHelper.GetSourceRegister(code);							
 							state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
-							state.Registers[RegisterName.ESP].PointsTo[0] = state.Registers[sourceRegister];							
+							
+							if (OpcodeHelper.HasSourceRegister(code))
+							{
+								sourceRegister = OpcodeHelper.GetSourceRegister(code);
+								sourceValue = state.Registers[sourceRegister];
+							}
+							else if (OpcodeHelper.HasImmediate(code))
+							{
+								sourceValue = new AbstractValue(OpcodeHelper.GetImmediate(code));
+							}
+							else
+							{
+								throw new InvalidOperationException("tried to push something that wasn't a register or an immediate");
+							}
+							
+							state.Registers[RegisterName.ESP].PointsTo[0] = sourceValue;
+
 							break;
 						}
 					}

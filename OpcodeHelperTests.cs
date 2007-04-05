@@ -33,6 +33,22 @@ namespace bugreport
 			Assert.AreEqual(RegisterName.EBP, OpcodeHelper.GetSourceRegister(code));
 		}
 		
+
+		[Test]
+		public void PushIz()
+		{
+			code = new Byte[] {0x68, 0x10, 0x84, 0x04, 0x08};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.Iz, encoding);
+			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.IsFalse(OpcodeHelper.HasSourceRegister(code));
+			Assert.IsFalse(OpcodeHelper.HasDestinationRegister(code));
+			Assert.IsTrue(OpcodeHelper.HasImmediate(code));
+			Assert.AreEqual(0x08048410, OpcodeHelper.GetImmediate(code));
+		}
+		
+
+	
 		[Test]
 		public void PoPrSI()
 		{
