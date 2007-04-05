@@ -52,6 +52,20 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void PushIzThenPopEbp()
+		{
+			Byte [] pushCode = new Byte[] {0x68, 0x10, 0x84, 0x04, 0x08};
+			Byte [] popCode = new Byte[] {0x5d};
+			
+			state = X86emulator.Run(reportItems, state, pushCode);
+			Assert.AreEqual(0x5, state.InstructionPointer);
+			state.Registers[RegisterName.EBP] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(0x6, state.InstructionPointer);			
+			Assert.AreEqual(0x08048410, state.Registers[RegisterName.EBP].Value);
+		}
+
+		[Test]
 		public void PushEbpThenPopEbp()
 		{
 			Byte [] pushCode = new Byte[] {0x55};

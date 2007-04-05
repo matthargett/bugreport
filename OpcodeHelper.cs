@@ -10,7 +10,7 @@ namespace bugreport
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump, Xor};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, rAxIv, rAxIz, rAxOv, rAX, rBX, rDX, rSI, rSP, EvIz, EbIb, Jz, rBP, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
+	public enum OpcodeEncoding {None, EvGv, GvEv, Iz, rAxIv, rAxIz, rAxOv, rAX, rBX, rDX, rSI, rSP, EvIz, EbIb, Jz, rBP, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -74,6 +74,8 @@ namespace bugreport
 					return OpcodeEncoding.EvIz;
 				case 0xe8:
 					return OpcodeEncoding.Jz;
+				case 0x68:
+					return OpcodeEncoding.Iz;
 				default:
 					throw new InvalidOpcodeException(code);
 			}			
@@ -107,6 +109,7 @@ namespace bugreport
 				case OpcodeEncoding.rAxIz:
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.Jz:
+				case OpcodeEncoding.Iz:
 					return true;
 				default:
 					return false;
@@ -146,6 +149,7 @@ namespace bugreport
 				case OpcodeEncoding.rAxIz:
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.Jz:
+				case OpcodeEncoding.Iz:
 				{
 					return BitMath.BytesToDword(code, valueIndex);
 				}
@@ -159,7 +163,6 @@ namespace bugreport
 		
 		public static StackEffect GetStackEffect(Byte[] code)
 		{
-		
 			switch(code[0])
 			{
 				case 0x53:
@@ -167,7 +170,8 @@ namespace bugreport
 				case 0x54:
 				case 0x55:
 				case 0x56:
-				case 0x50:				
+				case 0x50:	
+				case 0x68:
 					return StackEffect.Push;
 				case 0x5a:
 				case 0x5b:
