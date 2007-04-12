@@ -10,7 +10,7 @@ namespace bugreport
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump, Xor};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, Iz, rAxIv, rAxIz, rAxOv, rAX, rBX, rDX, rSI, rSP, EvIz, EbIb, Jz, rBP, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
+	public enum OpcodeEncoding {None, EvGv, GvEv, Iz, rAxIv, rAxIz, rAxOv, rAX, rBX, rCX, rDX, rSI, rSP, EvIz, EbIb, Jz, rBP, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -38,6 +38,9 @@ namespace bugreport
 				case 0x53:
 				case 0x5b:
 					return OpcodeEncoding.rBX;
+				case 0x51:
+				case 0x59:
+					return OpcodeEncoding.rCX;
 				case 0x52:
 				case 0x5a:
 					return OpcodeEncoding.rDX;
@@ -165,20 +168,22 @@ namespace bugreport
 		{
 			switch(code[0])
 			{
-				case 0x53:
+				case 0x50:	
+				case 0x51:
 				case 0x52:
+				case 0x53:
 				case 0x54:
 				case 0x55:
 				case 0x56:
-				case 0x50:	
 				case 0x68:
 					return StackEffect.Push;
+				case 0x58:
+				case 0x59:
 				case 0x5a:
 				case 0x5b:
 				case 0x5c:
 				case 0x5d:
 				case 0x5e:
-				case 0x58:
 					return StackEffect.Pop;
 
 				default:
@@ -199,68 +204,50 @@ namespace bugreport
 		public static RegisterName GetSourceRegister(Byte[] code)
 		{
 			OpcodeEncoding opcodeEncoding = GetEncoding(code);
-			
-			// GetSourceRegister and GetDestinationRegister both 
-			// return register names used for single register instructions regardless
-			// of direction. ex. push ebp vs. pop ebp
-			
-			switch (opcodeEncoding)
+						
+			if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
 			{
-
-				case OpcodeEncoding.rBP:
-				{	
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+				switch (opcodeEncoding)
+				{
+					case OpcodeEncoding.rBP:
 					{
 						return RegisterName.EBP;
 					}
-					return RegisterName.None;
-				}
-					
-				case OpcodeEncoding.rSI:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+						
+					case OpcodeEncoding.rSI:
 					{
 						return RegisterName.ESI;
 					}
-					return RegisterName.None;
-				}
-					
-				case OpcodeEncoding.rSP:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+						
+					case OpcodeEncoding.rSP:
 					{
 						return RegisterName.ESP;
 					}
-					return RegisterName.None;
-				}
 
-				case OpcodeEncoding.rAX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+					case OpcodeEncoding.rAX:
 					{
 						return RegisterName.EAX;	
 					}
-					return RegisterName.None;
-				}
-
-				case OpcodeEncoding.rBX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+	
+					case OpcodeEncoding.rBX:
 					{
 						return RegisterName.EBX;
 					}
-					return RegisterName.None;
-				}
-
-				case OpcodeEncoding.rDX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+	
+					case OpcodeEncoding.rCX:
+					{
+						return RegisterName.ECX;
+					}
+	
+					case OpcodeEncoding.rDX:
 					{
 						return RegisterName.EDX;	
 					}
-					return RegisterName.None;
 				}
-
+			}
+	
+			switch (opcodeEncoding)
+			{
 				case OpcodeEncoding.EbGb:
 				case OpcodeEncoding.EvGv:
 				{
@@ -296,7 +283,47 @@ namespace bugreport
 		public static RegisterName GetDestinationRegister(Byte[] code)
 		{
 			OpcodeEncoding opcodeEncoding = GetEncoding(code);
-			
+
+			if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+			{
+				switch (opcodeEncoding)
+				{
+					case OpcodeEncoding.rBP:
+					{	
+						return RegisterName.EBP;
+					}
+
+					case OpcodeEncoding.rSI:
+					{
+						return RegisterName.ESI;
+					}
+						
+					case OpcodeEncoding.rSP:
+					{
+						return RegisterName.ESP;
+					}
+						
+					case OpcodeEncoding.rAX:
+					{
+						return RegisterName.EAX;	
+					}
+	
+					case OpcodeEncoding.rBX:
+					{
+						return RegisterName.EBX;
+					}
+	
+					case OpcodeEncoding.rCX:
+					{
+						return RegisterName.ECX;
+					}
+	
+					case OpcodeEncoding.rDX:
+					{
+						return RegisterName.EDX;
+					}
+				}
+			}
 			
 			switch (opcodeEncoding)
 			{
@@ -305,60 +332,6 @@ namespace bugreport
 				case OpcodeEncoding.GvEb:
 				{
 					return ModRM.GetGv(code);
-				}
-
-				case OpcodeEncoding.rBP:
-				{	
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
-					{
-						return RegisterName.EBP;
-					}
-					return RegisterName.None;
-				}
-					
-				case OpcodeEncoding.rSI:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
-					{
-						return RegisterName.ESI;
-					}
-					return RegisterName.None;
-				}
-					
-				case OpcodeEncoding.rSP:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
-					{
-						return RegisterName.ESP;
-					}
-					return RegisterName.None;
-				}
-					
-				case OpcodeEncoding.rAX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
-					{
-						return RegisterName.EAX;	
-					}
-					return RegisterName.None;
-				}
-
-				case OpcodeEncoding.rBX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
-					{
-						return RegisterName.EBX;
-					}
-					return RegisterName.None;
-				}
-
-				case OpcodeEncoding.rDX:
-				{
-					if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
-					{
-						return RegisterName.EDX;
-					}
-					return RegisterName.None;
 				}
 
 				case OpcodeEncoding.rAxIv:
