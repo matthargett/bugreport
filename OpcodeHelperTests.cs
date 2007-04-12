@@ -47,10 +47,8 @@ namespace bugreport
 			Assert.AreEqual(0x08048410, OpcodeHelper.GetImmediate(code));
 		}
 		
-
-	
 		[Test]
-		public void PoPrSI()
+		public void PoprSI()
 		{
 			//Pop rSI
 			code = new Byte[] { 0x5e};
@@ -61,7 +59,31 @@ namespace bugreport
 			Assert.IsTrue(OpcodeHelper.HasDestinationRegister(code));
 			Assert.AreEqual(RegisterName.ESI, OpcodeHelper.GetDestinationRegister(code));
 		}
-		
+
+		[Test]
+		public void PushrCX()
+		{
+			code = new Byte[] {0x51};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rCX, encoding);
+			Assert.AreEqual(StackEffect.Push, OpcodeHelper.GetStackEffect(code));
+			Assert.IsTrue(OpcodeHelper.HasSourceRegister(code));
+			Assert.IsFalse(OpcodeHelper.HasDestinationRegister(code));
+			Assert.AreEqual(RegisterName.ECX, OpcodeHelper.GetSourceRegister(code));
+		}
+				
+		[Test]
+		public void PoprCX()
+		{
+			code = new Byte[] { 0x59};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.rCX, encoding);
+			Assert.AreEqual(StackEffect.Pop, OpcodeHelper.GetStackEffect(code));
+			Assert.IsFalse(OpcodeHelper.HasSourceRegister(code));
+			Assert.IsTrue(OpcodeHelper.HasDestinationRegister(code));
+			Assert.AreEqual(RegisterName.ECX, OpcodeHelper.GetDestinationRegister(code));
+		}
+
 		[Test]
 		public void PushrSI()
 		{

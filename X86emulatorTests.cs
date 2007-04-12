@@ -96,6 +96,21 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void PushEcxThenPopEcx()
+		{
+			Byte [] pushCode = new Byte[] {0x51};
+			Byte [] popCode = new Byte[] {0x59};
+			
+			state.Registers[RegisterName.ECX] = one;
+			state = X86emulator.Run(reportItems, state, pushCode);
+			Assert.AreEqual(0x1, state.InstructionPointer);
+			state.Registers[RegisterName.ECX] = null;
+			state = X86emulator.Run(reportItems, state, popCode);
+			Assert.AreEqual(0x2, state.InstructionPointer);
+			Assert.AreEqual(one, state.Registers[RegisterName.ECX]);
+		}
+		
+		[Test]
 		public void PushEdxThenPopEdx()
 		{
 			Byte [] pushCode = new Byte[] {0x52};
