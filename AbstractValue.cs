@@ -16,6 +16,7 @@ namespace bugreport
 		Boolean isOOB;
 
 		public const UInt32 UNKNOWN = 0xb4dc0d3d;
+		public const UInt32 MAX_BUFFER_SIZE = 25600000;
 		
 		public AbstractValue() {
 			storage = UNKNOWN;
@@ -87,7 +88,12 @@ namespace bugreport
 			return hashCode;
 		}
 		
-		public static AbstractValue[] GetNewBuffer(UInt32 size) {
+		public static AbstractValue[] GetNewBuffer(UInt32 size)
+		{
+			if (size > MAX_BUFFER_SIZE)
+			{
+				throw new ArgumentOutOfRangeException("size", "Size specified larger than maximum allowed: " + MAX_BUFFER_SIZE);
+			}
 			AbstractValue[] buffer = new AbstractValue[size];
 			for (UInt32 i = 0; i < size; i++)
 			{

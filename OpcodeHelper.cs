@@ -24,6 +24,7 @@ namespace bugreport
 				case 0xc9:
 				case 0xc3:
 				case 0x90:
+				case 0xf4:
 					return OpcodeEncoding.None;				
 				case 0x5e:
 				case 0x56:
