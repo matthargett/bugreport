@@ -405,14 +405,28 @@ namespace bugreport
 		}
 
 		[Test]
-		public void Call()
+		public void MallocCall()
 		{
+			UInt32 initialInstructionPointer = 0x804838f;
 			//TODO: need to reconcile with esp/ebp handling
 			state.PushOntoStack(new AbstractValue(16));
+			state.InstructionPointer = initialInstructionPointer;
 			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
 			state = X86emulator.Run(reportItems, state, code);
-			Assert.AreEqual(0x5, state.InstructionPointer);
+			Assert.AreEqual(initialInstructionPointer + 0x5, state.InstructionPointer);
 			Assert.AreEqual(16, state.ReturnValue.PointsTo.Length);
+		}
+		
+		[Test]
+		[Ignore("In progress, need to figure out math. --Mike && Matt")]
+		public void NonMallocCall()
+		{
+			state.InstructionPointer = 0x804839f;
+			state.Registers[RegisterName.EAX] = null;
+			code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
+			state = X86emulator.Run(reportItems, state, code);
+
+			Assert.IsNull(state.Registers[RegisterName.EAX]);
 		}
 		
 		[Test]

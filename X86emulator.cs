@@ -274,8 +274,20 @@ namespace bugreport
 
 				case OpcodeEncoding.Jz:
 				{
-					AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); // hardcoded malloc emulation
-					state.ReturnValue = new AbstractValue(buffer);
+					Int32 immediate = (Int32)(~OpcodeHelper.GetImmediate(code));
+					immediate++;
+					
+					// FIXME: total fudge factor, need to figure out where our math here is wrong
+					const UInt32 WTF_FUDGE_NUMBER = 512 - 40;
+					UInt32 effectiveAddress = (UInt32)(state.InstructionPointer + code.Length + (Int32)immediate) - WTF_FUDGE_NUMBER;
+					//Console.WriteLine("effectiveAddr: " + String.Format("0x{0:x8}", effectiveAddress));
+					
+					const UInt32 MALLOC_ADDR = 0x80482a8;
+					//if (effectiveAddress == MALLOC_ADDR)
+					{
+						AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); 
+						state.ReturnValue = new AbstractValue(buffer);
+					}
 					return state;
 				}
 

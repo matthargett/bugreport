@@ -175,5 +175,12 @@ namespace bugreport
 			
 			Assert.IsTrue(dest.IsOOB);
 		}
+		
+		[Test]
+		[ExpectedException(typeof(ArgumentOutOfRangeException))]
+		public void RequestedBufferTooLarge()
+		{
+			AbstractValue.GetNewBuffer(AbstractValue.MAX_BUFFER_SIZE + 1);
+		}
 	}
 }

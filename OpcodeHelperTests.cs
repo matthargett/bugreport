@@ -224,6 +224,15 @@ namespace bugreport
 		}
 
 		[Test]
+		public void Halt()
+		{
+			code = new Byte[] {0xf4};
+			encoding = OpcodeHelper.GetEncoding(code);
+			Assert.AreEqual(OpcodeEncoding.None, encoding);
+			Assert.AreEqual(StackEffect.None, OpcodeHelper.GetStackEffect(code));
+		}
+
+		[Test]
 		public void RAXIv()
 		{
 			code = new Byte[] {0xb8, 0x00, 0x00, 0x00, 0x00};
