@@ -418,7 +418,6 @@ namespace bugreport
 		}
 		
 		[Test]
-		[Ignore("In progress, need to figure out math. --Mike && Matt")]
 		public void NonMallocCall()
 		{
 			state.InstructionPointer = 0x804839f;
