@@ -1,4 +1,4 @@
-// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert
+// Copyright (c) 2007 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery
 // Licensed under GPLv3 draft 2
 // See LICENSE.txt for details.
 
@@ -274,16 +274,12 @@ namespace bugreport
 
 				case OpcodeEncoding.Jz:
 				{
-					Int32 immediate = (Int32)(~OpcodeHelper.GetImmediate(code));
-					immediate++;
+					//TODO: should push EIP + code.Length onto stack
+					UInt32 offset = OpcodeHelper.GetImmediate(code);
+					Int64 effectiveAddress = state.InstructionPointer + offset + code.Length;
 					
-					// FIXME: total fudge factor, need to figure out where our math here is wrong
-					const UInt32 WTF_FUDGE_NUMBER = 512 - 40;
-					UInt32 effectiveAddress = (UInt32)(state.InstructionPointer + code.Length + (Int32)immediate) - WTF_FUDGE_NUMBER;
-					//Console.WriteLine("effectiveAddr: " + String.Format("0x{0:x8}", effectiveAddress));
-					
-					const UInt32 MALLOC_ADDR = 0x80482a8;
-					//if (effectiveAddress == MALLOC_ADDR)
+					const UInt32 MALLOC_IMPORT_FUNCTION_ADDR = 0x80482a8;
+					if (effectiveAddress == MALLOC_IMPORT_FUNCTION_ADDR)
 					{
 						AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); 
 						state.ReturnValue = new AbstractValue(buffer);

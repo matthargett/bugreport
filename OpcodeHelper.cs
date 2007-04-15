@@ -123,7 +123,9 @@ namespace bugreport
 		public static UInt32 GetImmediate(Byte[] code)
 		{
 			if (!HasImmediate(code))
+			{
 				throw new InvalidOperationException("Can't get immediate from an opcode that doesn't have one");
+			}
 
 			Byte valueIndex = 1;
 			if (HasModRM(code))
