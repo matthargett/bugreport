@@ -1,5 +1,5 @@
-// Copyright (c) 2007 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery
-// Licensed under GPLv3 draft 2
+// Copyright (c) 2007 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
+// Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
 
 using System;
