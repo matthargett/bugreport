@@ -275,15 +275,11 @@ namespace bugreport
 				case OpcodeEncoding.Jz:
 				{
 					//TODO: should push EIP + code.Length onto stack
-					UInt32 offset = OpcodeHelper.GetImmediate(code);
-					Int64 effectiveAddress = state.InstructionPointer + offset + code.Length;
-					
-					const UInt32 MALLOC_IMPORT_FUNCTION_ADDR = 0x80482a8;
-					if (effectiveAddress == MALLOC_IMPORT_FUNCTION_ADDR)
+					MallocContract mallocContract = new MallocContract();
+					if (mallocContract.IsSatisfiedBy(state,code))
 					{
-						AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); 
-						state.ReturnValue = new AbstractValue(buffer);
-					}
+						state = mallocContract.Execute(state, code);
+					}					
 					return state;
 				}
 
