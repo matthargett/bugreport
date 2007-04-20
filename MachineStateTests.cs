@@ -1,3 +1,6 @@
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert, Cullen Bryan 
+// Licensed under GPLv3 draft 2
+// See LICENSE.txt for details.
 
 using NUnit.Framework;
 using System;
