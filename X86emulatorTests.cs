@@ -286,7 +286,9 @@ namespace bugreport
 		[ExpectedException(typeof(InvalidOpcodeException))]
 		public void InvalidOpcode()
 		{
-			state = X86emulator.Run(reportItems, state, new Byte[] {0xfe});
+			// int3 -- not really invalid, but we probably won't see it in any program we care about
+			code = new Byte[] {0xcc};
+			state = X86emulator.Run(reportItems, state, code);
 		}
 		
 
@@ -658,6 +660,5 @@ namespace bugreport
 			state = X86emulator.Run(reportItems, state, jnzCode);
 			Assert.AreEqual(jnzCode.Length + offset, state.InstructionPointer - oldEIP);	
 		}
-
 	}
 }

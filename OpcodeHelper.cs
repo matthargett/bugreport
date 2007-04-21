@@ -10,7 +10,14 @@ namespace bugreport
 	
 	public enum OperatorEffect {Unknown, Assignment, Add, Sub, And, Shr, Shl, Cmp, Jnz, None, Return, Leave, Jump, Xor};
 
-	public enum OpcodeEncoding {None, EvGv, GvEv, Iz, rAxIv, rAxIz, rAxOv, rAX, rBX, rCX, rDX, rSI, rSP, EvIz, EbIb, Jz, rBP, GvEb, EbGb, ObAL, EvIb, GvM, Jb};
+	public enum OpcodeEncoding 
+	{
+		None, EvGv, EvIb, EbGb,  EvIz, EbIb,
+		GvEv, GvEb, Iz, GvM, 
+		rAxIv, rAxIz, rAxOv, 
+		rAX, rBX, rCX, rDX, rSI, rSP, rBP, 
+		Jz, Jb, ObAL, Int3
+	};
 	
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
@@ -80,6 +87,8 @@ namespace bugreport
 					return OpcodeEncoding.Jz;
 				case 0x68:
 					return OpcodeEncoding.Iz;
+				case 0xcc:
+					return OpcodeEncoding.Int3;
 				default:
 					throw new InvalidOpcodeException(code);
 			}			

@@ -51,11 +51,6 @@ namespace bugreport
 			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(code);
 			OperatorEffect op = OpcodeHelper.GetOperatorEffect(code);
 			
-			if (op == OperatorEffect.Unknown)
-			{
-				throw new InvalidOpcodeException(code);
-			}
-	
 			switch (encoding)
 			{				
 				case OpcodeEncoding.rAxIv:
@@ -106,7 +101,7 @@ namespace bugreport
 							}
 							else
 							{
-								throw new InvalidOperationException("tried to push something that wasn't a register or an immediate");
+								throw new InvalidOperationException(String.Format("tried to push something that wasn't a register or an immediate @ 0x{0:x8}", state.InstructionPointer));
 							}
 							
 							state.Registers[RegisterName.ESP].PointsTo[0] = sourceValue;
@@ -142,12 +137,12 @@ namespace bugreport
 						sourceValue = state.Registers[sourceRegister];
 					}
 					
-					if (ModRM.HasOffset(code))
-					{
-						UInt32 offset = ModRM.GetOffset(code);
-						state.DataSegment[offset] = sourceValue;
-						return state;
-					}
+//					if (ModRM.HasOffset(code))
+//					{
+//						UInt32 offset = ModRM.GetOffset(code);
+//						state.DataSegment[offset] = sourceValue;
+//						return state;
+//					}
 					
 					if (ModRM.IsEffectiveAddressDereferenced(code))
 					{

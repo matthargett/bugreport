@@ -43,6 +43,7 @@
     <Compile Include="AbstractValueTests.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="AnalyzerTests.cs" />
+    <Compile Include="CoverageExcludeAttribute.cs" />
     <Compile Include="MallocContract.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="OptionsTest.cs" />
