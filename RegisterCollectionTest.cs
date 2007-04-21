@@ -47,5 +47,11 @@ namespace bugreport
 		{
 			StringAssert.StartsWith("EAX=?", registers.ToString());
 		}
+		
+		[Test]
+		public void Equals()
+		{
+			Assert.IsFalse(registers.Equals(null));
+		}
 	}
 }

@@ -11,7 +11,8 @@ namespace bugreport
 	public class MachineStateTests
 	{
 		MachineState state;
-		AbstractValue one = new AbstractValue(1), two = new AbstractValue(2).AddTaint();
+		AbstractValue one = new AbstractValue(1);
+		AbstractValue two = new AbstractValue(2).AddTaint();
 
 		private AbstractValue eax
 		{
@@ -52,6 +53,25 @@ namespace bugreport
 			
 			Assert.AreEqual(eax, ebx);
 			Assert.AreNotSame(eax, ebx);
+		}
+		
+		[Test]
+		public void AssignmentRetainsOOB()
+		{
+			AbstractValue oob = new AbstractValue(1);
+			oob.IsOOB = true;
+			
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Assignment, oob);			
+			Assert.IsTrue(eax.IsOOB);
+		}
+		
+		[Test]
+		[ExpectedException(typeof(ArgumentException))]
+		public void NonAssignmentOfPointer()
+		{
+			eax = one;
+			ebx = new AbstractValue(new AbstractValue[] {two});
+			state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
 		}
 		
 		[Test]
@@ -187,6 +207,14 @@ namespace bugreport
 		}
 		
 		[Test]
+		[ExpectedException(typeof(ArgumentException))]
+		public void JnzPointerOffset()
+		{
+			AbstractValue pointer = new AbstractValue(AbstractValue.GetNewBuffer(1));
+			state = state.DoOperation(OperatorEffect.Jnz, pointer);
+		}
+		
+		[Test]
 		public void OperationResultEquality()
 		{
 			OperationResult same = new OperationResult(new AbstractValue(1), false);
@@ -213,18 +241,29 @@ namespace bugreport
 			
 			RegisterCollection registers = new RegisterCollection();
 			registers[RegisterName.EAX] = new AbstractValue(1);
-			MachineState different = new MachineState(registers);
-			different.DataSegment[0] = new AbstractValue(2);
+			MachineState differentViaRegisters = new MachineState(registers);
+			differentViaRegisters.DataSegment[0] = new AbstractValue(2);
 			
 			Assert.IsTrue(same.Equals(same2));
-			Assert.IsFalse(different.Equals(same));
+			Assert.IsFalse(differentViaRegisters.Equals(same));
 			
 			Assert.IsTrue(same == same2);
-			Assert.IsTrue(same != different);
+			Assert.IsTrue(same != differentViaRegisters);
 			
 			Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
-			Assert.AreNotEqual(same.GetHashCode(), different.GetHashCode());
+			Assert.AreNotEqual(same.GetHashCode(), differentViaRegisters.GetHashCode());
+			
+			registers = new RegisterCollection();
+			MachineState differentViaDataSegmentKey = new MachineState(registers);
+			differentViaDataSegmentKey.DataSegment[1] = new AbstractValue(2);
+			
+			Assert.IsFalse(same.Equals(differentViaDataSegmentKey));
+			
+			registers = new RegisterCollection();
+			MachineState differentViaDataSegmentValue = new MachineState(registers);
+			differentViaDataSegmentValue.DataSegment[0] = new AbstractValue(1);
+			
+			Assert.IsFalse(same.Equals(differentViaDataSegmentValue));
 		}
-
 	}
 }

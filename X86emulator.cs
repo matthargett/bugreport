@@ -52,7 +52,9 @@ namespace bugreport
 			OperatorEffect op = OpcodeHelper.GetOperatorEffect(code);
 			
 			if (op == OperatorEffect.Unknown)
+			{
 				throw new InvalidOpcodeException(code);
+			}
 	
 			switch (encoding)
 			{				

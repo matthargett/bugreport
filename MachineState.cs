@@ -180,7 +180,9 @@ namespace bugreport
 		public MachineState DoOperation(OperatorEffect _operatorEffect, AbstractValue _offset)
 		{
 			if (_offset.IsPointer)
+			{
 				throw new ArgumentException("_offset pointer not supported.");
+			}
 
 			MachineState newState = new MachineState(this);
 			switch(_operatorEffect)
@@ -188,12 +190,16 @@ namespace bugreport
 				case OperatorEffect.Jnz:
 					{
 						if (!newState.zeroFlag)
+						{
 							newState.instructionPointer += _offset.Value;
+						}
 						
 						break;
 					}
 				default:
+				{
 					throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+				}
 			}
 			return newState;
 		}
@@ -263,7 +269,9 @@ namespace bugreport
 		public OperationResult DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
 		{
 			if (rhs.IsPointer && _operatorEffect != OperatorEffect.Assignment)
+			{
 				throw new ArgumentException("rhs pointer only supported for OperatorEffect.Assignment.");
+			}
 			
 			OperationResult result = new OperationResult();
 
@@ -273,7 +281,9 @@ namespace bugreport
 				{
 					AbstractValue newValue = new AbstractValue(rhs);
 					if (rhs.IsInitialized && rhs.IsOOB)
+					{
 						newValue.IsOOB = true;
+					}
 					
 					result.Value = newValue;
 					
@@ -394,9 +404,13 @@ namespace bugreport
 				case OperatorEffect.Cmp:
 				{
 					if ((lhs.Value - rhs.Value) == 0)
+					{
 						result.ZeroFlag = true;
+					}
 					else
+					{
 						result.ZeroFlag = false;
+					}
 					
 					result.Value = lhs;
 					return result;
