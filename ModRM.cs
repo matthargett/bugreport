@@ -94,11 +94,6 @@ namespace bugreport
 			Byte offsetBeginsAt = OpcodeHelper.GetOpcodeLength(code);
 			offsetBeginsAt++; // for modRM byte
 			
-			if (HasSIB(code))
-			{
-			    offsetBeginsAt++;
-			}
-			
 			return BitMath.BytesToDword(code, offsetBeginsAt);
 		}
 

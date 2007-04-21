@@ -31,6 +31,21 @@ namespace bugreport
 		}
 		
 		[Test]
+		public void Equals()
+		{
+			Assert.IsFalse(new AbstractValue().Equals(null));
+		}
+		
+		[Test]
+		public void PointerHashcodes()
+		{
+			pointer = new AbstractValue(new AbstractValue[] {new AbstractValue(1)});
+			AbstractValue pointer2 = new AbstractValue(new AbstractValue[] {new AbstractValue(2)});
+			
+			Assert.AreNotEqual(pointer.GetHashCode(), pointer2.GetHashCode());
+		}
+		
+		[Test]
 		public void AssignmentAtByteZero()
 		{
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);

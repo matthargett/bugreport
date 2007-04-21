@@ -17,7 +17,6 @@ namespace bugreport
 		Analyzer analyzer;
 		MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
 		Byte[] code = new Byte[] {0x90};
-
 		
 		private class FakeAnalyzer : Analyzer
 		{
@@ -39,11 +38,18 @@ namespace bugreport
 				_machineState.InstructionPointer += (UInt32)_instructionBytes.Length;
 				
 				return _machineState;
-			}
-			
+			}			
 		}
 
-		IParsable createMockParser(UInt32 expectedReportItemCount)
+		public void Dispose()
+		{
+			if(null != stream)
+			{
+				stream.Dispose();
+			}
+		}
+
+		private IParsable createMockParser(UInt32 expectedReportItemCount)
 		{				
 			DynamicMock control = new DynamicMock(typeof(IParsable));
 			control.ExpectAndReturn("get_EndOfFunction", false, null);
@@ -63,7 +69,7 @@ namespace bugreport
 
 		[Test]
 		[ExpectedException(typeof(ArgumentNullException))]
-		public void NullFileName() 
+		public void NullStream() 
 		{
 			analyzer = new Analyzer(null);
 			analyzer.Run();
@@ -74,6 +80,8 @@ namespace bugreport
 		{
 			analyzer = new Analyzer(createMockParser(0));
 			Assert.AreEqual(0, analyzer.ActualReportItems.Count);
+			analyzer.Run();
+			Assert.AreEqual(0, analyzer.ExpectedReportItems.Count);
 		}
 		
 		[Test]
@@ -113,14 +121,6 @@ namespace bugreport
 			analyzer = new FakeAnalyzer(createMockParser(2), 3);
 			analyzer.Run();
 			Assert.AreNotEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);	
-		}
-		
-		public void Dispose()
-		{
-			if(null != stream)
-			{
-				stream.Dispose();
-			}
 		}
 	}
 }

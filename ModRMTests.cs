@@ -109,7 +109,7 @@ namespace bugreport
 		
 		[Test]
 		[ExpectedException(typeof(InvalidOperationException))]
-		public void GetEVWithHasSIB()
+		public void GetEvWithSIB()
 		{
 			code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
 			Assert.IsTrue(ModRM.HasSIB(code));
