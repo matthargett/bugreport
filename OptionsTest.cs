@@ -13,7 +13,8 @@ namespace bugreport
 	[TestFixture]
 	public class OptionsTest
 	{
-		internal class FakeFileResolver : FileResolver
+		[CoverageExclude]
+		private class FakeFileResolver : FileResolver
 		{
 			String expectedPath, expectedFileName;
 			Int32 numberOfFilesFound;

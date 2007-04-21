@@ -1,4 +1,4 @@
 ﻿<ProfilerSettings>
   <Assemblies />
-  <ExclusionAttributes>NUnit.Framework.TestFixtureAttribute;NUnit.Framework.TestAttribute</ExclusionAttributes>
+  <ExclusionAttributes>NUnit.Framework.TestFixtureAttribute;NUnit.Framework.TestAttribute;bugreport.CoverageExcludeAttribute</ExclusionAttributes>
 </ProfilerSettings>
