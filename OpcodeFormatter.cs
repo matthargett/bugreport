@@ -4,6 +4,7 @@
 // See LICENSE.txt for details.
 
 using System;
+using System.Text;
 
 namespace bugreport
 {
@@ -21,86 +22,164 @@ namespace bugreport
 			{
 				OperatorEffect effect = OpcodeHelper.GetOperatorEffect(code);
 				if (OperatorEffect.Assignment == effect)
+				{
 					instructionName += "mov";
+				}
 				else if (OperatorEffect.None == effect)
+				{
 					instructionName +="nop";
+				}
 				else
+				{
 					instructionName += effect.ToString().ToLower();
+				}
 			}
 
 			return instructionName;
 		}
-
-		public static String GetOperands(Byte[] code)
+		
+		private static UInt32 getOperandCount(Byte[] code)
 		{
-			String operands = String.Empty;						
-			String destinationRegister = String.Empty;
+			UInt32 count = 0;
 			
+			if (OpcodeHelper.HasDestinationRegister(code)) 
+			{
+				count++;
+			}
+			
+			if (OpcodeHelper.HasSourceRegister(code) ||
+				OpcodeHelper.HasImmediate(code) ||
+				OpcodeHelper.HasModRM(code)) 
+			{
+				count++;
+			}
+			
+			return count;
+		}
+		
+		private static String getSingleOperand(Byte[] code)
+		{
 			if (OpcodeHelper.HasSourceRegister(code) && !OpcodeHelper.HasDestinationRegister(code))
 			{
 				return OpcodeHelper.GetSourceRegister(code).ToString().ToLower();
 			}
 			
-			if (OpcodeHelper.HasDestinationRegister(code))
+			if (!OpcodeHelper.HasSourceRegister(code) && OpcodeHelper.HasDestinationRegister(code))
 			{
-				destinationRegister = OpcodeHelper.GetDestinationRegister(code).ToString().ToLower();
-			}
-			
-			if (OpcodeHelper.HasModRM(code))
-			{
-				if (!ModRM.HasSIB(code))
-				{
-					Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
-					if (evDereferenced)
-					{
-						operands += "[";
-					}
-
-					operands += destinationRegister;
-
-					if (ModRM.HasIndex(code))
-					{
-						operands += "+" + ModRM.GetIndex(code);
-					}
-	
-					if (evDereferenced)
-					{
-						operands += "]";
-					}
-				}
-				else
-				{
-					operands += "[" + SIB.GetBaseRegister(code).ToString().ToLower();
-					String scaled = SIB.GetScaledRegister(code).ToString().ToLower() +
-						"*" + SIB.GetScaler(code);
-					if (!(SIB.GetScaler(code) == 1 && SIB.GetScaledRegister(code) == RegisterName.None))
-					{
-						operands += "+" + scaled;
-					}
-					
-					operands += "]";
-				}
-			}
-			else
-			{
-				operands += destinationRegister;
+				return OpcodeHelper.GetDestinationRegister(code).ToString().ToLower();
 			}
 
 			if (OpcodeHelper.HasImmediate(code))
 			{
-				if (OpcodeHelper.HasDestinationRegister(code))
+				return String.Format("0x{0:x8}", OpcodeHelper.GetImmediate(code));
+			}
+			
+			throw new ArgumentException("single operand requested when there is more than one");
+		}
+		
+		private static String encaseInSquareBrackets(String toBeEncased)
+		{
+			return "[" + toBeEncased + "]";
+		}
+		
+		private static String getSourceOperand(Byte[] code)
+		{
+			if (OpcodeHelper.HasImmediate(code))
+			{
+				return String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code));
+			}
+			else if (OpcodeHelper.HasSourceRegister(code))
+			{
+				return OpcodeHelper.GetSourceRegister(code).ToString().ToLower();
+			}
+			
+			throw new ArgumentException(
+				"don't know how to render this code's source operand: " + formatCode(code)
+			);
+		}
+		
+		private static String formatCode(Byte[] code)
+		{
+			StringBuilder formattedCode = new StringBuilder();
+			foreach (Byte codeByte in code)
+			{
+				formattedCode.Append(String.Format("{0:x2} ", codeByte));
+			}
+			
+			return formattedCode.ToString();
+		}
+
+		private static String getDestinationOperand(Byte[] code)
+		{
+			String destinationOperand = OpcodeHelper.GetDestinationRegister(code).ToString().ToLower();
+			
+			if (ModRM.HasSIB(code))
+			{
+				String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+				String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+				UInt32 scaler = SIB.GetScaler(code);
+				
+				if (SIB.GetScaledRegister(code) == RegisterName.None)
 				{
-					operands += ", ";
+					destinationOperand = baseRegister;
+				}
+				else if (scaler == 1)
+				{
+					destinationOperand = baseRegister + "+" + scaled;	
+				}
+				else
+				{
+					destinationOperand = baseRegister + "+" + scaled + "*" + scaler;
 				}
 				
-				operands += String.Format("0x{0:x}", OpcodeHelper.GetImmediate(code));
+				destinationOperand = encaseInSquareBrackets(destinationOperand);
 			}
-			else if (OpcodeHelper.HasSourceRegister(code) && OpcodeHelper.HasDestinationRegister(code))
+			else if (OpcodeHelper.HasModRM(code))
 			{
-				operands += String.Format(", {0}", OpcodeHelper.GetSourceRegister(code).ToString().ToLower());
+				if (ModRM.HasIndex(code))
+				{
+					destinationOperand += "+" + ModRM.GetIndex(code);
+				}
+
+				Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+				if (evDereferenced)
+				{
+					destinationOperand = encaseInSquareBrackets(destinationOperand);
+				}
 			}
-				
-			return operands;
+			
+			return destinationOperand;
+		}
+		
+		public static String GetOperands(Byte[] code)
+		{
+			UInt32 operandCount = getOperandCount(code);
+			
+			switch(operandCount)
+			{
+				case 0:
+				{
+					return String.Empty;
+				}
+			
+				case 1:
+				{
+					return getSingleOperand(code);
+				}
+			
+				case 2:
+				{
+					String destinationOperand = getDestinationOperand(code);
+					String sourceOperand = getSourceOperand(code);
+						
+					return destinationOperand + ", " + sourceOperand;
+				}
+					
+				default:
+				{
+					throw new InvalidOperationException("don't know how to display " + operandCount + " operands");
+				}
+			}
 		}
 	
 		public static String GetEncoding(Byte[] code)
@@ -116,3 +195,4 @@ namespace bugreport
 		}
 	}
 }
+
