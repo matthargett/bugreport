@@ -54,7 +54,7 @@ namespace bugreport
 			if (!HasIndex(_code))
 				throw new InvalidOperationException("For ModRM that does not specify an index, usage of GetIndex is invalid.");
 
-			UInt32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
+			UInt32 modRMIndex = Opcode.GetOpcodeLength(_code);
 			Byte modRM = getModRM(_code);
 			Byte mod = getMod(modRM);
 
@@ -91,7 +91,7 @@ namespace bugreport
 		
 		public static UInt32 GetOffset(Byte[] code)
 		{
-			Byte offsetBeginsAt = OpcodeHelper.GetOpcodeLength(code);
+			Byte offsetBeginsAt = Opcode.GetOpcodeLength(code);
 			offsetBeginsAt++; // for modRM byte
 			
 			return BitMath.BytesToDword(code, offsetBeginsAt);
@@ -115,7 +115,7 @@ namespace bugreport
 		
 		private static Byte getModRM(Byte[] _code)
 		{
-			Int32 modRMIndex = OpcodeHelper.GetOpcodeLength(_code);
+			Int32 modRMIndex = Opcode.GetOpcodeLength(_code);
 			
 			if (modRMIndex > _code.Length - 1)
 				throw new InvalidOperationException("No ModRM present: " + _code[0].ToString());

@@ -16,7 +16,7 @@ namespace bugreport
 		
 		private static Byte getSIB(Byte[] code)
 		{
-			return code[OpcodeHelper.GetOpcodeLength(code) + 1];
+			return code[Opcode.GetOpcodeLength(code) + 1];
 		}
 		
 		public static RegisterName GetBaseRegister(Byte[] code)
