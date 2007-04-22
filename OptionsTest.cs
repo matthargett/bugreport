@@ -13,7 +13,6 @@ namespace bugreport
 	[TestFixture]
 	public class OptionsTest
 	{
-		[CoverageExclude]
 		private class FakeFileResolver : FileResolver
 		{
 			String expectedPath, expectedFileName;
@@ -26,6 +25,7 @@ namespace bugreport
 				this.numberOfFilesFound = numberOfFilesFound;
 			}
 			
+			[CoverageExclude]		
 			public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
 			{
 				if (path == expectedPath && fileName == expectedFileName)

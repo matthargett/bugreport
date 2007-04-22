@@ -275,7 +275,7 @@ namespace bugreport
 					MallocContract mallocContract = new MallocContract();
 					if (mallocContract.IsSatisfiedBy(state,code))
 					{
-						state = mallocContract.Execute(state, code);
+						state = mallocContract.Execute(state);
 					}					
 					return state;
 				}

@@ -13,7 +13,9 @@ namespace bugreport
 			UInt32 offset = Opcode.GetImmediate(code);
 			UInt32 effectiveAddress;
 			
-			unchecked{
+			unchecked
+			{
+				//FIXME: find a way to do this without an unchecked operation
 				effectiveAddress = state.InstructionPointer + offset + (UInt32)code.Length;
 			}
 					
@@ -28,7 +30,7 @@ namespace bugreport
 			}			
 		}
 		
-		public MachineState Execute(MachineState state, Byte[] code)
+		public MachineState Execute(MachineState state)
 		{			
 			AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); 
 			state.ReturnValue = new AbstractValue(buffer);			
