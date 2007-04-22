@@ -48,16 +48,16 @@ namespace bugreport
 			AbstractValue sourceValue;
 			Int32 index;
 
-			OpcodeEncoding encoding = OpcodeHelper.GetEncoding(code);
-			OperatorEffect op = OpcodeHelper.GetOperatorEffect(code);
+			OpcodeEncoding encoding = Opcode.GetEncoding(code);
+			OperatorEffect op = Opcode.GetOperatorEffect(code);
 			
 			switch (encoding)
 			{				
 				case OpcodeEncoding.rAxIv:
 				case OpcodeEncoding.rAxIz:
 				{
-					destinationRegister = OpcodeHelper.GetDestinationRegister(code);
-					UInt32 immediate = OpcodeHelper.GetImmediate(code);
+					destinationRegister = Opcode.GetDestinationRegister(code);
+					UInt32 immediate = Opcode.GetImmediate(code);
 					state = state.DoOperation(destinationRegister, op, new AbstractValue(immediate));
 					return state;
 				}
@@ -77,11 +77,11 @@ namespace bugreport
 				case OpcodeEncoding.rDX:
 				case OpcodeEncoding.Iz:
 				{
-					switch (OpcodeHelper.GetStackEffect(code))
+					switch (Opcode.GetStackEffect(code))
 					{
 						case StackEffect.Pop:
 						{	
-							destinationRegister = OpcodeHelper.GetDestinationRegister(code);							
+							destinationRegister = Opcode.GetDestinationRegister(code);							
 							state.Registers[destinationRegister] = state.Registers[RegisterName.ESP].PointsTo[0];
 							state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));							
 							break;
@@ -90,14 +90,14 @@ namespace bugreport
 						{
 							state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
 							
-							if (OpcodeHelper.HasSourceRegister(code))
+							if (Opcode.HasSourceRegister(code))
 							{
-								sourceRegister = OpcodeHelper.GetSourceRegister(code);
+								sourceRegister = Opcode.GetSourceRegister(code);
 								sourceValue = state.Registers[sourceRegister];
 							}
-							else if (OpcodeHelper.HasImmediate(code))
+							else if (Opcode.HasImmediate(code))
 							{
-								sourceValue = new AbstractValue(OpcodeHelper.GetImmediate(code));
+								sourceValue = new AbstractValue(Opcode.GetImmediate(code));
 							}
 							else
 							{
@@ -119,7 +119,7 @@ namespace bugreport
 				case OpcodeEncoding.EvGv:
 				case OpcodeEncoding.EbGb:
 				{
-					destinationRegister = OpcodeHelper.GetDestinationRegister(code);
+					destinationRegister = Opcode.GetDestinationRegister(code);
 					index = 0;
 					
 					if (ModRM.HasIndex(code))
@@ -127,9 +127,9 @@ namespace bugreport
 						index = ModRM.GetIndex(code);
 					}
 
-					if (OpcodeHelper.HasImmediate(code))
+					if (Opcode.HasImmediate(code))
 					{
-						sourceValue = new AbstractValue(OpcodeHelper.GetImmediate(code));
+						sourceValue = new AbstractValue(Opcode.GetImmediate(code));
 					}
 					else
 					{

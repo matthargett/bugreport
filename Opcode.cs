@@ -22,7 +22,7 @@ namespace bugreport
 	/// <summary>
 	/// Based on table at http://sandpile.org/ia32/opc_1.htm
 	/// </summary>
-	public static class OpcodeHelper
+	public static class Opcode
 	{
 		public static OpcodeEncoding GetEncoding(Byte[] code)
 		{
@@ -217,7 +217,7 @@ namespace bugreport
 		{
 			OpcodeEncoding opcodeEncoding = GetEncoding(code);
 						
-			if (OpcodeHelper.GetStackEffect(code) == StackEffect.Push)
+			if (Opcode.GetStackEffect(code) == StackEffect.Push)
 			{
 				switch (opcodeEncoding)
 				{
@@ -296,7 +296,7 @@ namespace bugreport
 		{
 			OpcodeEncoding opcodeEncoding = GetEncoding(code);
 
-			if (OpcodeHelper.GetStackEffect(code) == StackEffect.Pop)
+			if (Opcode.GetStackEffect(code) == StackEffect.Pop)
 			{
 				switch (opcodeEncoding)
 				{

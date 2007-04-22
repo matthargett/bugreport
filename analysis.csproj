@@ -56,8 +56,8 @@
     <Compile Include="MachineStateTests.cs" />
     <Compile Include="ModRM.cs" />
     <Compile Include="ModRMTests.cs" />
-    <Compile Include="OpcodeHelper.cs" />
-    <Compile Include="OpcodeHelperTests.cs" />
+    <Compile Include="Opcode.cs" />
+    <Compile Include="OpcodeTest.cs" />
     <Compile Include="RegisterCollection.cs" />
     <Compile Include="RegisterCollectionTest.cs" />
     <Compile Include="ReportItem.cs" />

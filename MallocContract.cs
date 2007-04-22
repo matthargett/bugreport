@@ -10,7 +10,7 @@ namespace bugreport
 	{
 		public Boolean IsSatisfiedBy(MachineState state, Byte[] code)
 		{
-			UInt32 offset = OpcodeHelper.GetImmediate(code);
+			UInt32 offset = Opcode.GetImmediate(code);
 			UInt32 effectiveAddress;
 			
 			unchecked{
