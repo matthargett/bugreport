@@ -1,4 +1,7 @@
+using System;
+
 namespace bugreport
 {
-	public class CoverageExcludeAttribute : System.Attribute {}
+	[AttributeUsage(AttributeTargets.Method)]
+	public sealed class CoverageExcludeAttribute : System.Attribute {}
 }
