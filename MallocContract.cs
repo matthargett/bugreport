@@ -9,9 +9,11 @@ namespace bugreport
 {
 	public class MallocContract
 	{
+        Opcode opcode = new Opcode();
+
 		public Boolean IsSatisfiedBy(MachineState state, Byte[] code)
 		{
-			UInt32 offset = Opcode.GetImmediate(code);
+			UInt32 offset = opcode.GetImmediate(code);
 			UInt32 effectiveAddress;
 			
 			unchecked
