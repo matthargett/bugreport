@@ -1,5 +1,5 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
-// Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
+// Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert,
+// Cullen Bryan, Mike Seery
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
 
@@ -30,6 +30,7 @@ namespace bugreport
 		}
 		
 		Byte [] GetNextInstructionBytes();
+		Byte [] GetBytes();
 	}
 	
 	public sealed class DumpFileParser : IParsable, IDisposable
@@ -70,6 +71,34 @@ namespace bugreport
 			}
 			
 			return opCodeList[++index];
+		}
+		
+		public Byte[] GetBytes()
+		{
+			if (opCodeList.Count == 0)
+			{
+				
+				return null;
+			}
+			
+			Int32 total = 0;
+			foreach (Byte[] bytes in opCodeList)
+			{
+				total += bytes.Length;
+			}
+			
+			int allByteCount = 0;
+			Byte[] allBytes = new Byte[total];			
+			foreach (Byte[] bytes in opCodeList)
+			{
+				for(int i=0;i<bytes.Length;i++)
+				{
+					allBytes[i+allByteCount] = bytes[i];
+				}
+				allByteCount+=bytes.Length;
+			}
+			
+			return allBytes;
 		}
 		
 		public Boolean EndOfFunction
@@ -223,3 +252,4 @@ namespace bugreport
 		}
 	}
 }
+
