@@ -10,17 +10,19 @@ namespace bugreport
 {
 	public static class OpcodeFormatter
 	{
+		static Opcode opcode = new Opcode();
+
 		public static String GetInstructionName(Byte[] code)
 		{
 			String instructionName = String.Empty;
 			
-			if (Opcode.GetStackEffect(code) != StackEffect.None)
+			if (opcode.GetStackEffect(code) != StackEffect.None)
 			{
-				instructionName += Opcode.GetStackEffect(code).ToString().ToLower();
+				instructionName += opcode.GetStackEffect(code).ToString().ToLower();
 			}
 			else
 			{
-				OperatorEffect effect = Opcode.GetOperatorEffect(code);
+				OperatorEffect effect = opcode.GetOperatorEffect(code);
 				if (OperatorEffect.Assignment == effect)
 				{
 					instructionName += "mov";
@@ -42,14 +44,14 @@ namespace bugreport
 		{
 			UInt32 count = 0;
 			
-			if (Opcode.HasDestinationRegister(code)) 
+			if (opcode.HasDestinationRegister(code)) 
 			{
 				count++;
 			}
 			
-			if (Opcode.HasSourceRegister(code) ||
-				Opcode.HasImmediate(code) ||
-				Opcode.HasModRM(code)) 
+			if (opcode.HasSourceRegister(code) ||
+				opcode.HasImmediate(code) ||
+				opcode.HasModRM(code)) 
 			{
 				count++;
 			}
@@ -59,19 +61,19 @@ namespace bugreport
 		
 		private static String getSingleOperand(Byte[] code)
 		{
-			if (Opcode.HasSourceRegister(code) && !Opcode.HasDestinationRegister(code))
+			if (opcode.HasSourceRegister(code) && !opcode.HasDestinationRegister(code))
 			{
-				return Opcode.GetSourceRegister(code).ToString().ToLower();
+				return opcode.GetSourceRegister(code).ToString().ToLower();
 			}
 			
-			if (!Opcode.HasSourceRegister(code) && Opcode.HasDestinationRegister(code))
+			if (!opcode.HasSourceRegister(code) && opcode.HasDestinationRegister(code))
 			{
-				return Opcode.GetDestinationRegister(code).ToString().ToLower();
+				return opcode.GetDestinationRegister(code).ToString().ToLower();
 			}
 
-			if (Opcode.HasImmediate(code))
+			if (opcode.HasImmediate(code))
 			{
-				return String.Format("0x{0:x8}", Opcode.GetImmediate(code));
+				return String.Format("0x{0:x8}", opcode.GetImmediate(code));
 			}
 			
 			throw new ArgumentException("single operand requested when there is more than one");
@@ -84,13 +86,13 @@ namespace bugreport
 		
 		private static String getSourceOperand(Byte[] code)
 		{
-			if (Opcode.HasImmediate(code))
+			if (opcode.HasImmediate(code))
 			{
-				return String.Format("0x{0:x}", Opcode.GetImmediate(code));
+				return String.Format("0x{0:x}", opcode.GetImmediate(code));
 			}
-			else if (Opcode.HasSourceRegister(code))
+			else if (opcode.HasSourceRegister(code))
 			{
-				return Opcode.GetSourceRegister(code).ToString().ToLower();
+				return opcode.GetSourceRegister(code).ToString().ToLower();
 			}
 			
 			throw new ArgumentException(
@@ -111,7 +113,7 @@ namespace bugreport
 
 		private static String getDestinationOperand(Byte[] code)
 		{
-			String destinationOperand = Opcode.GetDestinationRegister(code).ToString().ToLower();
+			String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
 			
 			if (ModRM.HasSIB(code))
 			{
@@ -134,7 +136,7 @@ namespace bugreport
 				
 				destinationOperand = encaseInSquareBrackets(destinationOperand);
 			}
-			else if (Opcode.HasModRM(code))
+			else if (opcode.HasModRM(code))
 			{
 				if (ModRM.HasIndex(code))
 				{
@@ -186,9 +188,9 @@ namespace bugreport
 		{
 			String encoding = String.Empty;
 				
-			if (OpcodeEncoding.None != Opcode.GetEncoding(code))
+			if (OpcodeEncoding.None != opcode.GetEncoding(code))
 			{
-				encoding += "(" + Opcode.GetEncoding(code) + ")";
+				encoding += "(" + opcode.GetEncoding(code) + ")";
 			}
 			
 			return encoding;
