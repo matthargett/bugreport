@@ -101,6 +101,7 @@ namespace bugreport
 			{
 				case OpcodeEncoding.GvEb:
 				case OpcodeEncoding.GvEv:
+				case OpcodeEncoding.GvM:
 				case OpcodeEncoding.EvGv:
 				case OpcodeEncoding.EvIb:
 				case OpcodeEncoding.EbIb:
@@ -452,6 +453,55 @@ namespace bugreport
 			}
 
 			return opcodeLength;
+		}	
+
+		public static Byte GetInstructionLength(Byte[] code)
+		{
+			Byte instructionLength = GetOpcodeLength(code);
+			
+			if (HasModRM(code))
+			{
+				instructionLength++;
+				
+				if (ModRM.HasSIB(code))
+				{
+					instructionLength++;
+				}
+				
+				if (ModRM.HasOffset(code))
+				{
+					instructionLength += 4;
+				}
+				
+				if (ModRM.HasIndex(code))
+				{
+					instructionLength += 1;
+				}
+			}
+			
+			if (HasImmediate(code))
+			{
+				switch (GetEncoding(code))
+				{
+					case OpcodeEncoding.EbIb:
+					case OpcodeEncoding.EvIb:
+					case OpcodeEncoding.Jb:
+						instructionLength += 1;
+						break;
+					default:
+						instructionLength += 4;
+						break;
+				}
+			}
+			
+			if (GetEncoding(code) == OpcodeEncoding.ObAL ||
+				GetEncoding(code) == OpcodeEncoding.rAxOv)
+			{
+				instructionLength += 4;
+			}
+			
+
+			return instructionLength;
 		}	
 	}
 }
