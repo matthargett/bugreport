@@ -40,9 +40,9 @@
     <Compile Include="OpcodeFormatterTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="analysis.csproj">
+    <ProjectReference Include="AnalysisEngine.csproj">
       <Project>{8DC8856B-6FF9-4E39-BF0B-1C1B55115273}</Project>
-      <Name>analysis</Name>
+      <Name>AnalysisEngine</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
