@@ -18,7 +18,7 @@ namespace bugreport
 		[Test]
 		public void EvGv()
 		{
-			code = new Byte[] { 0x89, 0x00 };
+			code = new Byte[] {0x89, 0x00};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
@@ -28,7 +28,7 @@ namespace bugreport
 		public void XorEvGv()
 		{
 			//Xor EBP,EBP
-			code = new Byte[] { 0x31, 0xed };
+			code = new Byte[] {0x31, 0xed};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
@@ -54,8 +54,7 @@ namespace bugreport
 		[Test]
 		public void PoprSI()
 		{
-			//Pop rSI
-			code = new Byte[] { 0x5e};
+			code = new Byte[] {0x5e};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSI, encoding);
@@ -81,7 +80,7 @@ namespace bugreport
 		[Test]
 		public void PoprCX()
 		{
-			code = new Byte[] { 0x59};
+			code = new Byte[] {0x59};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rCX, encoding);
@@ -94,8 +93,7 @@ namespace bugreport
 		[Test]
 		public void PushrSI()
 		{
-			//Push rSI
-			code = new Byte[] { 0x56};
+			code = new Byte[] {0x56};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSI, encoding);
@@ -108,7 +106,7 @@ namespace bugreport
 		[Test]
 		public void PushrAX()
 		{
-			code = new Byte[] { 0x50};
+			code = new Byte[] {0x50};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rAX, encoding);
@@ -133,8 +131,7 @@ namespace bugreport
 		[Test]
 		public void PoprAX()
 		{
-			//Pop rAX
-			code = new Byte[] { 0x58};
+			code = new Byte[] {0x58};
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rAX, encoding);
 			Assert.AreEqual(StackEffect.Pop, opcode.GetStackEffect(code));
@@ -158,8 +155,7 @@ namespace bugreport
 		[Test]
 		public void PushrSP()
 		{
-			//Push ESP
-			code = new Byte[] { 0x54};
+			code = new Byte[] {0x54};
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSP, encoding);
 			Assert.AreEqual(StackEffect.Push, opcode.GetStackEffect(code));
@@ -173,7 +169,7 @@ namespace bugreport
 		public void PoprSP()
 		{
 			//Push ESP
-			code = new Byte[] { 0x5c};
+			code = new Byte[] {0x5c};
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.rSP, encoding);
 			Assert.AreEqual(StackEffect.Pop, opcode.GetStackEffect(code));
@@ -185,8 +181,9 @@ namespace bugreport
 
 		[Test]
 		public void GvEv()
-		{ // mov eax, [eax]
-			code = new Byte[] { 0x8b, 0x00 };
+		{ 
+			// mov eax, [eax]
+			code = new Byte[] {0x8b, 0x00};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.GvEv, encoding);
@@ -196,7 +193,8 @@ namespace bugreport
 
 		[Test]
 		public void GvEvDword()
-		{ // mov eax, [0x11223344]
+		{ 
+			// mov eax, [0x11223344]
 			code = new Byte[] { 0x8b, 0x05, 0x44, 0x33, 0x22, 0x11 };
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
@@ -207,7 +205,8 @@ namespace bugreport
 
 		[Test]
 		public void GvEvSIB()
-		{ // mov eax, [base_register+scale_register*scaler
+		{ 
+			// mov eax, [base_register+scale_register*scaler
 			code = new Byte[] { 0x8b, 0x04, 0x24 };
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
@@ -221,7 +220,7 @@ namespace bugreport
 		[ExpectedException(typeof(InvalidOpcodeException))]
 		public void UnknownOpcode()
 		{
-			code = new Byte[] { 0xf0, 0x00 };
+			code = new Byte[] {0xf0, 0x00};
 			opcode.GetEncoding(code);
 		}
 		
@@ -335,7 +334,8 @@ namespace bugreport
 		
 		[Test]
 		public void GvEbRegisterToRegister()
-		{ //  movzx  ebx,BYTE PTR [eax]
+		{ 
+			//  movzx  ebx,BYTE PTR [eax]
 			code = new Byte[] {0x0f, 0xb6, 0x18};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
@@ -348,7 +348,8 @@ namespace bugreport
 		
 		[Test]
 		public void EbGb()
-		{ // mov    BYTE PTR [eax+16],bl
+		{ 
+			// mov    BYTE PTR [eax+16],bl
 			code = new Byte[] {0x88, 0x58, 0x10};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
@@ -361,19 +362,21 @@ namespace bugreport
 		
 		[Test]
 		public void ObAL()
-		{ // mov    ds:0x80495e0,al
+		{ 
+			// mov    ds:0x80495e0,al
 			code = new Byte[] {0xa2, 0xe0, 0x95, 0x04, 0x08};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
 			Assert.AreEqual(OpcodeEncoding.ObAL, encoding);
-
+			
 			OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
 			Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
 		}
 		
 		[Test]
 		public void GvEbOffsetToRegister()
-		{ // movzx  edx,BYTE PTR ds:0x80495e0
+		{ 
+			// movzx  edx,BYTE PTR ds:0x80495e0
 			code = new Byte[] {0x0f, 0xb6, 0x15, 0xe0, 0x95, 0x04, 0x08};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
@@ -385,7 +388,8 @@ namespace bugreport
 		
 		[Test]
 		public void EvIbAdd()
-		{ //  83 c0 0f                add    eax,0xf
+		{ 
+			//  83 c0 0f                add    eax,0xf
 			code = new Byte[] {0x83, 0xc0, 0x0f};
 			Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
 			encoding = opcode.GetEncoding(code);
