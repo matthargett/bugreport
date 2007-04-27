@@ -213,7 +213,7 @@ namespace bugreport
 						throw new InvalidOperationException("GvM must be dereferenced");
 					}
 					
-					destinationRegister = ModRM.GetGv(code);
+					destinationRegister = Opcode.GetDestinationRegister(code);
 					AbstractValue baseRegisterValue;
 					index = 0;
 				
