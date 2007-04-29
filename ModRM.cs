@@ -10,7 +10,7 @@ namespace bugreport
 
 public static class ModRM
 {
-    static Opcode opcode = new Opcode();
+    static Opcode opcode = new X86Opcode();
 
     private static Byte getMod(Byte modrm)
     {

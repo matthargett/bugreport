@@ -45,7 +45,7 @@ public static class X86emulator
 
     private static MachineState emulateOpcode(Collection<ReportItem> reportItems, MachineState machineState, Byte[] code)
     {
-        Opcode opcode = new Opcode();
+        Opcode opcode = new X86Opcode();
 
         MachineState state = machineState;
         RegisterName sourceRegister, destinationRegister;

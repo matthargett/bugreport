@@ -13,7 +13,7 @@ public class OpcodeTest
 {
     private Byte[] code;
     private OpcodeEncoding encoding;
-    Opcode opcode = new Opcode();
+    Opcode opcode = new X86Opcode();
 
     [Test]
     public void EvGv()
