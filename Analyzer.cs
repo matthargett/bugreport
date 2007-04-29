@@ -10,150 +10,150 @@ using System.Collections.ObjectModel;
 
 namespace bugreport
 {
-	public class EmulationEventArgs : EventArgs
-	{
-		private MachineState state;
-		private ReadOnlyCollection<Byte> code;
-		
-		public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code) : base()
-		{
-			this.state = state;
-			this.code = code;
-		}
-		
-		public MachineState MachineState
-		{
-			get { return state; }
-		}
-		
-		public ReadOnlyCollection<Byte> Code
-		{
-			get { return code; }
-		}
-	}
-	
-	public class ReportEventArgs : EventArgs
-	{
-		private ReportItem reportItem;
-		
-		public ReportEventArgs(ReportItem reportItem) : base()
-		{
-			this.reportItem = reportItem;
-		}
-		
-		public ReportItem ReportItem
-		{
-			get { return reportItem; }
-		}
-	}
+public class EmulationEventArgs : EventArgs
+{
+    private MachineState state;
+    private ReadOnlyCollection<Byte> code;
 
-	public class ReportCollection : Collection<ReportItem>
-	{
-		public EventHandler<ReportEventArgs> OnReport;
-		
-		protected override void InsertItem(int index, ReportItem item)
-		{
-			base.InsertItem(index, item);
+    public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code) : base()
+    {
+        this.state = state;
+        this.code = code;
+    }
 
-			if (null != this.OnReport)
-			{
-				OnReport(this, new ReportEventArgs(item));
-			}
-		}
-	}
+    public MachineState MachineState
+    {
+        get { return state; }
+    }
 
-	public class Analyzer
-	{
-		public EventHandler<EmulationEventArgs> OnEmulationComplete;
-		
-		protected ReportCollection reportItems;
-		private IParsable parser;
+    public ReadOnlyCollection<Byte> Code
+    {
+        get { return code; }
+    }
+}
 
-		public Analyzer(IParsable parser)
-		{
-			if (null == parser)
-			{
-				throw new ArgumentNullException("parser");
-			}
-			
-			this.parser = parser;
-			
-			reportItems = new ReportCollection();
-		}
+public class ReportEventArgs : EventArgs
+{
+    private ReportItem reportItem;
 
-		public ReadOnlyCollection<ReportItem> ActualReportItems
-		{
-			get
-			{
-				return new ReadOnlyCollection<ReportItem>(reportItems);
-			}
-		}
-		
-		public ReadOnlyCollection<ReportItem> ExpectedReportItems
-		{
-			get
-			{
-				return parser.ExpectedReportItems;
-			}
-		}
-		
-		public EventHandler<ReportEventArgs> OnReport
-		{
-			get { return reportItems.OnReport; }
-			set { reportItems.OnReport = value; }
-		}
+    public ReportEventArgs(ReportItem reportItem) : base()
+    {
+        this.reportItem = reportItem;
+    }
 
-		
-		private static RegisterCollection getRegistersForLinuxMain()
-		{
-			RegisterCollection linuxMainDefaultValues = new RegisterCollection();
-			
-			AbstractValue arg0 = new AbstractValue(1).AddTaint();
-			
-			AbstractValue[] argvBuffer = new AbstractValue[] {arg0};
-			AbstractValue argvPointer = new AbstractValue(argvBuffer);
-			AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
-			AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
-			AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);
-			
-			AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
-			AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
-			
-			// linux ABI dictates 
-			modifiedBuffer[13] = argvPointerPointer;
+    public ReportItem ReportItem
+    {
+        get { return reportItem; }
+    }
+}
 
-			// gcc generates code that accesses this at some optimization levels
-			modifiedBuffer[0xfc] = new AbstractValue(1);
-			
-			AbstractValue stackPointer = new AbstractValue(modifiedBuffer);
-			linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
-			
-			return linuxMainDefaultValues;
-		}
+public class ReportCollection : Collection<ReportItem>
+{
+    public EventHandler<ReportEventArgs> OnReport;
 
-		
-		protected virtual MachineState runCode(MachineState _machineState, Byte [] _instructionBytes)
-		{
-			return X86emulator.Run(reportItems, _machineState, _instructionBytes);
-		}
+    protected override void InsertItem(int index, ReportItem item)
+    {
+        base.InsertItem(index, item);
 
-		public void Run()
-		{
-			MachineState machineState = new MachineState(getRegistersForLinuxMain());
-			machineState.InstructionPointer = parser.BaseAddress;
+        if (null != this.OnReport)
+        {
+            OnReport(this, new ReportEventArgs(item));
+        }
+    }
+}
 
-			while (!parser.EndOfFunction)
-			{
-				MachineState savedState;
-				
-				Byte[] instructionBytes = parser.GetNextInstructionBytes();
-				savedState = machineState;
-				machineState = runCode(machineState, instructionBytes);
-				if (null != this.OnEmulationComplete)
-				{
-					OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instructionBytes)));
-				}
-			}
-		}
-	}
+public class Analyzer
+{
+    public EventHandler<EmulationEventArgs> OnEmulationComplete;
+
+    protected ReportCollection reportItems;
+    private IParsable parser;
+
+    public Analyzer(IParsable parser)
+    {
+        if (null == parser)
+        {
+            throw new ArgumentNullException("parser");
+        }
+
+        this.parser = parser;
+
+        reportItems = new ReportCollection();
+    }
+
+    public ReadOnlyCollection<ReportItem> ActualReportItems
+    {
+        get
+        {
+            return new ReadOnlyCollection<ReportItem>(reportItems);
+        }
+    }
+
+    public ReadOnlyCollection<ReportItem> ExpectedReportItems
+    {
+        get
+        {
+            return parser.ExpectedReportItems;
+        }
+    }
+
+    public EventHandler<ReportEventArgs> OnReport
+    {
+        get { return reportItems.OnReport; }
+        set { reportItems.OnReport = value; }
+    }
+
+
+    private static RegisterCollection getRegistersForLinuxMain()
+    {
+        RegisterCollection linuxMainDefaultValues = new RegisterCollection();
+
+        AbstractValue arg0 = new AbstractValue(1).AddTaint();
+
+        AbstractValue[] argvBuffer = new AbstractValue[] {arg0};
+        AbstractValue argvPointer = new AbstractValue(argvBuffer);
+        AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
+        AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
+        AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);
+
+        AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
+        AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
+
+        // linux ABI dictates
+        modifiedBuffer[13] = argvPointerPointer;
+
+        // gcc generates code that accesses this at some optimization levels
+        modifiedBuffer[0xfc] = new AbstractValue(1);
+
+        AbstractValue stackPointer = new AbstractValue(modifiedBuffer);
+        linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
+
+        return linuxMainDefaultValues;
+    }
+
+
+    protected virtual MachineState runCode(MachineState _machineState, Byte [] _instructionBytes)
+    {
+        return X86emulator.Run(reportItems, _machineState, _instructionBytes);
+    }
+
+    public void Run()
+    {
+        MachineState machineState = new MachineState(getRegistersForLinuxMain());
+        machineState.InstructionPointer = parser.BaseAddress;
+
+        while (!parser.EndOfFunction)
+        {
+            MachineState savedState;
+
+            Byte[] instructionBytes = parser.GetNextInstructionBytes();
+            savedState = machineState;
+            machineState = runCode(machineState, instructionBytes);
+            if (null != this.OnEmulationComplete)
+            {
+                OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instructionBytes)));
+            }
+        }
+    }
+}
 }

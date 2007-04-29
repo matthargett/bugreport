@@ -7,37 +7,37 @@ using System;
 
 namespace bugreport
 {
-	public class MallocContract
-	{
-        Opcode opcode = new Opcode();
+public class MallocContract
+{
+    Opcode opcode = new Opcode();
 
-		public Boolean IsSatisfiedBy(MachineState state, Byte[] code)
-		{
-			UInt32 offset = opcode.GetImmediate(code);
-			UInt32 effectiveAddress;
-			
-			unchecked
-			{
-				//FIXME: find a way to do this without an unchecked operation
-				effectiveAddress = state.InstructionPointer + offset + (UInt32)code.Length;
-			}
-					
-			const UInt32 MALLOC_IMPORT_FUNCTION_ADDR = 0x80482a8;
-			if (effectiveAddress == MALLOC_IMPORT_FUNCTION_ADDR)
-			{
-				return true;				
-			}
-			else
-			{
-				return false;
-			}			
-		}
-		
-		public MachineState Execute(MachineState state)
-		{			
-			AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value); 
-			state.ReturnValue = new AbstractValue(buffer);			
-			return state;
-		}		
-	}
+    public Boolean IsSatisfiedBy(MachineState state, Byte[] code)
+    {
+        UInt32 offset = opcode.GetImmediate(code);
+        UInt32 effectiveAddress;
+
+        unchecked
+        {
+            //FIXME: find a way to do this without an unchecked operation
+            effectiveAddress = state.InstructionPointer + offset + (UInt32)code.Length;
+        }
+
+        const UInt32 MALLOC_IMPORT_FUNCTION_ADDR = 0x80482a8;
+        if (effectiveAddress == MALLOC_IMPORT_FUNCTION_ADDR)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public MachineState Execute(MachineState state)
+    {
+        AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value);
+        state.ReturnValue = new AbstractValue(buffer);
+        return state;
+    }
+}
 }
