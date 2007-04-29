@@ -57,7 +57,7 @@
     <Compile Include="ModRM.cs" />
     <Compile Include="ModRMTests.cs" />
     <Compile Include="Opcode.cs" />
-    <Compile Include="OpcodeTest.cs" />
+    <Compile Include="X86OpcodeTest.cs" />
     <Compile Include="RegisterCollection.cs" />
     <Compile Include="RegisterCollectionTest.cs" />
     <Compile Include="ReportItem.cs" />

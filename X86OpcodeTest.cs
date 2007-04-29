@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace bugreport
 {
 [TestFixture]
-public class OpcodeTest
+public class X86OpcodeTest
 {
     private Byte[] code;
     private OpcodeEncoding encoding;
