@@ -10,7 +10,7 @@ namespace bugreport
 {
 public static class OpcodeFormatter
 {
-    static Opcode opcode = new Opcode();
+    static Opcode opcode = new X86Opcode();
 
     public static String GetInstructionName(Byte[] code)
     {

@@ -9,7 +9,7 @@ namespace bugreport
 {
 public class MallocContract
 {
-    Opcode opcode = new Opcode();
+    Opcode opcode = new X86Opcode();
 
     public Boolean IsSatisfiedBy(MachineState state, Byte[] code)
     {
