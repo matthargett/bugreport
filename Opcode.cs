@@ -32,13 +32,14 @@ public interface Opcode
     StackEffect GetStackEffect(Byte[] code);
 
     Boolean HasModRM(Byte[] code);
+    Boolean HasOffset(Byte[] code);
 
     Boolean HasImmediate(Byte[] code);
     UInt32 GetImmediate(Byte[] code);
     
     Byte GetInstructionLength(Byte[] code);
+    Byte GetInstructionLength(Byte[] code, UInt32 index);
     Byte GetOpcodeLength(Byte[] code);
-    
     
     RegisterName GetSourceRegister(Byte[] code);
     RegisterName GetDestinationRegister(Byte[] code);

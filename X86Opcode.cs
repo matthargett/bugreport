@@ -450,15 +450,15 @@ public sealed class X86Opcode : Opcode
                 instructionLength++;
             }
 
-            if (ModRM.HasOffset(code))
-            {
-                instructionLength += 4;
-            }
-
             if (ModRM.HasIndex(code))
             {
                 instructionLength += 1;
             }
+        }
+
+        if (HasOffset(code))
+        {
+            instructionLength += 4;
         }
 
         if (HasImmediate(code))
@@ -476,14 +476,38 @@ public sealed class X86Opcode : Opcode
             }
         }
 
-        if (GetEncoding(code) == OpcodeEncoding.ObAL ||
-                GetEncoding(code) == OpcodeEncoding.rAxOv)
-        {
-            instructionLength += 4;
-        }
-
-
         return instructionLength;
+    }
+    
+    public Byte GetInstructionLength(Byte[] code, UInt32 index)
+    {
+        Byte[] shortCode = new Byte[15];
+        
+        Int32 minLength = (Int32)Math.Min((UInt32)15, code.Length - index);
+        Array.ConstrainedCopy(code, (Int32)index, shortCode, 0, minLength);
+        
+        return GetInstructionLength(shortCode);
+    }
+    
+    public Boolean HasOffset(Byte[] code)
+    {
+        OpcodeEncoding encoding = GetEncoding(code);
+        
+        if (encoding == OpcodeEncoding.ObAL || 
+            encoding == OpcodeEncoding.rAxOv)
+        {
+            return true; 
+        }
+        
+        if (HasModRM(code))
+        {
+            if (ModRM.HasOffset(code))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }
 }
