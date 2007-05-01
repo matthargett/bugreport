@@ -52,9 +52,7 @@ private class FakeAnalyzer : Analyzer
     private IParsable createMockParser(UInt32 expectedReportItemCount)
     {
         DynamicMock control = new DynamicMock(typeof(IParsable));
-        control.ExpectAndReturn("get_EndOfFunction", false, null);
-        control.ExpectAndReturn("GetNextInstructionBytes", code, null);
-        control.ExpectAndReturn("get_EndOfFunction", true, null);
+        control.ExpectAndReturn("GetBytes", code, null);
 
         List<ReportItem> reportItemList = new List<ReportItem>();
 

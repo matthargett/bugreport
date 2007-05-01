@@ -68,6 +68,7 @@ public class Analyzer
 
     protected ReportCollection reportItems;
     private IParsable parser;
+    private Opcode opcode = new X86Opcode();
 
     public Analyzer(IParsable parser)
     {
@@ -141,19 +142,33 @@ public class Analyzer
     {
         MachineState machineState = new MachineState(getRegistersForLinuxMain());
         machineState.InstructionPointer = parser.BaseAddress;
-
-        while (!parser.EndOfFunction)
+        Byte[] instructions = parser.GetBytes();
+        UInt32 index = machineState.InstructionPointer - parser.BaseAddress;
+        
+        while (index < instructions.Length)
         {
-            MachineState savedState;
-
-            Byte[] instructionBytes = parser.GetNextInstructionBytes();
-            savedState = machineState;
-            machineState = runCode(machineState, instructionBytes);
+            MachineState savedState = machineState;
+            Byte[] instruction = extractInstruction(instructions, index);
+            machineState = runCode(machineState, instruction);
             if (null != this.OnEmulationComplete)
             {
-                OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instructionBytes)));
+                OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instruction)));
             }
+            
+            index = machineState.InstructionPointer - parser.BaseAddress;
         }
+    }
+    
+    private Byte[] extractInstruction(Byte[] instructions, UInt32 index)
+    {
+        Byte instructionLength = opcode.GetInstructionLength(instructions, index);
+        Byte[] instruction = new Byte[instructionLength];
+        for (UInt32 count=index; count < index+instructionLength; count++)
+        {
+            instruction[count-index] = instructions[count];
+        }
+        
+        return instruction;
     }
 }
 }

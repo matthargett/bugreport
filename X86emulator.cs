@@ -33,20 +33,20 @@ public class InvalidOpcodeException : Exception
 
 public static class X86emulator
 {
+    private static Opcode opcode = new X86Opcode();
+
     public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
     {
         if (code.Length == 0)
             throw new ArgumentException("code", "Empty array not allowed.");
 
         MachineState afterState = emulateOpcode(reportItemCollector, machineState, code);
-        afterState.InstructionPointer += (UInt32)code.Length;
+        afterState.InstructionPointer += opcode.GetInstructionLength(code);
         return afterState;
     }
 
     private static MachineState emulateOpcode(Collection<ReportItem> reportItems, MachineState machineState, Byte[] code)
     {
-        Opcode opcode = new X86Opcode();
-
         MachineState state = machineState;
         RegisterName sourceRegister, destinationRegister;
         AbstractValue sourceValue;
