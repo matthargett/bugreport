@@ -14,13 +14,10 @@ namespace bugreport
 {
 public interface IParsable
 {
-    Boolean EndOfFunction { get; }
-
     ReadOnlyCollection<ReportItem> ExpectedReportItems { get; }
 
     UInt32 BaseAddress { get; }
-
-    Byte [] GetNextInstructionBytes();
+    
     Byte [] GetBytes();
 }
 
@@ -28,8 +25,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
 {
     private Stream stream;
     private StreamReader reader;
-    private Boolean inMain;
-    private String currentLine;
+    private Boolean inTargetFunction;    
     private List<Byte[]> opCodeList;
     private Int32 index = -1;
     private List<ReportItem> expectedReportItems;
@@ -52,17 +48,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
         {
             reader.Dispose();
         }
-    }
-
-    public Byte[] GetNextInstructionBytes()
-    {
-        if (EndOfFunction)
-        {
-            return null;
-        }
-
-        return opCodeList[++index];
-    }
+    }   
 
     public Byte[] GetBytes()
     {
@@ -90,15 +76,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
         }
 
         return allBytes;
-    }
-
-    public Boolean EndOfFunction
-    {
-        get
-        {
-            return (index >= opCodeList.Count-1);
-        }
-    }
+    }   
 
     public ReadOnlyCollection<ReportItem> ExpectedReportItems
     {
@@ -124,11 +102,11 @@ public sealed class DumpFileParser : IParsable, IDisposable
             {
                 String address = line.Substring(0,8);
                 baseAddress = UInt32.Parse(address, System.Globalization.NumberStyles.HexNumber);
-                inMain = true;
+                inTargetFunction = true;
             }
             else
             {
-                inMain = false;
+                inTargetFunction = false;
             }
         }
     }
@@ -204,6 +182,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
     {
         Byte[] opCode;
         List<Byte[]> opCodeList = new List<Byte[]>();
+        String currentLine;
 
         while (!reader.EndOfStream)
         {
@@ -216,7 +195,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
 
             updateMainInfo(currentLine);
 
-            if (inMain)
+            if (inTargetFunction)
             {
                 opCode = getHexFromString(currentLine);
                 if (opCode != null)
