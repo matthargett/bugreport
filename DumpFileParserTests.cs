@@ -1,3 +1,4 @@
+
 // Copyright (c) 2006 Luis Miras, Doug Coker, Todd Nagengast, Anthony Lineberry, Dan Moniz, Bryan Siepert,
 // Cullen Bryan, Mike Seery
 // Licensed under GPLv3 draft 3
@@ -31,8 +32,6 @@ public abstract class DumpFileParserFixture
             parser = null;
         }
     }
-
-
 }
 
 [TestFixture]
@@ -70,7 +69,7 @@ public class MainAfterNonMainTests : DumpFileParserFixture
     public override void SetUp()
     {
         base.SetUp();
-        writer.WriteLine("0804837c <nomain>:");
+        writer.WriteLine("0804837c <_start>:");
         writer.WriteLine(" 804837c:	c9                   	leave  ");
         writer.WriteLine();
         writer.WriteLine("0804837d <main>:");
@@ -83,10 +82,10 @@ public class MainAfterNonMainTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        //Byte[] code = parser.GetNextInstructionBytes();
+        Assert.AreEqual(0x0804837c, parser.BaseAddress);
+        Assert.AreEqual(0x0804837d, parser.EntryPointAddress);
+
         Byte[] code = parser.GetBytes();
-        //Assert.AreEqual(0xc3, code[0]);
-        //code = parser.GetBytes();
         Assert.AreEqual(0xc3, code[0]);
         Assert.AreEqual(1, code.Length);
         Assert.AreEqual(0, parser.ExpectedReportItems.Count);
@@ -102,15 +101,10 @@ public class MainAfterNonMainTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        Assert.AreEqual(0x0804837d, parser.BaseAddress);
+        Assert.AreEqual(0x0804837c, parser.BaseAddress);
+        Assert.AreEqual(0x0804837d, parser.EntryPointAddress);
 
-        //Byte[] code = parser.GetNextInstructionBytes();
-        //Assert.AreEqual(0xc3, code[0]);
         Byte[] code = parser.GetBytes();
-        Assert.AreEqual(0xc3, code[0]);
-        Assert.AreEqual(1, code.Length);        
-        
-        code = parser.GetBytes();
         Assert.AreEqual(0xc3, code[0]);
         Assert.AreEqual(1, code.Length);        
         Assert.AreEqual(0, parser.ExpectedReportItems.Count);
@@ -122,9 +116,11 @@ public class MainAfterNonMainTests : DumpFileParserFixture
         writer.WriteLine(" 804837d:	c3                   	ret    ");
         writer.WriteLine();
         writer.Flush();
-        parser = new DumpFileParser(stream, "nomain");
+        parser = new DumpFileParser(stream, "_start");
 
-        Assert.AreEqual(0x0804837c, parser.BaseAddress);        
+        Assert.AreEqual(0x0804837c, parser.BaseAddress);
+        Assert.AreEqual(0x0804837c, parser.EntryPointAddress);
+
         Byte[] code = parser.GetBytes();
         Assert.AreEqual(0xc9, code[0]);        
     }
@@ -146,7 +142,7 @@ public class MainAfterNonMainTests : DumpFileParserFixture
     }
 
     [Test]
-    public void GetBuytesReturnAllInstructions()
+    public void GetBytesReturnAllInstructions()
     {
         writer.WriteLine(" 804837d:	c3                   	ret    ");
         writer.WriteLine(" 804837e:	90                   	nop    ");
@@ -166,16 +162,19 @@ public class WithNoMainTests : DumpFileParserFixture
     public override void SetUp()
     {
         base.SetUp();
-        writer.WriteLine("0804837c <nomain>:");
+        writer.WriteLine("0804837f <_start>:");
     }
 
     [Test]
     public void LineWithSingleHex()
     {
-        writer.WriteLine(" 804837c:       55                      push   ebp");
+        writer.WriteLine(" 804837f:       55                      push   ebp");
         writer.Flush();
-        parser = new DumpFileParser(stream, "main");        
+        parser = new DumpFileParser(stream, "main");
+
         Assert.IsNull(parser.GetBytes());
+        Assert.AreEqual(0x0804837f, parser.BaseAddress);
+        Assert.AreEqual(0, parser.EntryPointAddress);
     }
 }
 

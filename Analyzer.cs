@@ -141,9 +141,9 @@ public class Analyzer
     public void Run()
     {
         MachineState machineState = new MachineState(getRegistersForLinuxMain());
-        machineState.InstructionPointer = parser.BaseAddress;
+        machineState.InstructionPointer = parser.EntryPointAddress;
         Byte[] instructions = parser.GetBytes();
-        UInt32 index = machineState.InstructionPointer - parser.BaseAddress;
+        UInt32 index = machineState.InstructionPointer - parser.EntryPointAddress;
         
         while (index < instructions.Length)
         {
@@ -155,7 +155,7 @@ public class Analyzer
                 OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instruction)));
             }
             
-            index = machineState.InstructionPointer - parser.BaseAddress;
+            index = machineState.InstructionPointer - parser.EntryPointAddress;
         }
     }
     
