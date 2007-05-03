@@ -17,6 +17,7 @@ public interface IParsable
     ReadOnlyCollection<ReportItem> ExpectedReportItems { get; }
 
     UInt32 BaseAddress { get; }
+    UInt32 EntryPointAddress { get; }
     
     Byte [] GetBytes();
 }
@@ -27,9 +28,8 @@ public sealed class DumpFileParser : IParsable, IDisposable
     private StreamReader reader;
     private Boolean inTargetFunction;    
     private List<Byte[]> opCodeList;
-    private Int32 index = -1;
     private List<ReportItem> expectedReportItems;
-    private UInt32 baseAddress;
+    private UInt32 entryPointAddress, baseAddress;
     private String functionNameToParse = "main";
 
     public DumpFileParser(Stream _stream, String functionNameToParse)
@@ -88,20 +88,32 @@ public sealed class DumpFileParser : IParsable, IDisposable
 
     public UInt32 BaseAddress
     {
-        get
-        {
-            return baseAddress;
-        }
+        get { return baseAddress; }
+    }
+
+    public UInt32 EntryPointAddress
+    {
+        get { return entryPointAddress; }
+    }
+    
+    private UInt32 getAddressForLine(String line)
+    {
+        String address = line.Substring(0,8);
+        return UInt32.Parse(address, System.Globalization.NumberStyles.HexNumber);
     }
 
     private void updateMainInfo(String line)
     {
         if (line.Length > 0 && line[0] >= '0' && line[0] <= '7')
         {
+            if (line.Contains("<_start>:"))
+            {
+                baseAddress = getAddressForLine(line);
+            }
+
             if (line.Contains("<" + functionNameToParse +">:"))
             {
-                String address = line.Substring(0,8);
-                baseAddress = UInt32.Parse(address, System.Globalization.NumberStyles.HexNumber);
+                entryPointAddress = getAddressForLine(line);
                 inTargetFunction = true;
             }
             else
