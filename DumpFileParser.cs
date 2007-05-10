@@ -26,7 +26,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
 {
     private Stream stream;
     private StreamReader reader;
-    private Boolean inTargetFunction;    
+    private Boolean inTextSection;    
     private List<Byte[]> opCodeList;
     private List<ReportItem> expectedReportItems;
     private UInt32 entryPointAddress, baseAddress;
@@ -54,7 +54,6 @@ public sealed class DumpFileParser : IParsable, IDisposable
     {
         if (opCodeList.Count == 0)
         {
-
             return null;
         }
 
@@ -109,16 +108,12 @@ public sealed class DumpFileParser : IParsable, IDisposable
             if (line.Contains("<_start>:"))
             {
                 baseAddress = getAddressForLine(line);
+                inTextSection = true;
             }
 
             if (line.Contains("<" + functionNameToParse +">:"))
             {
                 entryPointAddress = getAddressForLine(line);
-                inTargetFunction = true;
-            }
-            else
-            {
-                inTargetFunction = false;
             }
         }
     }
@@ -207,7 +202,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
 
             updateMainInfo(currentLine);
 
-            if (inTargetFunction)
+            if (inTextSection)
             {
                 opCode = getHexFromString(currentLine);
                 if (opCode != null)

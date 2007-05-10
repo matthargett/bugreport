@@ -440,7 +440,7 @@ public sealed class X86Opcode : Opcode
     public Byte GetInstructionLength(Byte[] code)
     {
         Byte instructionLength = GetOpcodeLength(code);
-
+        
         if (HasModRM(code))
         {
             instructionLength++;
@@ -507,6 +507,15 @@ public sealed class X86Opcode : Opcode
             }
         }
         
+        return false;
+    }
+    
+    public Boolean TerminatesFunction(Byte[] code)
+    {
+        if ( code[0] == 0xf4 || code[0] == 0xc3 )
+        {
+            return true;
+        }
         return false;
     }
 }

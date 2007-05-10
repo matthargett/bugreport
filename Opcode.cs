@@ -45,5 +45,7 @@ public interface Opcode
     RegisterName GetDestinationRegister(Byte[] code);
     Boolean HasSourceRegister(Byte[] code);
     Boolean HasDestinationRegister(Byte[] code);
+
+    Boolean TerminatesFunction(Byte[] code);
 }
 }

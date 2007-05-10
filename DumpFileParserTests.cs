@@ -86,8 +86,8 @@ public class MainAfterNonMainTests : DumpFileParserFixture
         Assert.AreEqual(0x0804837d, parser.EntryPointAddress);
 
         Byte[] code = parser.GetBytes();
-        Assert.AreEqual(0xc3, code[0]);
-        Assert.AreEqual(1, code.Length);
+        CollectionAssert.AreEqual(new Byte[] {0xc9, 0xc3}, code);
+        Assert.AreEqual(2, code.Length);
         Assert.AreEqual(0, parser.ExpectedReportItems.Count);
     }
 
@@ -105,8 +105,8 @@ public class MainAfterNonMainTests : DumpFileParserFixture
         Assert.AreEqual(0x0804837d, parser.EntryPointAddress);
 
         Byte[] code = parser.GetBytes();
-        Assert.AreEqual(0xc3, code[0]);
-        Assert.AreEqual(1, code.Length);        
+        CollectionAssert.AreEqual(new Byte[] {0xc9, 0xc3, 0x90}, code);
+        Assert.AreEqual(3, code.Length);        
         Assert.AreEqual(0, parser.ExpectedReportItems.Count);
     }
 
@@ -150,42 +150,7 @@ public class MainAfterNonMainTests : DumpFileParserFixture
         parser = new DumpFileParser(stream, "main");
 
         Byte[] code = parser.GetBytes();
-        Assert.AreEqual(0xc3, code[0]);
-        Assert.AreEqual(0x90, code[1]);
-    }
-}
-
-[TestFixture]
-public class WithNoMainTests : DumpFileParserFixture
-{
-    [SetUp]
-    public override void SetUp()
-    {
-        base.SetUp();
-        writer.WriteLine("0804837f <_start>:");
-    }
-
-    [Test]
-    public void LineWithSingleHex()
-    {
-        writer.WriteLine(" 804837f:       55                      push   ebp");
-        writer.Flush();
-        parser = new DumpFileParser(stream, "main");
-
-        Assert.IsNull(parser.GetBytes());
-        Assert.AreEqual(0x0804837f, parser.BaseAddress);
-        Assert.AreEqual(0, parser.EntryPointAddress);
-    }
-}
-
-[TestFixture]
-public class WithMainOnlyTests : DumpFileParserFixture
-{
-    [SetUp]
-    public override void SetUp()
-    {
-        base.SetUp();
-        writer.WriteLine("0804837c <main>:");
+        CollectionAssert.AreEqual(new Byte[] {0xc9, 0xc3, 0x90}, code);
     }
 
     [Test]
@@ -194,7 +159,7 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.WriteLine("        : ");
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
-        Assert.IsNull(parser.GetBytes());
+        CollectionAssert.AreEqual(new Byte[] {0xc9}, parser.GetBytes());
     }
 
     [Test]
@@ -203,7 +168,7 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.WriteLine(":");
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
-        Assert.IsNull(parser.GetBytes());
+        CollectionAssert.AreEqual(new Byte[] {0xc9}, parser.GetBytes());
     }
 
 
@@ -214,8 +179,8 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        Byte[] expectedResult = new Byte[] {0x55};        
-        Assert.AreEqual(expectedResult, parser.GetBytes());
+        Byte[] expectedResult = new Byte[] {0xc9, 0x55};
+        CollectionAssert.AreEqual(expectedResult, parser.GetBytes());
     }
 
     [Test]
@@ -225,9 +190,8 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};        
-        Assert.AreEqual(expectedResult, parser.GetBytes());
-
+        Byte[] expectedResult = new Byte[] {0xc9, 0x83, 0xec, 0x10};        
+        CollectionAssert.AreEqual(expectedResult, parser.GetBytes());
     }
 
     [Test]
@@ -237,8 +201,8 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        Byte[] expectedResult = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};        
-        Assert.AreEqual(expectedResult, parser.GetBytes());
+        Byte[] expectedResult = new Byte[] {0xc9, 0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};        
+        CollectionAssert.AreEqual(expectedResult, parser.GetBytes());
     }
 
     [Test]
@@ -258,8 +222,8 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        Byte[] expectedResult = new Byte[] {0x83, 0xec, 0x10};        
-        Assert.AreEqual(expectedResult, parser.GetBytes());
+        Byte[] expectedResult = new Byte[] {0xc9, 0x83, 0xec, 0x10};        
+        CollectionAssert.AreEqual(expectedResult, parser.GetBytes());
     }
 
     [Test]
@@ -269,8 +233,31 @@ public class WithMainOnlyTests : DumpFileParserFixture
         writer.Flush();
         parser = new DumpFileParser(stream, "main");
 
-        Byte[] expectedResult = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};        
-        Assert.AreEqual(expectedResult, parser.GetBytes());
+        Byte[] expectedResult = new Byte[] {0xc9, 0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};        
+        CollectionAssert.AreEqual(expectedResult, parser.GetBytes());
+    }
+}
+
+[TestFixture]
+public class WithNoStartTests : DumpFileParserFixture
+{
+    [SetUp]
+    public override void SetUp()
+    {
+        base.SetUp();
+        writer.WriteLine("0804837f <nostart>:");
+    }
+
+    [Test]
+    public void GetBytesIsNull()
+    {
+        writer.WriteLine(" 804837f:       55                      push   ebp");
+        writer.Flush();
+        parser = new DumpFileParser(stream, "main");
+
+        Assert.IsNull(parser.GetBytes());
+        Assert.AreEqual(0, parser.BaseAddress);
+        Assert.AreEqual(0, parser.EntryPointAddress);
     }
 }
 }
