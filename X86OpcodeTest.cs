@@ -242,6 +242,7 @@ public class X86OpcodeTest
         encoding = opcode.GetEncoding(code);
         Assert.AreEqual(OpcodeEncoding.None, encoding);
         Assert.AreEqual(StackEffect.None, opcode.GetStackEffect(code));
+        Assert.IsTrue(opcode.TerminatesFunction(code));
     }
 
     [Test]
@@ -537,8 +538,13 @@ public class X86OpcodeTest
     [Test]
     public void LeaveReturn()
     {
-        Assert.AreEqual(OperatorEffect.Leave, opcode.GetOperatorEffect(new Byte[] {0xc9}));
-        Assert.AreEqual(OperatorEffect.Return, opcode.GetOperatorEffect(new Byte[] {0xc3}));
+        code = new Byte[] {0xc9};
+        Assert.AreEqual(OperatorEffect.Leave, opcode.GetOperatorEffect(code));
+        Assert.IsFalse(opcode.TerminatesFunction(code));
+
+        code = new Byte[] {0xc3};
+        Assert.AreEqual(OperatorEffect.Return, opcode.GetOperatorEffect(code));
+        Assert.IsTrue(opcode.TerminatesFunction(code));
     }
 
     [Test]
