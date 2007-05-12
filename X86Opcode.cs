@@ -252,6 +252,7 @@ public sealed class X86Opcode : Opcode
     
             case OpcodeEncoding.GvEb:
             case OpcodeEncoding.GvEv:
+            case OpcodeEncoding.GvM:
             {
                 if (ModRM.HasSIB(code))
                 {
@@ -268,7 +269,8 @@ public sealed class X86Opcode : Opcode
                 {
                     return ModRM.GetEv(code);
                 }
-            }
+            }                
+
             default:
             {
                 return RegisterName.None;

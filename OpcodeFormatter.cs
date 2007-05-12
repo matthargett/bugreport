@@ -25,7 +25,14 @@ public static class OpcodeFormatter
             OperatorEffect effect = opcode.GetOperatorEffect(code);
             if (OperatorEffect.Assignment == effect)
             {
-                instructionName += "mov";
+                if (code[0] == 0x8d)
+                {
+                    instructionName += "lea";
+                }
+                else
+                {
+                    instructionName += "mov";
+                }
             }
             else if (OperatorEffect.None == effect)
             {
@@ -90,9 +97,61 @@ public static class OpcodeFormatter
         {
             return String.Format("0x{0:x}", opcode.GetImmediate(code));
         }
-        else if (opcode.HasSourceRegister(code))
+        
+        if (opcode.HasOffset(code) && opcode.HasModRM(code))
         {
-            return opcode.GetSourceRegister(code).ToString().ToLower();
+            String offset = String.Format("0x{0:x}", ModRM.GetOffset(code));
+            return encaseInSquareBrackets(offset);
+        }
+
+        String sourceOperand;
+        Boolean sourceIsEffectiveAddress = opcode.GetEncoding(code).ToString().EndsWith("Ev") ||
+                        opcode.GetEncoding(code).ToString().EndsWith("Eb") ||
+                        opcode.GetEncoding(code).ToString().EndsWith("M");
+
+        if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
+        {
+            String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+            String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+            UInt32 scaler = SIB.GetScaler(code);
+
+            if (SIB.GetScaledRegister(code) == RegisterName.None)
+            {
+                sourceOperand = baseRegister;
+            }
+            else if (scaler == 1)
+            {
+                sourceOperand = baseRegister + "+" + scaled;
+            }
+            else
+            {
+                sourceOperand = baseRegister + "+" + scaled + "*" + scaler;
+            }
+
+            sourceOperand =  encaseInSquareBrackets(sourceOperand);
+            return sourceOperand;
+        }
+
+        if (opcode.HasSourceRegister(code))
+        {
+            sourceOperand = opcode.GetSourceRegister(code).ToString().ToLower();
+
+            if (opcode.HasModRM(code) && sourceIsEffectiveAddress)
+            {
+                if (ModRM.HasIndex(code))
+                {
+                    sourceOperand += "+" + ModRM.GetIndex(code);
+                }
+    
+                Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                if (evDereferenced)
+                {
+                    sourceOperand = encaseInSquareBrackets(sourceOperand);
+                }                
+            }
+            
+            return sourceOperand;
+
         }
 
         throw new ArgumentException(
@@ -114,8 +173,10 @@ public static class OpcodeFormatter
     private static String getDestinationOperand(Byte[] code)
     {
         String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
+        Boolean destinationIsEffectiveAddress = opcode.GetEncoding(code).ToString().StartsWith("Ev") ||
+                                                opcode.GetEncoding(code).ToString().StartsWith("Eb");
 
-        if (ModRM.HasSIB(code))
+        if (destinationIsEffectiveAddress && ModRM.HasSIB(code))
         {
             String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
             String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
@@ -136,7 +197,7 @@ public static class OpcodeFormatter
 
             destinationOperand = encaseInSquareBrackets(destinationOperand);
         }
-        else if (opcode.HasModRM(code))
+        else if (opcode.HasModRM(code) && destinationIsEffectiveAddress)
         {
             if (ModRM.HasIndex(code))
             {

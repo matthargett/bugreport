@@ -106,10 +106,10 @@ public static class ModRM
         return ((GetRM(modRM) == 4) && (IsEffectiveAddressDereferenced(_code)));
     }
 
-    public static Boolean IsEvDword(Byte[] _code)
+    public static Boolean IsEvDword(Byte[] code)
     {
-        Byte modRM = getModRM(_code);
-        if (((modRM >> 6) == 0) && ((modRM & 7) == 5))
+        Byte modRM = getModRM(code);
+        if ((getMod(modRM) == 0) && (GetRM(modRM) == 5))
         {
             return true;
         }
