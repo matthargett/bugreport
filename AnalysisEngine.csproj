@@ -45,6 +45,8 @@
     <Compile Include="AnalyzerTests.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="CoverageExcludeAttribute.cs" />
+    <Compile Include="ElfFileParser.cs" />
+    <Compile Include="ElfFileParserTests.cs" />
     <Compile Include="GLibcStartMainContract.cs" />
     <Compile Include="GLibcStartMainContractTest.cs" />
     <Compile Include="MallocContract.cs" />

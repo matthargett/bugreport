@@ -1,23 +1,23 @@
-simple-malloc-via-immediate_gcc403-02-g.dump,
-simple-malloc-via-immediate2_gcc403-02-g.dump,
-simple-malloc-via-immediate-oob_gcc403-O2-g.dump,OOB at EIP 0x8048394
-simple-malloc-via-immediate-oob2_gcc403-O2-g.dump,OOB at EIP 0x8048394
-simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x804839d
-simple-malloc-via-immediate-oob-heap-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x804839e
-simple-malloc-via-immediate-oob-global-taint_gcc403-O0-g.dump,Exploitable OOB at EIP 0x80483c1
-simple-malloc-via-immediate-oob-global-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x80483a8
-simple-malloc-via-immediate-stack-taint_gcc403-O0-g.dump,
-simple-malloc-via-immediate-stack-taint_gcc403-O2-g.dump,
-simple-malloc-via-immediate-oob-stack-taint_gcc403-O0-g.dump,Exploitable OOB at EIP 0x80483bc
-simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g.dump,Exploitable OOB at EIP 0x804839d
-simple-malloc-via-heap-oob_gcc403-O2-g.dump,OOB at EIP 0x80483a6
+simple-malloc-via-immediate_gcc403-02-g,
+simple-malloc-via-immediate2_gcc403-02-g,
+simple-malloc-via-immediate-oob_gcc403-O2-g,OOB at EIP 0x8048394
+simple-malloc-via-immediate-oob2_gcc403-O2-g,OOB at EIP 0x8048394
+simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g,Exploitable OOB at EIP 0x804839d
+simple-malloc-via-immediate-oob-heap-taint_gcc403-O2-g,Exploitable OOB at EIP 0x804839e
+simple-malloc-via-immediate-oob-global-taint_gcc403-O0-g,Exploitable OOB at EIP 0x80483c1
+simple-malloc-via-immediate-oob-global-taint_gcc403-O2-g,Exploitable OOB at EIP 0x80483a8
+simple-malloc-via-immediate-stack-taint_gcc403-O0-g,
+simple-malloc-via-immediate-stack-taint_gcc403-O2-g,
+simple-malloc-via-immediate-oob-stack-taint_gcc403-O0-g,Exploitable OOB at EIP 0x80483bc
+simple-malloc-via-immediate-oob-stack-taint_gcc403-O2-g,Exploitable OOB at EIP 0x804839d
+simple-malloc-via-heap-oob_gcc403-O2-g,OOB at EIP 0x80483a6
 ##### these report one instruction too early:
-simple-malloc-via-stack-calculation-oob_gcc403-O0-g.dump,OOB at EIP 0x80483b6
-simple-malloc-via-stack-calculation-oob2_gcc403-O0-g.dump,OOB at EIP 0x80483b6
+simple-malloc-via-stack-calculation-oob_gcc403-O0-g,OOB at EIP 0x80483b6
+simple-malloc-via-stack-calculation-oob2_gcc403-O0-g,OOB at EIP 0x80483b6
 #####
-simple-malloc-via-stack-calculation-oob_gcc403-O2-g.dump,OOB at EIP 0x8048394
-simple-malloc-via-stack-calculation-oob2_gcc403-O2-g.dump,OOB at EIP 0x8048394
-simple-malloc-via-stack-calculation_gcc403-O0-g.dump,
-simple-malloc-via-stack-calculation2_gcc403-O0-g.dump,
-simple-malloc-via-stack-calculation_gcc403-O2-g.dump,
-simple-malloc-via-stack-calculation2_gcc403-O2-g.dump,
+simple-malloc-via-stack-calculation-oob_gcc403-O2-g,OOB at EIP 0x8048394
+simple-malloc-via-stack-calculation-oob2_gcc403-O2-g,OOB at EIP 0x8048394
+simple-malloc-via-stack-calculation_gcc403-O0-g,
+simple-malloc-via-stack-calculation2_gcc403-O0-g,
+simple-malloc-via-stack-calculation_gcc403-O2-g,
+simple-malloc-via-stack-calculation2_gcc403-O2-g,
