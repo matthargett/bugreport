@@ -487,11 +487,13 @@ public class X86OpcodeTest
     [Test]
     public void GvM()
     {
+        // lea edx, [eax+16]
         code = new Byte[] {0x8d, 0x50, 0x10};
         Assert.IsTrue(opcode.HasModRM(code));
         Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
         encoding = opcode.GetEncoding(code);
         Assert.AreEqual(OpcodeEncoding.GvM, encoding);
+        Assert.AreEqual(RegisterName.EAX, opcode.GetSourceRegister(code));
 
         OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
         Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);

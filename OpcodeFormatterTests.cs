@@ -77,12 +77,20 @@ public class OpcodeFormatterTests
     }
 
     [Test]
-    [Ignore("FIXME: GetOperands() currently crashes on this code")]
     public void LeaEdxEaxPlus16()
     {
         code = new Byte[] { 0x8d, 0x50, 0x10 };
         Assert.AreEqual("lea",			OpcodeFormatter.GetInstructionName(code));
         Assert.AreEqual("edx, [eax+16]",	OpcodeFormatter.GetOperands(code));
+    }
+    
+    [Test]
+    public void MovZxEaxBytePtr()
+    {
+        code = new Byte[] {0x0f, 0xb6, 0x05, 0x00, 0x96, 0x04, 0x08};
+        //TODO: this should actually be movzx
+        Assert.AreEqual("mov",          OpcodeFormatter.GetInstructionName(code));
+        Assert.AreEqual("eax, [0x8049600]", OpcodeFormatter.GetOperands(code));
     }
 }
 }
