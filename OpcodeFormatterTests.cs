@@ -76,5 +76,13 @@ public class OpcodeFormatterTests
         Assert.AreEqual("(Jz)", 		OpcodeFormatter.GetEncoding(code));
     }
 
+    [Test]
+    [Ignore("FIXME: GetOperands() currently crashes on this code")]
+    public void LeaEdxEaxPlus16()
+    {
+        code = new Byte[] { 0x8d, 0x50, 0x10 };
+        Assert.AreEqual("lea",			OpcodeFormatter.GetInstructionName(code));
+        Assert.AreEqual("edx, [eax+16]",	OpcodeFormatter.GetOperands(code));
+    }
 }
 }

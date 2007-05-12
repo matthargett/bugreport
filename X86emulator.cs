@@ -38,11 +38,22 @@ public static class X86emulator
     public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
     {
         if (code.Length == 0)
+        {
             throw new ArgumentException("code", "Empty array not allowed.");
+        }
 
         MachineState afterState = emulateOpcode(reportItemCollector, machineState, code);
-        afterState.InstructionPointer += opcode.GetInstructionLength(code);
+        
+        if (!branchTaken(machineState, afterState))
+        {
+            afterState.InstructionPointer += opcode.GetInstructionLength(code);
+        }
         return afterState;
+    }
+    
+    private static Boolean branchTaken(MachineState before, MachineState after)
+    {
+        return before.InstructionPointer != after.InstructionPointer;
     }
 
     private static MachineState emulateOpcode(Collection<ReportItem> reportItems, MachineState machineState, Byte[] code)
@@ -190,7 +201,9 @@ public static class X86emulator
                 else if (ModRM.IsEffectiveAddressDereferenced(code))
                 {
                     if (!sourceValue.IsPointer)
+                    {
                         throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", sourceRegister));
+                    }
     
                     index = 0;
     
@@ -277,10 +290,19 @@ public static class X86emulator
             {
                 //TODO: should push EIP + code.Length onto stack
                 MallocContract mallocContract = new MallocContract();
-                if (mallocContract.IsSatisfiedBy(state, code))
+                GLibcStartMainContract glibcStartMainContract = new GLibcStartMainContract();
+                List<Contract> contracts = new List<Contract>();                
+                contracts.Add(mallocContract);
+                contracts.Add(glibcStartMainContract);
+                
+                foreach (Contract contract in contracts)
                 {
-                    state = mallocContract.Execute(state);
+                    if (contract.IsSatisfiedBy(state, code))
+                    {
+                        state = contract.Execute(state);
+                    }
                 }
+                
                 return state;
             }
     
@@ -289,7 +311,9 @@ public static class X86emulator
                 UInt32 offset;
                 offset = (UInt32)code[1];
     
+                
                 state = state.DoOperation(op, new AbstractValue(offset));
+                state.InstructionPointer += opcode.GetInstructionLength(code);
     
                 return state;
             }

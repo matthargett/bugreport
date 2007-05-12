@@ -138,7 +138,7 @@ private class FakeFileResolver : FileResolver
                           @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump"
                       };
         Options.ParseArguments(commandLine);
-        Assert.AreEqual("main", Options.FunctionToAnalyze);
+        Assert.AreEqual("_start", Options.FunctionToAnalyze);
     }
 
     [Test]

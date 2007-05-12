@@ -7,7 +7,7 @@ using System;
 
 namespace bugreport
 {
-public class MallocContract : Contract
+public class GLibcStartMainContract : Contract
 {
     Opcode opcode = new X86Opcode();
 
@@ -22,8 +22,8 @@ public class MallocContract : Contract
             effectiveAddress = state.InstructionPointer + offset + (UInt32)code.Length;
         }
 
-        const UInt32 MALLOC_IMPORT_FUNCTION_ADDR = 0x80482a8;
-        if (effectiveAddress == MALLOC_IMPORT_FUNCTION_ADDR)
+        const UInt32 GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR = 0x80482b8;
+        if (effectiveAddress == GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR)
         {
             return true;
         }
@@ -35,9 +35,7 @@ public class MallocContract : Contract
 
     public MachineState Execute(MachineState state)
     {
-        AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value);
-        state.ReturnValue = new AbstractValue(buffer);
-        
+        state.InstructionPointer = state.TopOfStack.Value; 
         return state;
     }
 }

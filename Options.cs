@@ -58,7 +58,7 @@ public static class Options
             }
         }
 
-        return "main";
+        return "_start";
     }
 
     public static String FunctionToAnalyze

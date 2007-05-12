@@ -105,7 +105,7 @@ public class Analyzer
     }
 
 
-    private static RegisterCollection getRegistersForLinuxMain()
+    private static RegisterCollection getRegistersForLinuxStart()
     {
         RegisterCollection linuxMainDefaultValues = new RegisterCollection();
 
@@ -121,7 +121,7 @@ public class Analyzer
         AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
 
         // linux ABI dictates
-        modifiedBuffer[13] = argvPointerPointer;
+        modifiedBuffer[5] = argvPointerPointer;
 
         // gcc generates code that accesses this at some optimization levels
         modifiedBuffer[0xfc] = new AbstractValue(1);
@@ -140,7 +140,7 @@ public class Analyzer
 
     public void Run()
     {
-        MachineState machineState = new MachineState(getRegistersForLinuxMain());
+        MachineState machineState = new MachineState(getRegistersForLinuxStart());
         machineState.InstructionPointer = parser.EntryPointAddress;
         Byte[] instructions = parser.GetBytes();
         UInt32 index = machineState.InstructionPointer - parser.BaseAddress;
