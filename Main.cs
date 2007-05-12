@@ -71,7 +71,8 @@ public static class MainClass
                 return; // needed to hush up a false warning in mono
             }
 
-            IParsable parser = new DumpFileParser(fileStream, Options.FunctionToAnalyze);
+//            IParsable parser = new DumpFileParser(fileStream, Options.FunctionToAnalyze);
+            IParsable parser = new ElfFileParser(fileStream);
 
             analyzer = new Analyzer(parser);
             analyzer.OnReport += printReportItem;
@@ -134,7 +135,7 @@ public static class MainClass
 
     private static void printUsage()
     {
-        Console.WriteLine("Usage: bugreport.exe [--trace] [--function=funcname] file.test");
+        Console.WriteLine("Usage: bugreport.exe [--trace] file.test");
     }
 }
 }

@@ -32,12 +32,12 @@ public sealed class DumpFileParser : IParsable, IDisposable
     private UInt32 entryPointAddress, baseAddress;
     private String functionNameToParse = "main";
 
-    public DumpFileParser(Stream _stream, String functionNameToParse)
+    public DumpFileParser(Stream stream, String functionNameToParse)
     {
         this.functionNameToParse = functionNameToParse;
-        stream = _stream;
-        stream.Position = 0;
-        reader = new StreamReader(stream);
+        this.stream = stream;
+        this.stream.Position = 0;
+        reader = new StreamReader(this.stream);
         expectedReportItems = new List<ReportItem>();
         opCodeList = parse();
     }
