@@ -289,6 +289,7 @@ public static class X86emulator
             case OpcodeEncoding.Jz:
             {
                 //TODO: should push EIP + code.Length onto stack
+                Boolean contractSatisfied = false;
                 MallocContract mallocContract = new MallocContract();
                 GLibcStartMainContract glibcStartMainContract = new GLibcStartMainContract();
                 List<Contract> contracts = new List<Contract>();                
@@ -299,9 +300,17 @@ public static class X86emulator
                 {
                     if (contract.IsSatisfiedBy(state, code))
                     {
+                        contractSatisfied = true;
                         state = contract.Execute(state);
                     }
                 }
+                
+                if ( !contractSatisfied )
+                {
+                    UInt32 returnAddress = state.InstructionPointer + (UInt32)code.Length;
+                    state.PushOntoStack(new AbstractValue(returnAddress));
+                    state.InstructionPointer = opcode.GetEffectiveAddress(code, state);
+                }                
                 
                 return state;
             }

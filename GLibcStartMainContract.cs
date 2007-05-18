@@ -9,19 +9,10 @@ namespace bugreport
 {
 public class GLibcStartMainContract : Contract
 {
-    Opcode opcode = new X86Opcode();
-
-    public Boolean IsSatisfiedBy(MachineState state, Byte[] code)
+    public override Boolean IsSatisfiedBy(MachineState state, Byte[] code)
     {
-        UInt32 offset = opcode.GetImmediate(code);
-        UInt32 effectiveAddress;
-
-        unchecked
-        {
-            //FIXME: find a way to do this without an unchecked operation
-            effectiveAddress = state.InstructionPointer + offset + (UInt32)code.Length;
-        }
-
+        UInt32 effectiveAddress = opcode.GetEffectiveAddress(code, state);
+        
         const UInt32 GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR = 0x80482b8;
         if (effectiveAddress == GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR)
         {
@@ -33,7 +24,7 @@ public class GLibcStartMainContract : Contract
         }
     }
 
-    public MachineState Execute(MachineState state)
+    public override MachineState Execute(MachineState state)
     {
         state.InstructionPointer = state.TopOfStack.Value; 
         return state;

@@ -56,8 +56,5 @@ public sealed class ElfFileParser : IParsable, IDisposable
     {
         get { return 0x080482e0; }
     }
-    
-
 }
-
 }

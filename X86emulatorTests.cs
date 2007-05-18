@@ -422,12 +422,13 @@ public class X86emulatorTests
     [Test]
     public void NonMallocCall()
     {
-        state.InstructionPointer = 0x804839f;
-        state.Registers[RegisterName.EAX] = null;
-        code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
+        UInt32 initialInstructionPointer = 0x80483b8;
+        state.InstructionPointer = initialInstructionPointer;
+        code = new Byte[] {0xe8, 0xbf, 0xff, 0xff, 0xff};
         state = X86emulator.Run(reportItems, state, code);
-
-        Assert.IsNull(state.Registers[RegisterName.EAX]);
+        
+        Assert.AreEqual(0x804837c, state.InstructionPointer);
+        Assert.AreEqual(initialInstructionPointer + (UInt32)code.Length, state.TopOfStack.Value);
     }
 
     [Test]
