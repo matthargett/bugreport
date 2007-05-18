@@ -2,9 +2,11 @@ using System;
 
 namespace bugreport
 {
-public interface Contract
+public abstract class Contract
 {
-    Boolean IsSatisfiedBy(MachineState state, Byte[] code);
-    MachineState Execute(MachineState state);
+    protected Opcode opcode = new X86Opcode();
+
+    public abstract Boolean IsSatisfiedBy(MachineState state, Byte[] code);
+    public abstract MachineState Execute(MachineState state);
 }
 }

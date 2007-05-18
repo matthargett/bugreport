@@ -520,5 +520,17 @@ public sealed class X86Opcode : Opcode
         }
         return false;
     }
+    
+    public UInt32 GetEffectiveAddress(Byte[] code, MachineState state)
+    {
+        UInt32 offset = GetImmediate(code);
+
+        unchecked
+        {
+            //FIXME: find a way to do this without an unchecked operation
+            return state.InstructionPointer + offset + (UInt32)code.Length;
+        }
+    }
+
 }
 }

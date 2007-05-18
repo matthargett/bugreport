@@ -47,5 +47,6 @@ public interface Opcode
     Boolean HasDestinationRegister(Byte[] code);
 
     Boolean TerminatesFunction(Byte[] code);
+    UInt32 GetEffectiveAddress(Byte[] code, MachineState state);
 }
 }
