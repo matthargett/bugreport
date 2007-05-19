@@ -274,6 +274,8 @@ public class X86OpcodeTest
         Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
         encoding = opcode.GetEncoding(code);
         Assert.AreEqual(OpcodeEncoding.Jz, encoding);
+        
+        Assert.AreEqual(OperatorEffect.Call, opcode.GetOperatorEffect(code));
         Assert.IsTrue(opcode.HasImmediate(code));
         Assert.AreEqual(0xffffff14, opcode.GetImmediate(code));
     }

@@ -66,7 +66,7 @@ public static class OpcodeFormatter
         return count;
     }
 
-    private static String getSingleOperand(Byte[] code)
+    private static String getSingleOperand(Byte[] code, UInt32 instructionPointer)
     {
         if (opcode.HasSourceRegister(code) && !opcode.HasDestinationRegister(code))
         {
@@ -76,6 +76,11 @@ public static class OpcodeFormatter
         if (!opcode.HasSourceRegister(code) && opcode.HasDestinationRegister(code))
         {
             return opcode.GetDestinationRegister(code).ToString().ToLower();
+        }
+
+        if (opcode.GetOperatorEffect(code) == OperatorEffect.Call)
+        {
+            return String.Format("0x{0:x8}", opcode.GetEffectiveAddress(code, instructionPointer));
         }
 
         if (opcode.HasImmediate(code))
@@ -214,7 +219,7 @@ public static class OpcodeFormatter
         return destinationOperand;
     }
 
-    public static String GetOperands(Byte[] code)
+    public static String GetOperands(Byte[] code, UInt32 instructionPointer)
     {
         UInt32 operandCount = getOperandCount(code);
 
@@ -227,7 +232,7 @@ public static class OpcodeFormatter
     
             case 1:
             {
-                return getSingleOperand(code);
+                return getSingleOperand(code, instructionPointer);
             }
     
             case 2:
