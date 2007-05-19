@@ -11,7 +11,7 @@ public class MallocContract : Contract
 {
     public override Boolean IsSatisfiedBy(MachineState state, Byte[] code)
     {
-        UInt32 effectiveAddress = opcode.GetEffectiveAddress(code, state);
+        UInt32 effectiveAddress = opcode.GetEffectiveAddress(code, state.InstructionPointer);
 
         const UInt32 MALLOC_IMPORT_FUNCTION_ADDR = 0x80482a8;
         if (effectiveAddress == MALLOC_IMPORT_FUNCTION_ADDR)

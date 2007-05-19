@@ -13,7 +13,7 @@ public enum OperatorEffect
 {
     Unknown, Assignment, Add, Sub, None,
     And, Shr, Shl, Xor,
-    Return, Leave, Jump, Cmp, Jnz, 
+    Return, Leave, Jump, Cmp, Jnz, Call,
 };
 
 public enum OpcodeEncoding
@@ -47,6 +47,6 @@ public interface Opcode
     Boolean HasDestinationRegister(Byte[] code);
 
     Boolean TerminatesFunction(Byte[] code);
-    UInt32 GetEffectiveAddress(Byte[] code, MachineState state);
+    UInt32 GetEffectiveAddress(Byte[] code, UInt32 instructionPointer);
 }
 }

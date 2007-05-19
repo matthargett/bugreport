@@ -309,7 +309,7 @@ public static class X86emulator
                 {
                     UInt32 returnAddress = state.InstructionPointer + (UInt32)code.Length;
                     state.PushOntoStack(new AbstractValue(returnAddress));
-                    state.InstructionPointer = opcode.GetEffectiveAddress(code, state);
+                    state.InstructionPointer = opcode.GetEffectiveAddress(code, state.InstructionPointer);
                 }                
                 
                 return state;

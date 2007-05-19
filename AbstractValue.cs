@@ -38,7 +38,10 @@ public class AbstractValue
     public AbstractValue(AbstractBuffer _willPointTo)
     {
         if (_willPointTo.Length == 0)
+        {
             throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
+        }
+        
         storage = 0xdeadbeef;
         pointsTo = new AbstractBuffer(_willPointTo);
     }

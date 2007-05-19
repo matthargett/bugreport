@@ -120,7 +120,7 @@ public static class MainClass
         Console.Write(OpcodeFormatter.GetInstructionName(code));
         Console.Write("\t");
 
-        String operands = OpcodeFormatter.GetOperands(code);
+        String operands = OpcodeFormatter.GetOperands(code, state.InstructionPointer);
         Console.Write(operands);
         if (operands.Length < 8)
             Console.Write("\t");

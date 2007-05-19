@@ -421,7 +421,7 @@ public sealed class X86Opcode : Opcode
             }
     
             case 0xe8:
-                return OperatorEffect.Jump;
+                return OperatorEffect.Call;
     
             default:
                 return OperatorEffect.Assignment;
@@ -521,14 +521,14 @@ public sealed class X86Opcode : Opcode
         return false;
     }
     
-    public UInt32 GetEffectiveAddress(Byte[] code, MachineState state)
+    public UInt32 GetEffectiveAddress(Byte[] code, UInt32 instructionPointer)
     {
         UInt32 offset = GetImmediate(code);
 
         unchecked
         {
             //FIXME: find a way to do this without an unchecked operation
-            return state.InstructionPointer + offset + (UInt32)code.Length;
+            return instructionPointer + offset + (UInt32)code.Length;
         }
     }
 
