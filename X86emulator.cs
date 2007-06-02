@@ -280,7 +280,9 @@ public static class X86emulator
                 offset = BitMath.BytesToDword(code, 1); // This is 1 for ObAL
     
                 if (!state.DataSegment.ContainsKey(offset))
+                {
                     state.DataSegment[offset] = new AbstractValue();
+                }
     
                 state = state.DoOperation(offset, op, byteValue);
                 return state;

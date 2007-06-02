@@ -52,13 +52,13 @@ public class AbstractValue
             throw new ArgumentNullException("_copyMe");
         }
 
-        this.Value = _copyMe.Value;
-        this.IsTainted = _copyMe.IsTainted;
-        this.IsOOB = _copyMe.IsOOB;
+        storage = _copyMe.Value;
+        tainted = _copyMe.IsTainted;
+        isOOB = _copyMe.IsOOB;
 
         if (_copyMe.PointsTo != null)
         {
-            this.PointsTo = new AbstractBuffer(_copyMe.PointsTo);
+            pointsTo = new AbstractBuffer(_copyMe.PointsTo);
         }
     }
 
