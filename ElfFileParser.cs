@@ -7,16 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Globalization;
-
 
 namespace bugreport
 {
 
 public sealed class ElfFileParser : IParsable, IDisposable
 {
-    private Stream stream;
-    private Byte[] textData;
+    private readonly Stream stream;
+    private readonly Byte[] textData;
 
     public ElfFileParser(Stream stream)
     {

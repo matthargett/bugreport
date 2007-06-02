@@ -10,7 +10,7 @@ namespace bugreport
 {
 public static class OpcodeFormatter
 {
-    static Opcode opcode = new X86Opcode();
+    static readonly Opcode opcode = new X86Opcode();
 
     public static String GetInstructionName(Byte[] code)
     {
@@ -110,9 +110,10 @@ public static class OpcodeFormatter
         }
 
         String sourceOperand;
-        Boolean sourceIsEffectiveAddress = opcode.GetEncoding(code).ToString().EndsWith("Ev") ||
-                        opcode.GetEncoding(code).ToString().EndsWith("Eb") ||
-                        opcode.GetEncoding(code).ToString().EndsWith("M");
+        Boolean sourceIsEffectiveAddress = 
+                        opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
+                        opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
+                        opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
 
         if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
         {
@@ -178,8 +179,9 @@ public static class OpcodeFormatter
     private static String getDestinationOperand(Byte[] code)
     {
         String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
-        Boolean destinationIsEffectiveAddress = opcode.GetEncoding(code).ToString().StartsWith("Ev") ||
-                                                opcode.GetEncoding(code).ToString().StartsWith("Eb");
+        Boolean destinationIsEffectiveAddress = 
+            opcode.GetEncoding(code).ToString().StartsWith("Ev", StringComparison.Ordinal) ||
+            opcode.GetEncoding(code).ToString().StartsWith("Eb", StringComparison.Ordinal);
 
         if (destinationIsEffectiveAddress && ModRM.HasSIB(code))
         {
@@ -263,4 +265,3 @@ public static class OpcodeFormatter
     }
 }
 }
-

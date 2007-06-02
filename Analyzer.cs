@@ -4,18 +4,16 @@
 // See LICENSE.txt for details.
 
 using System;
-using System.IO;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace bugreport
 {
 public class EmulationEventArgs : EventArgs
 {
-    private MachineState state;
-    private ReadOnlyCollection<Byte> code;
+    private readonly MachineState state;
+    private readonly ReadOnlyCollection<Byte> code;
 
-    public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code) : base()
+    public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code)
     {
         this.state = state;
         this.code = code;
@@ -34,9 +32,9 @@ public class EmulationEventArgs : EventArgs
 
 public class ReportEventArgs : EventArgs
 {
-    private ReportItem reportItem;
+    private readonly ReportItem reportItem;
 
-    public ReportEventArgs(ReportItem reportItem) : base()
+    public ReportEventArgs(ReportItem reportItem)
     {
         this.reportItem = reportItem;
     }
@@ -67,8 +65,8 @@ public class Analyzer
     public EventHandler<EmulationEventArgs> OnEmulationComplete;
 
     protected ReportCollection reportItems;
-    private IParsable parser;
-    private Opcode opcode = new X86Opcode();
+    private readonly IParsable parser;
+    private readonly Opcode opcode = new X86Opcode();
 
     public Analyzer(IParsable parser)
     {
@@ -133,9 +131,9 @@ public class Analyzer
     }
 
 
-    protected virtual MachineState runCode(MachineState _machineState, Byte [] _instructionBytes)
+    protected virtual MachineState runCode(MachineState _machineState, Byte[] code)
     {
-        return X86emulator.Run(reportItems, _machineState, _instructionBytes);
+        return X86emulator.Run(reportItems, _machineState, code);
     }
 
     public void Run()

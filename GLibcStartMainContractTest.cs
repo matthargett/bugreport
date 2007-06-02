@@ -22,7 +22,7 @@ public class GLibcStartMainContractTest
     public void IsSatisified()
     {
         Byte[] code = new Byte[] {0xe8, 0xb7, 0xff, 0xff, 0xff};        
-        MachineState state = new MachineState();
+        state = new MachineState();
         state.InstructionPointer = 0x80482fc;                    
         Assert.IsTrue(contract.IsSatisfiedBy(state, code));
         

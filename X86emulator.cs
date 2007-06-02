@@ -33,13 +33,13 @@ public class InvalidOpcodeException : Exception
 
 public static class X86emulator
 {
-    private static Opcode opcode = new X86Opcode();
+    private static readonly Opcode opcode = new X86Opcode();
 
     public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
     {
         if (code.Length == 0)
         {
-            throw new ArgumentException("code", "Empty array not allowed.");
+            throw new ArgumentException("Empty array not allowed.", "code");
         }
 
         MachineState afterState = emulateOpcode(reportItemCollector, machineState, code);
@@ -56,7 +56,7 @@ public static class X86emulator
         return before.InstructionPointer != after.InstructionPointer;
     }
 
-    private static MachineState emulateOpcode(Collection<ReportItem> reportItems, MachineState machineState, Byte[] code)
+    private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, MachineState machineState, Byte[] code)
     {
         MachineState state = machineState;
         RegisterName sourceRegister, destinationRegister;
@@ -318,8 +318,7 @@ public static class X86emulator
             case OpcodeEncoding.Jb:
             {
                 UInt32 offset;
-                offset = (UInt32)code[1];
-    
+                offset = code[1];
                 
                 state = state.DoOperation(op, new AbstractValue(offset));
                 state.InstructionPointer += opcode.GetInstructionLength(code);

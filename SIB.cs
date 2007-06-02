@@ -10,7 +10,7 @@ namespace bugreport
 
 public static class SIB
 {
-    static Opcode opcode = new X86Opcode();
+    static readonly Opcode opcode = new X86Opcode();
 
     private static Byte getIndex(Byte[] code)
     {

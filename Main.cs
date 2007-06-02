@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 
 namespace bugreport
@@ -52,7 +51,7 @@ public static class MainClass
         }
     }
 
-    private static void analyzeFiles(ICollection<String> _fileNames, Boolean _isTracing)
+    private static void analyzeFiles(IEnumerable<string> _fileNames, Boolean _isTracing)
     {
         foreach(String fileName in _fileNames)
         {
