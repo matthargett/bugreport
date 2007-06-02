@@ -15,10 +15,12 @@ public static class OpcodeFormatter
     public static String GetInstructionName(Byte[] code)
     {
         String instructionName = String.Empty;
+        
+        StackEffect stackEffect = opcode.GetStackEffect(code);
 
-        if (opcode.GetStackEffect(code) != StackEffect.None)
+        if (stackEffect != StackEffect.None)
         {
-            instructionName += opcode.GetStackEffect(code).ToString().ToLower();
+            instructionName += stackEffect.ToString().ToLower();
         }
         else
         {

@@ -21,14 +21,10 @@ public class AbstractBuffer
 
     public AbstractBuffer(AbstractBuffer _copyMe)
     {
-        storage = new AbstractValue[_copyMe.storage.Length];
-        BaseIndex = _copyMe.BaseIndex;
+        baseIndex = _copyMe.BaseIndex;
         allocatedLength = _copyMe.allocatedLength;
-
-        for (Int32 index = 0; index < _copyMe.storage.Length; index++)
-        {
-            storage[index] = _copyMe.storage[index];
-        }
+        storage = new AbstractValue[_copyMe.storage.Length];
+        Array.Copy(_copyMe.storage, storage, _copyMe.storage.Length);
     }
 
     private void extend(UInt32 _newLength)
