@@ -15,13 +15,12 @@ namespace bugreport
 public sealed class AnalyzerTests : IDisposable
 {
     Analyzer analyzer;
-    MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
-    Byte[] code = new Byte[] {0x90};
+    readonly MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
+    readonly Byte[] code = new Byte[] {0x90};
 
 private class FakeAnalyzer : Analyzer
     {
-        Byte[] code = new Byte[] { 0x90 };
-        private UInt32 actualReportItemCount;
+        private readonly UInt32 actualReportItemCount;
 
         public FakeAnalyzer(IParsable parser, UInt32 actualReportItemCount) : base (parser)
         {

@@ -3,9 +3,8 @@
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
 
-using NUnit.Framework;
 using System;
-using System.Collections.Generic;
+using NUnit.Framework;
 
 namespace bugreport
 {
@@ -15,7 +14,7 @@ public class X86emulatorTests
     MachineState state;
     Byte[] code;
     ReportCollection reportItems;
-    AbstractValue one = new AbstractValue(1);
+    readonly AbstractValue one = new AbstractValue(1);
 
     [SetUp]
     public void SetUp()
@@ -592,7 +591,7 @@ public class X86emulatorTests
     [Test]
     public void MovPtrEspEax()
     { // mov [esp]. eax
-        Byte[] code = new Byte[] {0x89, 0x04, 0x24};
+        code = new Byte[] {0x89, 0x04, 0x24};
         state.Registers[RegisterName.EAX] = new AbstractValue(0x10);
         AbstractValue[] values = new AbstractValue[] {new AbstractValue(1)};
         AbstractBuffer buffer = new AbstractBuffer(values);
@@ -608,10 +607,9 @@ public class X86emulatorTests
     public void LeaEdxFromEaxPlus16()
     { //  lea    edx,[eax+index]
         Byte index = 0x1;
-        Byte[] code = new Byte[] {0x8d, 0x50, index};
+        code = new Byte[] {0x8d, 0x50, index};
 
         AbstractValue zero = new AbstractValue(0);
-        AbstractValue one = new AbstractValue(1);
         AbstractValue[] values = new AbstractValue [] {zero, one};
         AbstractBuffer buffer = new AbstractBuffer(values);
         state.Registers[RegisterName.EAX] = new AbstractValue(buffer);
@@ -625,7 +623,7 @@ public class X86emulatorTests
     [Test]
     public void LeaEaxFromEdxPlusEax()
     { //  lea    eax,[edx+eax]
-        Byte[] code = new Byte[] {0x8d, 0x04, 0x02};
+        code = new Byte[] {0x8d, 0x04, 0x02};
 
         AbstractValue zero = new AbstractValue(0);
         AbstractValue two = new AbstractValue(2);

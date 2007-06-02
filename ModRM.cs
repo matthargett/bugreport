@@ -10,7 +10,7 @@ namespace bugreport
 
 public static class ModRM
 {
-    static Opcode opcode = new X86Opcode();
+    static readonly Opcode opcode = new X86Opcode();
 
     private static Byte getMod(Byte modrm)
     {
@@ -125,7 +125,7 @@ public static class ModRM
 
         if (modRMIndex > _code.Length - 1)
         {
-            throw new InvalidOperationException("No ModRM present: " + _code[0].ToString());
+            throw new InvalidOperationException("No ModRM present: " + _code[0]);
         }
 
         return _code[modRMIndex];

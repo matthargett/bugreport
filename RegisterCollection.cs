@@ -13,7 +13,7 @@ int {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, Unknown, None};
 
 public class RegisterCollection
 {
-    private AbstractValue[] registers;
+    private readonly AbstractValue[] registers;
 
     public RegisterCollection()
     {

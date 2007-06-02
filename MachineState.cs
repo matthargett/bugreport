@@ -44,24 +44,24 @@ public struct OperationResult
 public struct MachineState
 {
     private UInt32 instructionPointer;
-    private RegisterCollection registers;
-    private Dictionary<UInt32, AbstractValue> dataSegment;
+    private readonly RegisterCollection registers;
+    private readonly Dictionary<UInt32, AbstractValue> dataSegment;
     Boolean zeroFlag;
 
-    public MachineState(RegisterCollection _registers)
+    public MachineState(RegisterCollection registers)
     {
         dataSegment = new Dictionary<UInt32, AbstractValue>();
-        registers = _registers;
+        this.registers = registers;
         instructionPointer = 0x00;
         zeroFlag = false;
     }
 
-    public MachineState(MachineState _copyMe)
+    public MachineState(MachineState copyMe)
     {
-        this.instructionPointer = _copyMe.instructionPointer;
-        this.registers = new RegisterCollection(_copyMe.registers);
-        this.dataSegment = new Dictionary<UInt32, AbstractValue>(_copyMe.dataSegment);
-        this.zeroFlag = _copyMe.zeroFlag;
+        this.instructionPointer = copyMe.instructionPointer;
+        this.registers = new RegisterCollection(copyMe.registers);
+        this.dataSegment = new Dictionary<UInt32, AbstractValue>(copyMe.dataSegment);
+        this.zeroFlag = copyMe.zeroFlag;
     }
 
     public override Boolean Equals(object obj)
@@ -327,7 +327,7 @@ public struct MachineState
         return result;
     }
 
-    private UInt32 getCalculatedValue(UInt32 lhs, OperatorEffect operatorEffect, UInt32 rhs)
+    private static UInt32 getCalculatedValue(UInt32 lhs, OperatorEffect operatorEffect, UInt32 rhs)
     {
         switch (operatorEffect)
         {
@@ -363,7 +363,7 @@ public struct MachineState
     
             default:
             {
-                throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", operatorEffect), "_operatorEffect");
+                throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", operatorEffect), "operatorEffect");
             }
         }
     }

@@ -485,7 +485,7 @@ public sealed class X86Opcode : Opcode
     {
         Byte[] shortCode = new Byte[15];
         
-        Int32 minLength = (Int32)Math.Min((UInt32)15, code.Length - index);
+        Int32 minLength = (Int32)Math.Min(15, code.Length - index);
         Array.ConstrainedCopy(code, (Int32)index, shortCode, 0, minLength);
         
         return GetInstructionLength(shortCode);

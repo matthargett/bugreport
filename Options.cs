@@ -48,7 +48,7 @@ public static class Options
         {
             if (arguments[i].StartsWith("--function"))
             {
-                Int32 indexOfEquals = arguments[i].IndexOf("=");
+                Int32 indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
 
                 if (indexOfEquals == -1)
                 {
@@ -119,7 +119,7 @@ public static class Options
         }
     }
 
-    private static Boolean getIsTracing(String[] arguments)
+    private static Boolean getIsTracing(IEnumerable<string> arguments)
     {
         foreach (String argument in arguments)
         {

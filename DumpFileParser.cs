@@ -24,13 +24,13 @@ public interface IParsable
 
 public sealed class DumpFileParser : IParsable, IDisposable
 {
-    private Stream stream;
-    private StreamReader reader;
+    private readonly Stream stream;
+    private readonly StreamReader reader;
     private Boolean inTextSection;    
-    private List<Byte[]> opCodeList;
-    private List<ReportItem> expectedReportItems;
+    private readonly List<Byte[]> opCodeList;
+    private readonly List<ReportItem> expectedReportItems;
     private UInt32 entryPointAddress, baseAddress;
-    private String functionNameToParse = "main";
+    private readonly String functionNameToParse = "main";
 
     public DumpFileParser(Stream stream, String functionNameToParse)
     {
@@ -95,10 +95,10 @@ public sealed class DumpFileParser : IParsable, IDisposable
         get { return entryPointAddress; }
     }
     
-    private UInt32 getAddressForLine(String line)
+    private static UInt32 getAddressForLine(String line)
     {
         String address = line.Substring(0,8);
-        return UInt32.Parse(address, System.Globalization.NumberStyles.HexNumber);
+        return UInt32.Parse(address, NumberStyles.HexNumber);
     }
 
     private void updateMainInfo(String line)
@@ -118,7 +118,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
         }
     }
 
-    private String getHexWithSpaces(String line)
+    private static String getHexWithSpaces(String line)
     {
         Int32 colonIndex = line.IndexOf(':');
 
@@ -132,8 +132,8 @@ public sealed class DumpFileParser : IParsable, IDisposable
         }
 
         String afterColonToEnd = line.Substring(colonIndex+1).Trim();
-        Int32 doubleSpaceIndex = afterColonToEnd.IndexOf("  ");
-        Int32 spaceTabIndex = afterColonToEnd.IndexOf(" \t");
+        Int32 doubleSpaceIndex = afterColonToEnd.IndexOf("  ", StringComparison.Ordinal);
+        Int32 spaceTabIndex = afterColonToEnd.IndexOf(" \t", StringComparison.Ordinal);
         Int32 endOfHexIndex;
 
         if ( doubleSpaceIndex >= 0 && spaceTabIndex >= 0)
@@ -155,7 +155,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
         return hexString;
     }
 
-    private Byte[] getByteArrayFromHexString(String hex)
+    private static Byte[] getByteArrayFromHexString(String hex)
     {
         String[] hexStrings = hex.Split(new Char[] {' '});
 
@@ -169,7 +169,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
         return hexBytes;
     }
 
-    private Byte[] getHexFromString(String line)
+    private static Byte[] getHexFromString(String line)
     {
 
         if (line.Trim().Length == 0)
@@ -187,13 +187,11 @@ public sealed class DumpFileParser : IParsable, IDisposable
 
     private List<Byte[]> parse()
     {
-        Byte[] opCode;
-        List<Byte[]> opCodeList = new List<Byte[]>();
-        String currentLine;
+        List<Byte[]> opcodes = new List<Byte[]>();
 
         while (!reader.EndOfStream)
         {
-            currentLine = reader.ReadLine();
+            String currentLine = reader.ReadLine();
             if (hasAnnotation(currentLine))
             {
                 ReportItem item = getAnnotation(currentLine);
@@ -204,26 +202,26 @@ public sealed class DumpFileParser : IParsable, IDisposable
 
             if (inTextSection)
             {
-                opCode = getHexFromString(currentLine);
+                Byte[] opCode = getHexFromString(currentLine);
                 if (opCode != null)
                 {
-                    opCodeList.Add(getHexFromString(currentLine));
+                    opcodes.Add(getHexFromString(currentLine));
                 }
             }
         }
-        return opCodeList;
+        return opcodes;
     }
 
-    private Boolean hasAnnotation(String line)
+    private static Boolean hasAnnotation(String line)
     {
         return line.Contains("//<OutOfBoundsMemoryAccess ");
     }
 
-    private ReportItem getAnnotation(String line)
+    private static ReportItem getAnnotation(String line)
     {
-        Int32 locationIndex = line.IndexOf("=") + 1;
-        UInt32 location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), System.Globalization.NumberStyles.HexNumber);
-        Int32 exploitableIndex = line.IndexOf("=", locationIndex + 1) + 1;
+        Int32 locationIndex = line.IndexOf("=", StringComparison.Ordinal) + 1;
+        UInt32 location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), NumberStyles.HexNumber);
+        Int32 exploitableIndex = line.IndexOf("=", locationIndex + 1, StringComparison.Ordinal) + 1;
         Boolean exploitable = Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex)-"/>".Length));
         return new ReportItem(location, exploitable);
     }

@@ -12,8 +12,8 @@ namespace bugreport
 public class MachineStateTests
 {
     MachineState state;
-    AbstractValue one = new AbstractValue(1);
-    AbstractValue two = new AbstractValue(2).AddTaint();
+    readonly AbstractValue one = new AbstractValue(1);
+    readonly AbstractValue two = new AbstractValue(2).AddTaint();
 
     private AbstractValue eax
     {

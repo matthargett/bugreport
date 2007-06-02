@@ -5,7 +5,6 @@
 
 using System;
 using System.Text;
-using NUnit.Framework;
 
 namespace bugreport
 {
@@ -128,9 +127,9 @@ public class AbstractValue
             throw new InvalidOperationException("Cannot AddTaint to a pointer");
         }
 
-        AbstractValue tainted = new AbstractValue(this);
-        tainted.IsTainted = true;
-        return tainted;
+        AbstractValue taintedValue = new AbstractValue(this);
+        taintedValue.IsTainted = true;
+        return taintedValue;
     }
 
     public AbstractValue AddTaintIf(Boolean condition)

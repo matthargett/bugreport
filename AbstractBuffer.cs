@@ -4,7 +4,6 @@
 // See LICENSE.txt for details.
 
 using System;
-using NUnit.Framework;
 
 namespace bugreport
 {
@@ -12,7 +11,7 @@ public class AbstractBuffer
 {
     private AbstractValue[] storage;
     private UInt32 baseIndex;
-    private Int32 allocatedLength;
+    private readonly Int32 allocatedLength;
 
     public AbstractBuffer(AbstractValue[] _buffer)
     {
@@ -36,21 +35,21 @@ public class AbstractBuffer
     {
         // Account for element [0] of the array
         _newLength = _newLength + 1;
-        if (_newLength >= this.Length)
+        if (_newLength >= Length)
         {
             AbstractValue[] _copyTo = new AbstractValue[_newLength];
 
             Int32 i;
-            for (i = 0; i < this.storage.Length; i++)
+            for (i = 0; i < storage.Length; i++)
             {
-                _copyTo[i] = this.storage[i];
+                _copyTo[i] = storage[i];
             }
             for (; i < _newLength; i++)
             {
                 _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN);
                 _copyTo[i].IsOOB = true;
             }
-            this.storage = _copyTo;
+            storage = _copyTo;
         }
 
         return;
@@ -104,7 +103,7 @@ public class AbstractBuffer
 
     private Boolean IsIndexPastBounds(Int32 index)
     {
-        return (((baseIndex + index) >= this.allocatedLength) && ((baseIndex + index) >= this.storage.Length));
+        return (((baseIndex + index) >= allocatedLength) && ((baseIndex + index) >= storage.Length));
     }
 
     public AbstractValue this[Int32 index]
@@ -112,10 +111,10 @@ public class AbstractBuffer
         get
         {
             // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
-            if (this.IsIndexPastBounds(index))
+            if (IsIndexPastBounds(index))
             {
-                this.extend(baseIndex + (UInt32)index);
-                return this.storage[baseIndex + index];
+                extend(baseIndex + (UInt32)index);
+                return storage[baseIndex + index];
             }
             else
             {
@@ -125,19 +124,19 @@ public class AbstractBuffer
 
         set
         {
-            if ((baseIndex + index) >= this.allocatedLength)
+            if ((baseIndex + index) >= allocatedLength)
             {
                 value.IsOOB = true;
             }
                 
-            if (this.IsIndexPastBounds(index))
+            if (IsIndexPastBounds(index))
             {
-                this.extend(baseIndex + (UInt32)index);
-                this.storage[baseIndex + index] = value;
+                extend(baseIndex + (UInt32)index);
+                storage[baseIndex + index] = value;
             }
             else
             {
-                this.storage[baseIndex + index] = value;
+                storage[baseIndex + index] = value;
             }
         }
     }
@@ -151,7 +150,7 @@ public class AbstractBuffer
 
     public Int32 Length
     {
-        get { return this.allocatedLength; }
+        get { return allocatedLength; }
     }
 }
 }

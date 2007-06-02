@@ -15,8 +15,9 @@ public class OptionsTest
 {
 private class FakeFileResolver : FileResolver
     {
-        String expectedPath, expectedFileName;
-        Int32 numberOfFilesFound;
+    readonly String expectedPath;
+    readonly String expectedFileName;
+    readonly Int32 numberOfFilesFound;
 
         public FakeFileResolver(String expectedPath, String expectedFileName, Int32 numberOfFilesFound)
         {

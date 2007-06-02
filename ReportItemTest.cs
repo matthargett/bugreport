@@ -3,7 +3,6 @@
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
 
-using System;
 using NUnit.Framework;
 
 namespace bugreport
