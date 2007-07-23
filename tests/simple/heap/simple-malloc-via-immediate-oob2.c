@@ -1,7 +1,12 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char **argv)
 {
-	void *p = malloc(16);
-	((char *)p)[-1] = 0;
+	char *p = malloc(16);
+	p[-1] = 0;
+
+	printf(p);
+
+	return 0;
 }
