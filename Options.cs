@@ -26,6 +26,7 @@ public static class Options
     private static String functionToAnalyze;
     private static ReadOnlyCollection<String> filenames;
     private static Boolean isTracing;
+    private static Boolean isDebugging;
 
     internal static FileResolver FileResolver
     {
@@ -40,6 +41,12 @@ public static class Options
         functionToAnalyze = getFunctionToAnalyze(commandLine);
         filenames = getFilenames(commandLine);
         isTracing = getIsTracing(commandLine);
+        isDebugging = getIsDebugging(commandLine);
+        if (isDebugging)
+        {
+            isTracing = true;
+        }
+
     }
 
     private static String getFunctionToAnalyze(String[] arguments)
@@ -132,6 +139,19 @@ public static class Options
         return false;
     }
 
+    private static Boolean getIsDebugging(IEnumerable<string> arguments)
+    {
+        foreach (String argument in arguments)
+        {
+            if (argument == "--debug")
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     public static Boolean IsTracing
     {
         get
@@ -139,5 +159,14 @@ public static class Options
             return isTracing;
         }
     }
+
+    public static Boolean IsDebugging
+    {
+        get
+        {
+            return isDebugging;
+        }
+    }
+
 }
 }

@@ -112,6 +112,37 @@ private class FakeFileResolver : FileResolver
     }
 
     [Test]
+    public void DebugOption()
+    {
+        fileResolver = new FakeFileResolver(
+                           @"/cygwin/home/steve/bugreport/tests/simple/heap",
+                           @"simple-malloc-via-immediate*.dump",
+                           12
+                       );
+        Options.FileResolver = fileResolver;
+        commandLine = new String[] {
+                          "--debug",
+                          @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
+                      };
+        Options.ParseArguments(commandLine);
+        Assert.IsTrue(Options.IsDebugging);
+
+        commandLine = new String[] {
+                          @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump",
+                          "--debug"
+                      };
+        Options.ParseArguments(commandLine);
+        Assert.IsTrue(Options.IsDebugging);
+
+        commandLine = new String[] {
+                          @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
+                      };
+        Options.ParseArguments(commandLine);
+        Assert.IsFalse(Options.IsDebugging);
+    }
+
+    
+    [Test]
     public void MultipleFilenames()
     {
         commandLine = new String[] {
