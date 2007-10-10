@@ -53,7 +53,7 @@ public class ReportCollection : Collection<ReportItem>
     {
         base.InsertItem(index, item);
 
-        if (null != this.OnReport)
+        if (null != OnReport)
         {
             OnReport(this, new ReportEventArgs(item));
         }
@@ -149,7 +149,7 @@ public class Analyzer
             Byte[] instruction = extractInstruction(instructions, index);
             
             machineState = runCode(machineState, instruction);
-            if (null != this.OnEmulationComplete)
+            if (null != OnEmulationComplete)
             {
                 OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instruction)));
             }

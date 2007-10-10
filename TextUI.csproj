@@ -42,10 +42,12 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="DebuggerView.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="MainTests.cs" />
     <Compile Include="OpcodeFormatter.cs" />
