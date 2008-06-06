@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
+// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
 // Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
@@ -120,6 +120,9 @@ public static class X86emulator
                         }
         
                         state.Registers[RegisterName.ESP].PointsTo[0] = sourceValue;
+
+                        // TODO(matt_hargett): next step in correct stack emulation,, but breaks PushESPPopESP test
+                        //                        state = state.PushOntoStack(sourceValue);
         
                         break;
                     }
@@ -310,7 +313,7 @@ public static class X86emulator
                 if ( !contractSatisfied )
                 {
                     UInt32 returnAddress = state.InstructionPointer + (UInt32)code.Length;
-                    state.PushOntoStack(new AbstractValue(returnAddress));
+                    state = state.PushOntoStack(new AbstractValue(returnAddress));
                     state.InstructionPointer = opcode.GetEffectiveAddress(code, state.InstructionPointer);
                 }                
                 

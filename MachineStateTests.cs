@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
+// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
 // Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
@@ -25,6 +25,12 @@ public class MachineStateTests
     {
         get { return state.Registers[RegisterName.EBX]; }
         set { state.Registers[RegisterName.EBX] = value; }
+    }
+
+    private AbstractValue esp
+    {
+        get { return state.Registers[RegisterName.ESP]; }
+        set { state.Registers[RegisterName.ESP] = value; }
     }
 
     [SetUp]
@@ -170,6 +176,19 @@ public class MachineStateTests
         Assert.IsNotNull(eax.PointsTo);
         state = state.DoOperation(RegisterName.EAX, OperatorEffect.Sub, RegisterName.EBX);
         Assert.AreEqual(one, eax.PointsTo[0]);
+    }
+
+    [Test]
+    public void PushPopThenAssignToTop()
+    {
+        AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
+        esp = new AbstractValue(buffer);
+        state = state.PushOntoStack(one);
+        
+        //TODO(matt_hargett): extract into state.PopOffStack()
+        state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(0x1));
+        state = state.DoOperation(RegisterName.ESP, 0, OperatorEffect.Assignment, two);
+        Assert.AreEqual(two, state.TopOfStack);
     }
 
     [Test]

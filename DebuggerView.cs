@@ -99,10 +99,8 @@ namespace bugreport
         {
             AbstractValue esp = currentState.Registers[RegisterName.ESP];
             
-            // print esp-2, esp-1, esp
-
             Console.WriteLine("Stack dump");
-            Console.WriteLine("esp-2\t\t esp-1\t\t esp");
+            Console.WriteLine("esp-8\t\t esp-4\t\t esp");
             Console.WriteLine("{0}\t\t {1}\t\t {2}", esp.PointsTo[-2], esp.PointsTo[-1], esp.PointsTo[0]);
 
         }

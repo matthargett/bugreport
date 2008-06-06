@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
+// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
 // Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
@@ -172,9 +172,11 @@ public struct MachineState
         }
     }
 
-    public void PushOntoStack(AbstractValue value)
+    public MachineState PushOntoStack(AbstractValue value)
     {
-        TopOfStack = new AbstractValue(value);
+        MachineState newState = DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x1));
+        newState.TopOfStack = new AbstractValue(value);
+        return newState;
     }
 
 

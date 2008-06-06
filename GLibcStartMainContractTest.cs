@@ -34,7 +34,7 @@ public class GLibcStartMainContractTest
     public void Execute()
     {
         AbstractValue address = new AbstractValue(0xdeadbabe);
-        state.PushOntoStack(address);
+        state = state.PushOntoStack(address);
         state = contract.Execute(state);        
         Assert.AreEqual(address.Value, state.InstructionPointer);
     }
