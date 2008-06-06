@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
+// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
 // Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
@@ -145,8 +145,6 @@ public class AbstractValue
     public AbstractBuffer PointsTo
     {
         get { return pointsTo; }
-
-        private set { pointsTo = value; }
     }
 
     public Boolean IsTainted
@@ -170,7 +168,6 @@ public class AbstractValue
     public UInt32 Value
     {
         get { return storage; }
-        private set { storage = value; }
     }
 
     public Boolean IsPointer

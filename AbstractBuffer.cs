@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
+// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
 // Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
@@ -139,9 +139,7 @@ public class AbstractBuffer
 
     public UInt32 BaseIndex
     {
-    get { return baseIndex; }
-
-        private set { baseIndex = value; }
+        get { return baseIndex; }
     }
 
     public Int32 Length

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2007 Luis Miras, Doug Coker, Todd Nagengast,
+// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
 // Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
 // Licensed under GPLv3 draft 3
 // See LICENSE.txt for details.
@@ -410,7 +410,7 @@ public class X86emulatorTests
     {
         UInt32 initialInstructionPointer = 0x804838f;
         //TODO: need to reconcile with esp/ebp handling
-        state.PushOntoStack(new AbstractValue(16));
+        state = state.PushOntoStack(new AbstractValue(16));
         state.InstructionPointer = initialInstructionPointer;
         code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
         state = X86emulator.Run(reportItems, state, code);
