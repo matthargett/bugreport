@@ -2,25 +2,22 @@ using System;
 
 namespace bugreport
 {
-
     class DebuggerView
     {
         private readonly Boolean interactive;
-        private MachineState currentState;
+        private MachineState state;
 
         public DebuggerView(Boolean interactive)
         {
-            this.interactive = interactive;    
+            this.interactive = interactive;
         }
         public void printInfo(object sender, EmulationEventArgs e)
         {
-            Byte[] code = new Byte[e.Code.Count];
-            e.Code.CopyTo(code, 0);
-            currentState = e.MachineState;
-            String address = String.Format("{0:x8}", currentState.InstructionPointer);
+            String address = getEffectiveAddressFor(e);
             Console.Write(address + ":");
             Console.Write("\t");
 
+            Byte[] code = getCodeFor(e);
             foreach (Byte codeByte in code)
             {
                 Console.Write(String.Format("{0:x2}", codeByte) + " ");
@@ -34,7 +31,7 @@ namespace bugreport
             Console.Write(OpcodeFormatter.GetInstructionName(code));
             Console.Write("\t");
 
-            String operands = OpcodeFormatter.GetOperands(code, currentState.InstructionPointer);
+            String operands = OpcodeFormatter.GetOperands(code, state.InstructionPointer);
             Console.Write(operands);
             if (operands.Length < 8)
                 Console.Write("\t");
@@ -43,11 +40,27 @@ namespace bugreport
             Console.Write("\t");
             Console.WriteLine(encoding);
 
-            Console.WriteLine(currentState.Registers);
+            Console.WriteLine(state.Registers);
             Console.WriteLine();
 
             promptIfNecessary();
         }
+
+        Byte[] getCodeFor(EmulationEventArgs e)
+        {
+            Byte[] code = new Byte[e.Code.Count];
+            e.Code.CopyTo(code, 0);
+            return code;
+        }
+
+
+        string getEffectiveAddressFor(EmulationEventArgs e)
+        {
+            state = e.MachineState;
+            String address = String.Format("{0:x8}", state.InstructionPointer);
+            return address;
+        }
+
 
         protected void promptIfNecessary()
         {
@@ -64,7 +77,7 @@ namespace bugreport
                     }
                     else if (isStackPrint(input))
                     {
-                        printStack();
+                        printStackFor(state);
                         continue;
                     }
                     else if (isQuit(input))
@@ -81,46 +94,32 @@ namespace bugreport
 
         private string getInput()
         {
-            Console.Write("0x{0:x8} > ", currentState.InstructionPointer);
+            Console.Write("0x{0:x8} > ", state.InstructionPointer);
             return Console.ReadLine();
         }
 
         private static Boolean isQuit(string input)
         {
-            if (input == "q")
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private void printStack()
-        {
-            AbstractValue esp = currentState.Registers[RegisterName.ESP];
-            
-            Console.WriteLine("Stack dump");
-            Console.WriteLine("esp-8\t\t esp-4\t\t esp");
-            Console.WriteLine("{0}\t\t {1}\t\t {2}", esp.PointsTo[-2], esp.PointsTo[-1], esp.PointsTo[0]);
-
+            return input == "q";
         }
 
         private static Boolean isStackPrint(string input)
         {
-            if (input == "p")
-            {
-                return true;
-            }
-            return false;
+            return input == "p";
         }
 
         private static Boolean isEnter(string input)
         {
-            if (input == "")
-            {
-                return true;
-            }
-            return false;
+            return input == "";
+        }
+
+        private void printStackFor(MachineState state)
+        {
+            AbstractValue esp = state.Registers[RegisterName.ESP];
+            
+            Console.WriteLine("Stack dump");
+            Console.WriteLine("esp-8\t\t esp-4\t\t esp");
+            Console.WriteLine("{0}\t\t {1}\t\t {2}", esp.PointsTo[-2], esp.PointsTo[-1], esp.PointsTo[0]);
         }
     }
 }
