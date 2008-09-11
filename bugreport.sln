@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisEngine", "AnalysisEngine.csproj", "{8DC8856B-6FF9-4E39-BF0B-1C1B55115273}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextUI", "TextUI.csproj", "{53C43EB0-FA91-426B-8239-D14E498B962B}"
