@@ -11,6 +11,7 @@ namespace bugreport
         {
             this.interactive = interactive;
         }
+
         public void printInfo(object sender, EmulationEventArgs e)
         {
             String address = getEffectiveAddressFor(e);
@@ -18,6 +19,16 @@ namespace bugreport
             Console.Write("\t");
 
             Byte[] code = getCodeFor(e);
+            printOpcodeInfo(code);
+
+            Console.WriteLine(state.Registers);
+            Console.WriteLine();
+
+            handleInputIfNecessary();
+        }
+
+        private void printOpcodeInfo(byte[] code)
+        {
             foreach (Byte codeByte in code)
             {
                 Console.Write(String.Format("{0:x2}", codeByte) + " ");
@@ -39,11 +50,6 @@ namespace bugreport
             String encoding = OpcodeFormatter.GetEncoding(code);
             Console.Write("\t");
             Console.WriteLine(encoding);
-
-            Console.WriteLine(state.Registers);
-            Console.WriteLine();
-
-            promptIfNecessary();
         }
 
         Byte[] getCodeFor(EmulationEventArgs e)
@@ -62,32 +68,39 @@ namespace bugreport
         }
 
 
-        protected void promptIfNecessary()
+        protected void handleInputIfNecessary()
         {
+            //TODO: cover this with a system-level test
             Boolean enterPressed = false;
             if (interactive)
             {
                 while (!enterPressed)
                 {
-                    string input = getInput();
-                    if (isEnter(input))
+                    var input = getInput();
+                    var command = new DebuggerCommand(input);
+                    if (command.IsEnter)
                     {
                         enterPressed = true;
                         continue;
                     }
-                    else if (isStackPrint(input))
+                    if (command.IsStackPrint)
                     {
                         printStackFor(state);
                         continue;
                     }
-                    else if (isQuit(input))
+                    if (command.IsDisassemble)
+                    {
+                        var hex = input.Substring("disasm".Length + 1);
+                        var code = DumpFileParser.getByteArrayFromHexString(hex);
+                        printOpcodeInfo(code);
+                        continue;
+                    }
+                    if (command.IsQuit)
                     {
                         Environment.Exit(0);
                     }
-                    else
-                    {
-                        Console.WriteLine("invalid command");
-                    }
+
+                    Console.WriteLine("invalid command");
                 }
             }
         }
@@ -96,21 +109,6 @@ namespace bugreport
         {
             Console.Write("0x{0:x8} > ", state.InstructionPointer);
             return Console.ReadLine();
-        }
-
-        private static Boolean isQuit(string input)
-        {
-            return input == "q";
-        }
-
-        private static Boolean isStackPrint(string input)
-        {
-            return input == "p";
-        }
-
-        private static Boolean isEnter(string input)
-        {
-            return input == "";
         }
 
         private void printStackFor(MachineState state)

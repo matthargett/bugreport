@@ -155,7 +155,7 @@ public sealed class DumpFileParser : IParsable, IDisposable
         return hexString;
     }
 
-    private static Byte[] getByteArrayFromHexString(String hex)
+    public static Byte[] getByteArrayFromHexString(String hex)
     {
         String[] hexStrings = hex.Split(new Char[] {' '});
 

@@ -17,10 +17,10 @@ public class AbstractValueTests
     [Test]
     public void NotInitialized()
     {
-        AbstractValue uninit = new AbstractValue();
-        Assert.IsFalse(uninit.IsInitialized);
-        Assert.AreEqual(AbstractValue.UNKNOWN, uninit.Value);
-        Assert.AreEqual("?", uninit.ToString());
+        AbstractValue uninitializedValue = new AbstractValue();
+        Assert.IsFalse(uninitializedValue.IsInitialized);
+        Assert.AreEqual(AbstractValue.UNKNOWN, uninitializedValue.Value);
+        Assert.AreEqual("?", uninitializedValue.ToString());
     }
 
     [Test]
@@ -40,8 +40,8 @@ public class AbstractValueTests
     [Test]
     public void PointerHashcodes()
     {
-        pointer = new AbstractValue(new AbstractValue[] {new AbstractValue(1)});
-        AbstractValue pointer2 = new AbstractValue(new AbstractValue[] {new AbstractValue(2)});
+        pointer = new AbstractValue(new[] {new AbstractValue(1)});
+        var pointer2 = new AbstractValue(new[] {new AbstractValue(2)});
 
         Assert.AreNotEqual(pointer.GetHashCode(), pointer2.GetHashCode());
     }
@@ -49,7 +49,7 @@ public class AbstractValueTests
     [Test]
     public void AssignmentAtByteZero()
     {
-        AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+        var buffer = AbstractValue.GetNewBuffer(16);
         pointer = new AbstractValue(buffer);
         pointer.PointsTo[0] = new AbstractValue(0x31337);
         Assert.AreEqual(0x31337, pointer.PointsTo[0].Value);
