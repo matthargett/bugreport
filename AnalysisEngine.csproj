@@ -83,6 +83,7 @@
     <Compile Include="MachineState.cs" />
     <Compile Include="ModRM.cs" />
     <Compile Include="Opcode.cs" />
+    <Compile Include="X86Emulator.cs" />
     <Compile Include="X86EmulatorTest.cs" />
     <Compile Include="X86OpcodeTest.cs" />
     <Compile Include="RegisterCollection.cs" />
@@ -91,7 +92,6 @@
     <Compile Include="ReportItemTest.cs" />
     <Compile Include="SIB.cs" />
     <Compile Include="SIBTests.cs" />
-    <Compile Include="X86emulator.cs" />
     <Compile Include="X86Opcode.cs" />
   </ItemGroup>
 </Project>
