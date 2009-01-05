@@ -1,6 +1,7 @@
-// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
-// Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
-// Licensed under GPLv3 draft 3
+// This file is part of bugreport.
+// Copyright (c) 2006-2009 The bugreport Developers.
+// See AUTHORS.txt for details.
+// Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
 using System;
@@ -8,51 +9,51 @@ using NUnit.Framework;
 
 namespace bugreport
 {
-[TestFixture]
-public class RegisterCollectionTest
-{
-    RegisterCollection registers;
-
-    [SetUp]
-    public void SetUp()
+    [TestFixture]
+    public class RegisterCollectionTest
     {
-        registers = new RegisterCollection();
-    }
+        RegisterCollection registers;
 
-    [Test]
-    public void Copy()
-    {
-        registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
-        RegisterCollection newRegisters = new RegisterCollection(registers);
-        for (UInt32 i = 0; i < 7; i++)
+        [SetUp]
+        public void SetUp()
         {
-            RegisterName register = (RegisterName)i;
-            Assert.AreNotSame(newRegisters[register], registers[register]);
+            registers = new RegisterCollection();
         }
 
-        Assert.AreNotSame(newRegisters[RegisterName.ESP].PointsTo, registers[RegisterName.ESP].PointsTo);
-    }
-
-    [Test]
-    public void DefaultRegistersContainUninitializedValues()
-    {
-        for (UInt32 i = 0; i < 7; i++)
+        [Test]
+        public void Copy()
         {
-            RegisterName register = (RegisterName)i;
-            Assert.IsFalse(registers[register].IsInitialized);
+            registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
+            RegisterCollection newRegisters = new RegisterCollection(registers);
+            for (UInt32 i = 0; i < 7; i++)
+            {
+                RegisterName register = (RegisterName)i;
+                Assert.AreNotSame(newRegisters[register], registers[register]);
+            }
+
+            Assert.AreNotSame(newRegisters[RegisterName.ESP].PointsTo, registers[RegisterName.ESP].PointsTo);
+        }
+
+        [Test]
+        public void DefaultRegistersContainUninitializedValues()
+        {
+            for (UInt32 i = 0; i < 7; i++)
+            {
+                RegisterName register = (RegisterName)i;
+                Assert.IsFalse(registers[register].IsInitialized);
+            }
+        }
+
+        [Test]
+        public void ToStringOutput()
+        {
+            StringAssert.StartsWith("EAX=?", registers.ToString());
+        }
+
+        [Test]
+        public void Equals()
+        {
+            Assert.IsFalse(registers.Equals(null));
         }
     }
-
-    [Test]
-    public void ToStringOutput()
-    {
-        StringAssert.StartsWith("EAX=?", registers.ToString());
-    }
-
-    [Test]
-    public void Equals()
-    {
-        Assert.IsFalse(registers.Equals(null));
-    }
-}
 }

@@ -60,6 +60,10 @@
     <Compile Include="AbstractValueTests.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="AnalyzerTests.cs" />
+    <Compile Include="ArmEmulator.cs" />
+    <Compile Include="ArmEmulatorTest.cs" />
+    <Compile Include="ArmOpcode.cs" />
+    <Compile Include="ArmOpcodeTest.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="CoverageExcludeAttribute.cs" />
     <Compile Include="ElfFileParser.cs" />

@@ -1,6 +1,7 @@
-// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
-// Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
-// Licensed under GPLv3 draft 3
+// This file is part of bugreport.
+// Copyright (c) 2006-2009 The bugreport Developers.
+// See AUTHORS.txt for details.
+// Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
 using System;
@@ -8,171 +9,171 @@ using System.Collections.ObjectModel;
 
 namespace bugreport
 {
-public class EmulationEventArgs : EventArgs
-{
-    private readonly MachineState state;
-    private readonly ReadOnlyCollection<Byte> code;
-
-    public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code)
+    public class EmulationEventArgs : EventArgs
     {
-        this.state = state;
-        this.code = code;
-    }
+        private readonly MachineState state;
+        private readonly ReadOnlyCollection<Byte> code;
 
-    public MachineState MachineState
-    {
-        get { return state; }
-    }
-
-    public ReadOnlyCollection<Byte> Code
-    {
-        get { return code; }
-    }
-}
-
-public class ReportEventArgs : EventArgs
-{
-    private readonly ReportItem reportItem;
-
-    public ReportEventArgs(ReportItem reportItem)
-    {
-        this.reportItem = reportItem;
-    }
-
-    public ReportItem ReportItem
-    {
-        get { return reportItem; }
-    }
-}
-
-public class ReportCollection : Collection<ReportItem>
-{
-    public EventHandler<ReportEventArgs> OnReport;
-
-    protected override void InsertItem(int index, ReportItem item)
-    {
-        base.InsertItem(index, item);
-
-        if (null != OnReport)
+        public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code)
         {
-            OnReport(this, new ReportEventArgs(item));
-        }
-    }
-}
-
-public class Analyzer
-{
-    public EventHandler<EmulationEventArgs> OnEmulationComplete;
-
-    protected ReportCollection reportItems;
-    private readonly IParsable parser;
-    private readonly Opcode opcode = new X86Opcode();
-
-    public Analyzer(IParsable parser)
-    {
-        if (null == parser)
-        {
-            throw new ArgumentNullException("parser");
+            this.state = state;
+            this.code = code;
         }
 
-        this.parser = parser;
-
-        reportItems = new ReportCollection();
-    }
-
-    public ReadOnlyCollection<ReportItem> ActualReportItems
-    {
-        get
+        public MachineState MachineState
         {
-            return new ReadOnlyCollection<ReportItem>(reportItems);
+            get { return state; }
+        }
+
+        public ReadOnlyCollection<Byte> Code
+        {
+            get { return code; }
         }
     }
 
-    public ReadOnlyCollection<ReportItem> ExpectedReportItems
+    public class ReportEventArgs : EventArgs
     {
-        get
+        private readonly ReportItem reportItem;
+
+        public ReportEventArgs(ReportItem reportItem)
         {
-            return parser.ExpectedReportItems;
+            this.reportItem = reportItem;
+        }
+
+        public ReportItem ReportItem
+        {
+            get { return reportItem; }
         }
     }
 
-    public EventHandler<ReportEventArgs> OnReport
+    public class ReportCollection : Collection<ReportItem>
     {
-        get { return reportItems.OnReport; }
-        set { reportItems.OnReport = value; }
-    }
+        public EventHandler<ReportEventArgs> OnReport;
 
-
-    private static RegisterCollection getRegistersForLinuxStart()
-    {
-        RegisterCollection linuxMainDefaultValues = new RegisterCollection();
-
-        AbstractValue arg0 = new AbstractValue(1).AddTaint();
-
-        AbstractValue[] argvBuffer = new AbstractValue[] {arg0};
-        AbstractValue argvPointer = new AbstractValue(argvBuffer);
-        AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
-        AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
-        AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);
-
-        AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
-        AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
-
-        // linux ABI dictates
-        modifiedBuffer[5] = argvPointerPointer;
-
-        // gcc generates code that accesses this at some optimization levels
-        modifiedBuffer[0xfc] = new AbstractValue(1);
-
-        AbstractValue stackPointer = new AbstractValue(modifiedBuffer);
-        linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
-
-        return linuxMainDefaultValues;
-    }
-
-
-    protected virtual MachineState runCode(MachineState _machineState, Byte[] code)
-    {
-        return X86emulator.Run(reportItems, _machineState, code);
-    }
-
-    public void Run()
-    {
-        MachineState machineState = new MachineState(getRegistersForLinuxStart());
-        machineState.InstructionPointer = parser.EntryPointAddress;
-        Byte[] instructions = parser.GetBytes();
-        UInt32 index = machineState.InstructionPointer - parser.BaseAddress;
-        
-        while (index < instructions.Length)
+        protected override void InsertItem(int index, ReportItem item)
         {
-            MachineState savedState = machineState;
-            Byte[] instruction = extractInstruction(instructions, index);
-            
-            machineState = runCode(machineState, instruction);
-            if (null != OnEmulationComplete)
+            base.InsertItem(index, item);
+
+            if (null != OnReport)
             {
-                OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instruction)));
-            }
-            
-            index = machineState.InstructionPointer - parser.BaseAddress;
-            
-            if (opcode.TerminatesFunction(instruction))
-            {
-                break;
+                OnReport(this, new ReportEventArgs(item));
             }
         }
     }
-    
-    private Byte[] extractInstruction(Byte[] instructions, UInt32 index)
+
+    public class Analyzer
     {
-        Byte instructionLength = opcode.GetInstructionLength(instructions, index);
-        Byte[] instruction = new Byte[instructionLength];
-        for (UInt32 count=index; count < index+instructionLength; count++)
+        public EventHandler<EmulationEventArgs> OnEmulationComplete;
+
+        protected ReportCollection reportItems;
+        private readonly IParsable parser;
+        private readonly Opcode opcode = new X86Opcode();
+
+        public Analyzer(IParsable parser)
         {
-            instruction[count-index] = instructions[count];
+            if (null == parser)
+            {
+                throw new ArgumentNullException("parser");
+            }
+
+            this.parser = parser;
+
+            reportItems = new ReportCollection();
+        }
+
+        public ReadOnlyCollection<ReportItem> ActualReportItems
+        {
+            get
+            {
+                return new ReadOnlyCollection<ReportItem>(reportItems);
+            }
+        }
+
+        public ReadOnlyCollection<ReportItem> ExpectedReportItems
+        {
+            get
+            {
+                return parser.ExpectedReportItems;
+            }
+        }
+
+        public EventHandler<ReportEventArgs> OnReport
+        {
+            get { return reportItems.OnReport; }
+            set { reportItems.OnReport = value; }
+        }
+
+
+        private static RegisterCollection getRegistersForLinuxStart()
+        {
+            RegisterCollection linuxMainDefaultValues = new RegisterCollection();
+
+            AbstractValue arg0 = new AbstractValue(1).AddTaint();
+
+            AbstractValue[] argvBuffer = new AbstractValue[] {arg0};
+            AbstractValue argvPointer = new AbstractValue(argvBuffer);
+            AbstractValue[] argvPointerBuffer = new AbstractValue[] {argvPointer};
+            AbstractValue argvPointerPointer = new AbstractValue(argvPointerBuffer);
+            AbstractValue[]  stackBuffer = AbstractValue.GetNewBuffer(0x200);
+
+            AbstractBuffer buffer = new AbstractBuffer(stackBuffer);
+            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
+
+            // linux ABI dictates
+            modifiedBuffer[5] = argvPointerPointer;
+
+            // gcc generates code that accesses this at some optimization levels
+            modifiedBuffer[0xfc] = new AbstractValue(1);
+
+            AbstractValue stackPointer = new AbstractValue(modifiedBuffer);
+            linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
+
+            return linuxMainDefaultValues;
+        }
+
+
+        protected virtual MachineState runCode(MachineState _machineState, Byte[] code)
+        {
+            return X86Emulator.Run(reportItems, _machineState, code);
+        }
+
+        public void Run()
+        {
+            MachineState machineState = new MachineState(getRegistersForLinuxStart());
+            machineState.InstructionPointer = parser.EntryPointAddress;
+            Byte[] instructions = parser.GetBytes();
+            UInt32 index = machineState.InstructionPointer - parser.BaseAddress;
+            
+            while (index < instructions.Length)
+            {
+                MachineState savedState = machineState;
+                Byte[] instruction = extractInstruction(instructions, index);
+                
+                machineState = runCode(machineState, instruction);
+                if (null != OnEmulationComplete)
+                {
+                    OnEmulationComplete(this, new EmulationEventArgs(savedState, new ReadOnlyCollection<Byte>(instruction)));
+                }
+                
+                index = machineState.InstructionPointer - parser.BaseAddress;
+                
+                if (opcode.TerminatesFunction(instruction))
+                {
+                    break;
+                }
+            }
         }
         
-        return instruction;
+        private Byte[] extractInstruction(Byte[] instructions, UInt32 index)
+        {
+            Byte instructionLength = opcode.GetInstructionLength(instructions, index);
+            Byte[] instruction = new Byte[instructionLength];
+            for (UInt32 count=index; count < index+instructionLength; count++)
+            {
+                instruction[count-index] = instructions[count];
+            }
+            
+            return instruction;
+        }
     }
-}
 }
