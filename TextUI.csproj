@@ -58,9 +58,9 @@
     <Compile Include="DebuggerView.cs" />
     <Compile Include="DebuggerCommandTest.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="MainTests.cs" />
+    <Compile Include="MainTest.cs" />
     <Compile Include="OpcodeFormatter.cs" />
-    <Compile Include="OpcodeFormatterTests.cs" />
+    <Compile Include="OpcodeFormatterTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="AnalysisEngine.csproj">

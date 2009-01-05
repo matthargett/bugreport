@@ -16,7 +16,7 @@ namespace bugreport
     [TestFixture]
     //[Ignore("long")]
     [Platform(Exclude="Mono")]
-    public class MainTests
+    public class MainTest
     {
         // TODO: This assumes that the test runner is run from the build directory.
         private String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
