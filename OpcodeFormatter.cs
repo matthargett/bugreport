@@ -1,6 +1,7 @@
-// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
-// Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
-// Licensed under GPLv3 draft 3
+// This file is part of bugreport.
+// Copyright (c) 2006-2009 The bugreport Developers.
+// See AUTHORS.txt for details.
+// Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
 using System;
@@ -8,262 +9,262 @@ using System.Text;
 
 namespace bugreport
 {
-public static class OpcodeFormatter
-{
-    static readonly Opcode opcode = new X86Opcode();
-
-    public static String GetInstructionName(Byte[] code)
+    public static class OpcodeFormatter
     {
-        String instructionName = String.Empty;
-        
-        StackEffect stackEffect = opcode.GetStackEffect(code);
+        static readonly Opcode opcode = new X86Opcode();
 
-        if (stackEffect != StackEffect.None)
+        public static String GetInstructionName(Byte[] code)
         {
-            instructionName += stackEffect.ToString().ToLower();
-        }
-        else
-        {
-            OperatorEffect effect = opcode.GetOperatorEffect(code);
-            if (OperatorEffect.Assignment == effect)
+            String instructionName = String.Empty;
+            
+            StackEffect stackEffect = opcode.GetStackEffect(code);
+
+            if (stackEffect != StackEffect.None)
             {
-                if (code[0] == 0x8d)
+                instructionName += stackEffect.ToString().ToLower();
+            }
+            else
+            {
+                OperatorEffect effect = opcode.GetOperatorEffect(code);
+                if (OperatorEffect.Assignment == effect)
                 {
-                    instructionName += "lea";
+                    if (code[0] == 0x8d)
+                    {
+                        instructionName += "lea";
+                    }
+                    else
+                    {
+                        instructionName += "mov";
+                    }
+                }
+                else if (OperatorEffect.None == effect)
+                {
+                    instructionName +="nop";
                 }
                 else
                 {
-                    instructionName += "mov";
+                    instructionName += effect.ToString().ToLower();
                 }
             }
-            else if (OperatorEffect.None == effect)
+
+            return instructionName;
+        }
+
+        private static UInt32 getOperandCount(Byte[] code)
+        {
+            UInt32 count = 0;
+
+            if (opcode.HasDestinationRegister(code))
             {
-                instructionName +="nop";
+                count++;
             }
-            else
+
+            if (opcode.HasSourceRegister(code) ||
+                    opcode.HasImmediate(code) ||
+                    opcode.HasModRM(code))
             {
-                instructionName += effect.ToString().ToLower();
+                count++;
             }
+
+            return count;
         }
 
-        return instructionName;
-    }
-
-    private static UInt32 getOperandCount(Byte[] code)
-    {
-        UInt32 count = 0;
-
-        if (opcode.HasDestinationRegister(code))
+        private static String getSingleOperand(Byte[] code, UInt32 instructionPointer)
         {
-            count++;
+            if (opcode.HasSourceRegister(code) && !opcode.HasDestinationRegister(code))
+            {
+                return opcode.GetSourceRegister(code).ToString().ToLower();
+            }
+
+            if (!opcode.HasSourceRegister(code) && opcode.HasDestinationRegister(code))
+            {
+                return opcode.GetDestinationRegister(code).ToString().ToLower();
+            }
+
+            if (opcode.GetOperatorEffect(code) == OperatorEffect.Call)
+            {
+                return String.Format("0x{0:x8}", opcode.GetEffectiveAddress(code, instructionPointer));
+            }
+
+            if (opcode.HasImmediate(code))
+            {
+                return String.Format("0x{0:x8}", opcode.GetImmediate(code));
+            }
+
+            throw new ArgumentException("single operand requested when there is more than one");
         }
 
-        if (opcode.HasSourceRegister(code) ||
-                opcode.HasImmediate(code) ||
-                opcode.HasModRM(code))
+        private static String encaseInSquareBrackets(String toBeEncased)
         {
-            count++;
+            return "[" + toBeEncased + "]";
         }
 
-        return count;
-    }
-
-    private static String getSingleOperand(Byte[] code, UInt32 instructionPointer)
-    {
-        if (opcode.HasSourceRegister(code) && !opcode.HasDestinationRegister(code))
+        private static String getSourceOperand(Byte[] code)
         {
-            return opcode.GetSourceRegister(code).ToString().ToLower();
-        }
+            if (opcode.HasImmediate(code))
+            {
+                return String.Format("0x{0:x}", opcode.GetImmediate(code));
+            }
+            
+            if (opcode.HasOffset(code) && opcode.HasModRM(code))
+            {
+                String offset = String.Format("0x{0:x}", ModRM.GetOffset(code));
+                return encaseInSquareBrackets(offset);
+            }
 
-        if (!opcode.HasSourceRegister(code) && opcode.HasDestinationRegister(code))
-        {
-            return opcode.GetDestinationRegister(code).ToString().ToLower();
-        }
+            String sourceOperand;
+            Boolean sourceIsEffectiveAddress = 
+                            opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
+                            opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
+                            opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
 
-        if (opcode.GetOperatorEffect(code) == OperatorEffect.Call)
-        {
-            return String.Format("0x{0:x8}", opcode.GetEffectiveAddress(code, instructionPointer));
-        }
+            if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
+            {
+                String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+                String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+                UInt32 scaler = SIB.GetScaler(code);
 
-        if (opcode.HasImmediate(code))
-        {
-            return String.Format("0x{0:x8}", opcode.GetImmediate(code));
-        }
+                if (SIB.GetScaledRegister(code) == RegisterName.None)
+                {
+                    sourceOperand = baseRegister;
+                }
+                else if (scaler == 1)
+                {
+                    sourceOperand = baseRegister + "+" + scaled;
+                }
+                else
+                {
+                    sourceOperand = baseRegister + "+" + scaled + "*" + scaler;
+                }
 
-        throw new ArgumentException("single operand requested when there is more than one");
-    }
+                sourceOperand =  encaseInSquareBrackets(sourceOperand);
+                return sourceOperand;
+            }
 
-    private static String encaseInSquareBrackets(String toBeEncased)
-    {
-        return "[" + toBeEncased + "]";
-    }
+            if (opcode.HasSourceRegister(code))
+            {
+                sourceOperand = opcode.GetSourceRegister(code).ToString().ToLower();
 
-    private static String getSourceOperand(Byte[] code)
-    {
-        if (opcode.HasImmediate(code))
-        {
-            return String.Format("0x{0:x}", opcode.GetImmediate(code));
-        }
+                if (opcode.HasModRM(code) && sourceIsEffectiveAddress)
+                {
+                    if (ModRM.HasIndex(code))
+                    {
+                        sourceOperand += "+" + ModRM.GetIndex(code);
+                    }
         
-        if (opcode.HasOffset(code) && opcode.HasModRM(code))
-        {
-            String offset = String.Format("0x{0:x}", ModRM.GetOffset(code));
-            return encaseInSquareBrackets(offset);
+                    Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                    if (evDereferenced)
+                    {
+                        sourceOperand = encaseInSquareBrackets(sourceOperand);
+                    }                
+                }
+                
+                return sourceOperand;
+
+            }
+
+            throw new ArgumentException(
+                "don't know how to render this code's source operand: " + formatCode(code)
+            );
         }
 
-        String sourceOperand;
-        Boolean sourceIsEffectiveAddress = 
-                        opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
-                        opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
-                        opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
-
-        if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
+        private static String formatCode(Byte[] code)
         {
-            String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
-            String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
-            UInt32 scaler = SIB.GetScaler(code);
-
-            if (SIB.GetScaledRegister(code) == RegisterName.None)
+            StringBuilder formattedCode = new StringBuilder();
+            foreach (Byte codeByte in code)
             {
-                sourceOperand = baseRegister;
-            }
-            else if (scaler == 1)
-            {
-                sourceOperand = baseRegister + "+" + scaled;
-            }
-            else
-            {
-                sourceOperand = baseRegister + "+" + scaled + "*" + scaler;
+                formattedCode.Append(String.Format("{0:x2} ", codeByte));
             }
 
-            sourceOperand =  encaseInSquareBrackets(sourceOperand);
-            return sourceOperand;
+            return formattedCode.ToString();
         }
 
-        if (opcode.HasSourceRegister(code))
+        private static String getDestinationOperand(Byte[] code)
         {
-            sourceOperand = opcode.GetSourceRegister(code).ToString().ToLower();
+            String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
+            Boolean destinationIsEffectiveAddress = 
+                opcode.GetEncoding(code).ToString().StartsWith("Ev", StringComparison.Ordinal) ||
+                opcode.GetEncoding(code).ToString().StartsWith("Eb", StringComparison.Ordinal);
 
-            if (opcode.HasModRM(code) && sourceIsEffectiveAddress)
+            if (destinationIsEffectiveAddress && ModRM.HasSIB(code))
+            {
+                String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+                String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+                UInt32 scaler = SIB.GetScaler(code);
+
+                if (SIB.GetScaledRegister(code) == RegisterName.None)
+                {
+                    destinationOperand = baseRegister;
+                }
+                else if (scaler == 1)
+                {
+                    destinationOperand = baseRegister + "+" + scaled;
+                }
+                else
+                {
+                    destinationOperand = baseRegister + "+" + scaled + "*" + scaler;
+                }
+
+                destinationOperand = encaseInSquareBrackets(destinationOperand);
+            }
+            else if (opcode.HasModRM(code) && destinationIsEffectiveAddress)
             {
                 if (ModRM.HasIndex(code))
                 {
-                    sourceOperand += "+" + ModRM.GetIndex(code);
+                    destinationOperand += "+" + ModRM.GetIndex(code);
                 }
-    
+
                 Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
                 if (evDereferenced)
                 {
-                    sourceOperand = encaseInSquareBrackets(sourceOperand);
-                }                
+                    destinationOperand = encaseInSquareBrackets(destinationOperand);
+                }
             }
-            
-            return sourceOperand;
 
+            return destinationOperand;
         }
 
-        throw new ArgumentException(
-            "don't know how to render this code's source operand: " + formatCode(code)
-        );
-    }
-
-    private static String formatCode(Byte[] code)
-    {
-        StringBuilder formattedCode = new StringBuilder();
-        foreach (Byte codeByte in code)
+        public static String GetOperands(Byte[] code, UInt32 instructionPointer)
         {
-            formattedCode.Append(String.Format("{0:x2} ", codeByte));
-        }
+            UInt32 operandCount = getOperandCount(code);
 
-        return formattedCode.ToString();
-    }
-
-    private static String getDestinationOperand(Byte[] code)
-    {
-        String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
-        Boolean destinationIsEffectiveAddress = 
-            opcode.GetEncoding(code).ToString().StartsWith("Ev", StringComparison.Ordinal) ||
-            opcode.GetEncoding(code).ToString().StartsWith("Eb", StringComparison.Ordinal);
-
-        if (destinationIsEffectiveAddress && ModRM.HasSIB(code))
-        {
-            String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
-            String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
-            UInt32 scaler = SIB.GetScaler(code);
-
-            if (SIB.GetScaledRegister(code) == RegisterName.None)
+            switch (operandCount)
             {
-                destinationOperand = baseRegister;
-            }
-            else if (scaler == 1)
-            {
-                destinationOperand = baseRegister + "+" + scaled;
-            }
-            else
-            {
-                destinationOperand = baseRegister + "+" + scaled + "*" + scaler;
-            }
-
-            destinationOperand = encaseInSquareBrackets(destinationOperand);
-        }
-        else if (opcode.HasModRM(code) && destinationIsEffectiveAddress)
-        {
-            if (ModRM.HasIndex(code))
-            {
-                destinationOperand += "+" + ModRM.GetIndex(code);
-            }
-
-            Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
-            if (evDereferenced)
-            {
-                destinationOperand = encaseInSquareBrackets(destinationOperand);
+                case 0:
+                {
+                    return String.Empty;
+                }
+        
+                case 1:
+                {
+                    return getSingleOperand(code, instructionPointer);
+                }
+        
+                case 2:
+                {
+                    String destinationOperand = getDestinationOperand(code);
+                    String sourceOperand = getSourceOperand(code);
+        
+                    return destinationOperand + ", " + sourceOperand;
+                }
+        
+                default:
+                {
+                    throw new InvalidOperationException("don't know how to display " + operandCount + " operands");
+                }
             }
         }
 
-        return destinationOperand;
-    }
-
-    public static String GetOperands(Byte[] code, UInt32 instructionPointer)
-    {
-        UInt32 operandCount = getOperandCount(code);
-
-        switch (operandCount)
+        public static String GetEncoding(Byte[] code)
         {
-            case 0:
+            String encoding = String.Empty;
+
+            if (OpcodeEncoding.None != opcode.GetEncoding(code))
             {
-                return String.Empty;
+                encoding += "(" + opcode.GetEncoding(code) + ")";
             }
-    
-            case 1:
-            {
-                return getSingleOperand(code, instructionPointer);
-            }
-    
-            case 2:
-            {
-                String destinationOperand = getDestinationOperand(code);
-                String sourceOperand = getSourceOperand(code);
-    
-                return destinationOperand + ", " + sourceOperand;
-            }
-    
-            default:
-            {
-                throw new InvalidOperationException("don't know how to display " + operandCount + " operands");
-            }
+
+            return encoding;
         }
     }
-
-    public static String GetEncoding(Byte[] code)
-    {
-        String encoding = String.Empty;
-
-        if (OpcodeEncoding.None != opcode.GetEncoding(code))
-        {
-            encoding += "(" + opcode.GetEncoding(code) + ")";
-        }
-
-        return encoding;
-    }
-}
 }

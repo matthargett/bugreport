@@ -1,7 +1,7 @@
-﻿// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
-// Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan,
-// Matt Hargett, Huy 
-// Licensed under GPLv3
+﻿// This file is part of bugreport.
+// Copyright (c) 2006-2009 The bugreport Developers.
+// See AUTHORS.txt for details.
+// Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
 using NUnit.Framework;

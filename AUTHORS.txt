@@ -1,0 +1,13 @@
+bugreport is copyright (c) 2006-2009 The bugreport Developers.
+
+The bugreport Developers are:
+
+Luis Miras
+Doug Coker
+Todd Nagengast
+Anthony Lineberry
+Dan Moniz
+Bryan Siepert
+Mike Seery
+Cullen Bryan
+Matt Hargett

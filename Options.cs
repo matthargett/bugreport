@@ -1,6 +1,7 @@
-// Copyright (c) 2006-2008 Luis Miras, Doug Coker, Todd Nagengast,
-// Anthony Lineberry, Dan Moniz, Bryan Siepert, Mike Seery, Cullen Bryan
-// Licensed under GPLv3 draft 3
+// This file is part of bugreport.
+// Copyright (c) 2006-2009 The bugreport Developers.
+// See AUTHORS.txt for details.
+// Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
 using System;
@@ -10,163 +11,161 @@ using System.Collections.Generic;
 
 namespace bugreport
 {
-
-internal class FileResolver
-{
-    public virtual ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
+    internal class FileResolver
     {
-        return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
-    }
-}
-
-public static class Options
-{
-    private static FileResolver fileResolver = new FileResolver();
-
-    private static String functionToAnalyze;
-    private static ReadOnlyCollection<String> filenames;
-    private static Boolean isTracing;
-    private static Boolean isDebugging;
-
-    internal static FileResolver FileResolver
-    {
-        set
+        public virtual ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
         {
-            fileResolver = value;
+            return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
         }
     }
 
-    public static void ParseArguments(String[] commandLine)
+    public static class Options
     {
-        functionToAnalyze = getFunctionToAnalyze(commandLine);
-        filenames = getFilenames(commandLine);
-        isTracing = getIsTracing(commandLine);
-        isDebugging = getIsDebugging(commandLine);
-        if (isDebugging)
-        {
-            isTracing = true;
-        }
+        private static FileResolver fileResolver = new FileResolver();
 
-    }
+        private static String functionToAnalyze;
+        private static ReadOnlyCollection<String> filenames;
+        private static Boolean isTracing;
+        private static Boolean isDebugging;
 
-    private static String getFunctionToAnalyze(String[] arguments)
-    {
-        for (Int32 i=0; i < arguments.Length; i++)
+        internal static FileResolver FileResolver
         {
-            if (arguments[i].StartsWith("--function"))
+            set
             {
-                Int32 indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
-
-                if (indexOfEquals == -1)
-                {
-                    throw new ArgumentException("--function malformed, should be in the form of --function=name");
-                }
-                return arguments[i].Substring(indexOfEquals + 1);
+                fileResolver = value;
             }
         }
 
-        return "_start";
-    }
-
-    public static String FunctionToAnalyze
-    {
-        get
+        public static void ParseArguments(String[] commandLine)
         {
-            return functionToAnalyze;
-        }
-    }
-
-    private static ReadOnlyCollection<String> getFilenames(String[] arguments)
-    {
-        String fileArgument = arguments[arguments.Length - 1];
-
-        if (fileArgument.Contains("*"))
-        {
-            String path;
-
-            if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) || fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
+            functionToAnalyze = getFunctionToAnalyze(commandLine);
+            filenames = getFilenames(commandLine);
+            isTracing = getIsTracing(commandLine);
+            isDebugging = getIsDebugging(commandLine);
+            if (isDebugging)
             {
-                Int32 directorySeparatorIndex = fileArgument.LastIndexOf(Path.DirectorySeparatorChar);
-                if (-1 == directorySeparatorIndex)
+                isTracing = true;
+            }
+
+        }
+
+        private static String getFunctionToAnalyze(String[] arguments)
+        {
+            for (Int32 i=0; i < arguments.Length; i++)
+            {
+                if (arguments[i].StartsWith("--function"))
                 {
-                    directorySeparatorIndex = fileArgument.LastIndexOf(Path.AltDirectorySeparatorChar);
+                    Int32 indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
+
+                    if (indexOfEquals == -1)
+                    {
+                        throw new ArgumentException("--function malformed, should be in the form of --function=name");
+                    }
+                    return arguments[i].Substring(indexOfEquals + 1);
+                }
+            }
+
+            return "_start";
+        }
+
+        public static String FunctionToAnalyze
+        {
+            get
+            {
+                return functionToAnalyze;
+            }
+        }
+
+        private static ReadOnlyCollection<String> getFilenames(String[] arguments)
+        {
+            String fileArgument = arguments[arguments.Length - 1];
+
+            if (fileArgument.Contains("*"))
+            {
+                String path;
+
+                if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) || fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
+                {
+                    Int32 directorySeparatorIndex = fileArgument.LastIndexOf(Path.DirectorySeparatorChar);
+                    if (-1 == directorySeparatorIndex)
+                    {
+                        directorySeparatorIndex = fileArgument.LastIndexOf(Path.AltDirectorySeparatorChar);
+                    }
+
+                    path = fileArgument.Substring(0, directorySeparatorIndex);
+                }
+                else
+                {
+                    path = Environment.CurrentDirectory;
                 }
 
-                path = fileArgument.Substring(0, directorySeparatorIndex);
+                String fileName = Path.GetFileName(fileArgument);
+
+                return fileResolver.GetFilesFromDirectory(path, fileName);
             }
             else
             {
-                path = Environment.CurrentDirectory;
+                List<String> fileNames = new List<String>();
+                foreach (String argument in arguments)
+                {
+                    if (!argument.StartsWith("--"))
+                    {
+                        fileNames.Add(argument);
+                    }
+                }
+
+                return fileNames.AsReadOnly();
             }
-
-            String fileName = Path.GetFileName(fileArgument);
-
-            return fileResolver.GetFilesFromDirectory(path, fileName);
         }
-        else
+
+        public static ReadOnlyCollection<String> Filenames
         {
-            List<String> fileNames = new List<String>();
+            get
+            {
+                return filenames;
+            }
+        }
+
+        private static Boolean getIsTracing(IEnumerable<string> arguments)
+        {
             foreach (String argument in arguments)
             {
-                if (!argument.StartsWith("--"))
+                if (argument == "--trace")
                 {
-                    fileNames.Add(argument);
+                    return true;
                 }
             }
 
-            return fileNames.AsReadOnly();
+            return false;
         }
-    }
 
-    public static ReadOnlyCollection<String> Filenames
-    {
-        get
+        private static Boolean getIsDebugging(IEnumerable<string> arguments)
         {
-            return filenames;
-        }
-    }
-
-    private static Boolean getIsTracing(IEnumerable<string> arguments)
-    {
-        foreach (String argument in arguments)
-        {
-            if (argument == "--trace")
+            foreach (String argument in arguments)
             {
-                return true;
+                if (argument == "--debug")
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        
+        public static Boolean IsTracing
+        {
+            get
+            {
+                return isTracing;
             }
         }
 
-        return false;
-    }
-
-    private static Boolean getIsDebugging(IEnumerable<string> arguments)
-    {
-        foreach (String argument in arguments)
+        public static Boolean IsDebugging
         {
-            if (argument == "--debug")
+            get
             {
-                return true;
+                return isDebugging;
             }
         }
-
-        return false;
     }
-    
-    public static Boolean IsTracing
-    {
-        get
-        {
-            return isTracing;
-        }
-    }
-
-    public static Boolean IsDebugging
-    {
-        get
-        {
-            return isDebugging;
-        }
-    }
-
-}
 }
