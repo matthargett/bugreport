@@ -62,8 +62,6 @@
     <Compile Include="AnalyzerTest.cs" />
     <Compile Include="ArmEmulator.cs" />
     <Compile Include="ArmEmulatorTest.cs" />
-    <Compile Include="ArmOpcode.cs" />
-    <Compile Include="ArmOpcodeTest.cs" />
     <Compile Include="BitMathTest.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="CoverageExcludeAttribute.cs" />

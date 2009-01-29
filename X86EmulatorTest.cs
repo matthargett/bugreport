@@ -415,7 +415,7 @@ namespace bugreport
             state.InstructionPointer = initialInstructionPointer;
             code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
             state = X86Emulator.Run(reportItems, state, code);
-            Assert.AreEqual(initialInstructionPointer + 0x5, state.InstructionPointer);
+            Assert.AreEqual(initialInstructionPointer + code.Length, state.InstructionPointer);
             Assert.AreEqual(16, state.ReturnValue.PointsTo.Length);
         }
 
