@@ -13,31 +13,31 @@ namespace bugreport
     public class BitMathTest
     {
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void NotEnoughBytesToDwordAtZeroIndex()
+        public void AllZeroes()
         {
-            BitMath.BytesToDword(new Byte[] {0}, 0);
+            UInt32 result = BitMath.BytesToDword(new Byte[] {0, 0, 0, 0}, 0);
+            Assert.AreEqual(0, result);
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void NotEnoughBytesToDwordAtNonZeroIndex()
-        {
-            BitMath.BytesToDword(new Byte[] {0, 1, 2, 3}, 1);
-        }
-
-        [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void EmptyBytes()
         {
             BitMath.BytesToDword(new Byte[] {}, 0);
         }
 
         [Test]
-        public void AllZeroes()
+        [ExpectedException(typeof (ArgumentException))]
+        public void NotEnoughBytesToDwordAtNonZeroIndex()
         {
-            UInt32 result = BitMath.BytesToDword(new Byte[] {0, 0, 0, 0}, 0);
-            Assert.AreEqual(0, result);
+            BitMath.BytesToDword(new Byte[] {0, 1, 2, 3}, 1);
+        }
+
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void NotEnoughBytesToDwordAtZeroIndex()
+        {
+            BitMath.BytesToDword(new Byte[] {0}, 0);
         }
 
         [Test]

@@ -13,35 +13,65 @@ namespace bugreport
     public class AbstractBufferTest
     {
         [Test]
-        public void PointerAssignment()
-        {
-            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
-            AbstractBuffer buffer = new AbstractBuffer(values);
-            AbstractBuffer assignedBuffer = buffer.DoOperation(OperatorEffect.Assignment, null);
-            Assert.AreNotSame(buffer, assignedBuffer);
-        }
-
-        [Test]
         public void Copy()
         {
             AbstractValue[] values = AbstractValue.GetNewBuffer(4);
-            AbstractBuffer buffer = new AbstractBuffer(values);
-            AbstractBuffer newBuffer = new AbstractBuffer(buffer);
+            var buffer = new AbstractBuffer(values);
+            var newBuffer = new AbstractBuffer(buffer);
             Assert.AreNotSame(newBuffer, buffer);
 
-            for (Int32 index=0; index < newBuffer.Length; index++)
+            for (Int32 index = 0; index < newBuffer.Length; index++)
             {
                 Assert.AreSame(newBuffer[index], buffer[index]);
             }
         }
 
         [Test]
+        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        public void InvalidPointerAnd()
+        {
+            var one = new AbstractValue(0x1);
+            var buffer = new AbstractBuffer(new[] {one});
+            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Sub, new AbstractValue(3));
+            modifiedBuffer.DoOperation(OperatorEffect.And, new AbstractValue(0xf));
+        }
+
+        [Test]
+        public void OverflowDoesntLoseIncrement()
+        {
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+            var pointer = new AbstractBuffer(buffer);
+            var value = new AbstractValue(0x41);
+            value = value.AddTaint();
+
+            pointer[0] = value;
+
+            pointer = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(1));
+
+            pointer[16] = value;
+
+            pointer = pointer.DoOperation(OperatorEffect.Sub, new AbstractValue(1));
+
+            Assert.AreEqual(0x41, pointer[0].Value);
+            Assert.IsTrue(value.IsTainted);
+            Assert.AreEqual(0x41, pointer[17].Value);
+            Assert.IsTrue(pointer[17].IsTainted);
+        }
+
+        [Test]
+        public void OverflowZeroSizeBuffer()
+        {
+            var f = new AbstractBuffer(new AbstractValue[] {});
+            Assert.IsFalse(f[0].IsInitialized);
+        }
+
+        [Test]
         public void PointerAdd()
         {
-            AbstractValue one = new AbstractValue(0x1);
-            AbstractValue two = new AbstractValue(0x2);
-            AbstractValue three = new AbstractValue(0x3);
-            AbstractValue four = new AbstractValue(0x4);
+            var one = new AbstractValue(0x1);
+            var two = new AbstractValue(0x2);
+            var three = new AbstractValue(0x3);
+            var four = new AbstractValue(0x4);
             AbstractValue[] values = AbstractValue.GetNewBuffer(4);
 
             values[0] = one;
@@ -49,49 +79,19 @@ namespace bugreport
             values[2] = three;
             values[3] = four;
 
-            AbstractBuffer buffer = new AbstractBuffer(values);
+            var buffer = new AbstractBuffer(values);
             Assert.AreEqual(one, buffer[0]);
             AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
             Assert.AreEqual(three, modifiedBuffer[0]);
-        }
-
-        [Test]
-        public void PointerSub()
-        {
-            AbstractValue one = new AbstractValue(0x1);
-            AbstractValue two = new AbstractValue(0x2);
-            AbstractValue three = new AbstractValue(0x3);
-            AbstractValue four = new AbstractValue(0x4);
-            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
-
-            values[0] = one;
-            values[1] = two;
-            values[2] = three;
-            values[3] = four;
-
-            AbstractBuffer buffer = new AbstractBuffer(values);
-            Assert.AreEqual(one, buffer[0]);
-            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
-            Assert.AreEqual(three, modifiedBuffer[0]);
-
-            AbstractBuffer subbedBuffer = modifiedBuffer.DoOperation(OperatorEffect.Sub, new AbstractValue(2));
-            Assert.AreEqual(one, subbedBuffer[0]);
-        }
-
-        [Test]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void PointerSubUnderflow()
-        {
-            new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Sub, new AbstractValue(1));
         }
 
         [Test]
         public void PointerAnd()
         {
-            AbstractValue one = new AbstractValue(0x1);
-            AbstractValue two = new AbstractValue(0x2);
-            AbstractValue three = new AbstractValue(0x3);
-            AbstractValue four = new AbstractValue(0x4);
+            var one = new AbstractValue(0x1);
+            var two = new AbstractValue(0x2);
+            var three = new AbstractValue(0x3);
+            var four = new AbstractValue(0x4);
             AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
 
             avBuffer[0] = one;
@@ -99,7 +99,7 @@ namespace bugreport
             avBuffer[2] = three;
             avBuffer[3] = four;
 
-            AbstractBuffer buffer = new AbstractBuffer(avBuffer);
+            var buffer = new AbstractBuffer(avBuffer);
             Assert.AreEqual(one, buffer[0]);
             AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(3));
             Assert.AreEqual(four, modifiedBuffer[0]);
@@ -108,27 +108,19 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void InvalidPointerAnd()
+        public void PointerAssignment()
         {
-            AbstractValue one = new AbstractValue(0x1);
-            AbstractBuffer buffer = new AbstractBuffer(new AbstractValue[] {one});
-            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Sub, new AbstractValue(3));
-            modifiedBuffer.DoOperation(OperatorEffect.And, new AbstractValue(0xf));
-        }
-
-        [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void PointerUnknownOperation()
-        {
-            new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Unknown, null);
+            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
+            var buffer = new AbstractBuffer(values);
+            AbstractBuffer assignedBuffer = buffer.DoOperation(OperatorEffect.Assignment, null);
+            Assert.AreNotSame(buffer, assignedBuffer);
         }
 
         [Test]
         public void PointerOverflowByOne()
         {
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-            AbstractBuffer pointer = new AbstractBuffer(buffer);
+            var pointer = new AbstractBuffer(buffer);
 
             AbstractValue value = pointer[16];
             Assert.IsTrue(value.IsOOB);
@@ -139,14 +131,14 @@ namespace bugreport
         [Test]
         public void PointerOverflowStillRetainsOldValues()
         {
-            AbstractValue test1 = new AbstractValue(0x41);
-            AbstractValue test2 = new AbstractValue(0x42);
+            var test1 = new AbstractValue(0x41);
+            var test2 = new AbstractValue(0x42);
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(2);
 
             buffer[0] = test1;
             buffer[1] = test2;
 
-            AbstractBuffer pointer = new AbstractBuffer(buffer);
+            var pointer = new AbstractBuffer(buffer);
 
             // Accessing pointer[2] will cause the AbstractBuffer to extend..
             Assert.IsTrue(pointer[2].IsOOB, " value is not out of bounds");
@@ -165,7 +157,7 @@ namespace bugreport
         public void PointerOverflowTwiceStillRetainsOriginalValues()
         {
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-            AbstractBuffer pointer = new AbstractBuffer(buffer);
+            var pointer = new AbstractBuffer(buffer);
 
             //Access beyond buffer bounds forcing buffer to expand
             Assert.IsTrue(pointer[17].IsOOB);
@@ -185,32 +177,40 @@ namespace bugreport
         }
 
         [Test]
-        public void OverflowDoesntLoseIncrement()
+        public void PointerSub()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-            AbstractBuffer pointer = new AbstractBuffer(buffer);
-            AbstractValue value = new AbstractValue(0x41);
-            value = value.AddTaint();
+            var one = new AbstractValue(0x1);
+            var two = new AbstractValue(0x2);
+            var three = new AbstractValue(0x3);
+            var four = new AbstractValue(0x4);
+            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
 
-            pointer[0] = value;
+            values[0] = one;
+            values[1] = two;
+            values[2] = three;
+            values[3] = four;
 
-            pointer = pointer.DoOperation(OperatorEffect.Add, new AbstractValue(1));
+            var buffer = new AbstractBuffer(values);
+            Assert.AreEqual(one, buffer[0]);
+            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
+            Assert.AreEqual(three, modifiedBuffer[0]);
 
-            pointer[16] = value;
-
-            pointer = pointer.DoOperation(OperatorEffect.Sub, new AbstractValue(1));
-
-            Assert.AreEqual(0x41, pointer[0].Value);
-            Assert.IsTrue(value.IsTainted);
-            Assert.AreEqual(0x41, pointer[17].Value);
-            Assert.IsTrue(pointer[17].IsTainted);
+            AbstractBuffer subbedBuffer = modifiedBuffer.DoOperation(OperatorEffect.Sub, new AbstractValue(2));
+            Assert.AreEqual(one, subbedBuffer[0]);
         }
 
         [Test]
-        public void OverflowZeroSizeBuffer() 
+        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        public void PointerSubUnderflow()
         {
-            AbstractBuffer f = new AbstractBuffer(new AbstractValue[] {});
-            Assert.IsFalse(f[0].IsInitialized);
+            new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Sub, new AbstractValue(1));
+        }
+
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void PointerUnknownOperation()
+        {
+            new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Unknown, null);
         }
     }
 }

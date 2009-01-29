@@ -5,17 +5,18 @@
 // See LICENSE.txt for details.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using NUnit.Framework;
 
 namespace bugreport
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public abstract class ElfFileParserFixture
     {
-        protected StreamWriter writer;
         protected ElfFileParser parser;
         protected MemoryStream stream;
+        protected StreamWriter writer;
 
         public virtual void SetUp()
         {
@@ -35,21 +36,25 @@ namespace bugreport
     }
 
     [TestFixture]
-    public class WellFormatted:ElfFileParserFixture
+    public class WellFormatted : ElfFileParserFixture
     {
-        Byte [] textData;
-        
+        #region Setup/Teardown
+
         [SetUp]
         public override void SetUp()
         {
             base.SetUp();
-            Byte[] elfHeader = new Byte[] {0x7f, 0x45, 0x4c, 0x46};
+            var elfHeader = new Byte[] {0x7f, 0x45, 0x4c, 0x46};
             textData = new Byte[] {0x90};
-            stream.Write(elfHeader,0, elfHeader.Length);
+            stream.Write(elfHeader, 0, elfHeader.Length);
             stream.Seek(0x2e0, SeekOrigin.Begin);
             stream.Write(textData, 0, textData.Length);
             parser = new ElfFileParser(stream);
         }
+
+        #endregion
+
+        private Byte[] textData;
 
         [Test]
         public void GetBytes()

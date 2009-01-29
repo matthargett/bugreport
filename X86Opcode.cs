@@ -13,6 +13,8 @@ namespace bugreport
     /// </summary>
     public sealed class X86Opcode : Opcode
     {
+        #region Opcode Members
+
         public OpcodeEncoding GetEncoding(Byte[] code)
         {
             switch (code[0])
@@ -158,7 +160,7 @@ namespace bugreport
                 {
                     return BitMath.BytesToDword(code, valueIndex);
                 }
-        
+
                 default:
                 {
                     throw new NotImplementedException("Don't know how to get the immediate for this opcode: " + code[0]);
@@ -187,7 +189,7 @@ namespace bugreport
                 case 0x5d:
                 case 0x5e:
                     return StackEffect.Pop;
-        
+
                 default:
                     return StackEffect.None;
             }
@@ -215,32 +217,32 @@ namespace bugreport
                     {
                         return RegisterName.EBP;
                     }
-        
+
                     case OpcodeEncoding.rSI:
                     {
                         return RegisterName.ESI;
                     }
-        
+
                     case OpcodeEncoding.rSP:
                     {
                         return RegisterName.ESP;
                     }
-        
+
                     case OpcodeEncoding.rAX:
                     {
                         return RegisterName.EAX;
                     }
-        
+
                     case OpcodeEncoding.rBX:
                     {
                         return RegisterName.EBX;
                     }
-        
+
                     case OpcodeEncoding.rCX:
                     {
                         return RegisterName.ECX;
                     }
-        
+
                     case OpcodeEncoding.rDX:
                     {
                         return RegisterName.EDX;
@@ -255,7 +257,7 @@ namespace bugreport
                 {
                     return ModRM.GetGv(code);
                 }
-        
+
                 case OpcodeEncoding.GvEb:
                 case OpcodeEncoding.GvEv:
                 case OpcodeEncoding.GvM:
@@ -275,7 +277,7 @@ namespace bugreport
                     {
                         return ModRM.GetEv(code);
                     }
-                }                
+                }
 
                 default:
                 {
@@ -296,32 +298,32 @@ namespace bugreport
                     {
                         return RegisterName.EBP;
                     }
-        
+
                     case OpcodeEncoding.rSI:
                     {
                         return RegisterName.ESI;
                     }
-        
+
                     case OpcodeEncoding.rSP:
                     {
                         return RegisterName.ESP;
                     }
-        
+
                     case OpcodeEncoding.rAX:
                     {
                         return RegisterName.EAX;
                     }
-        
+
                     case OpcodeEncoding.rBX:
                     {
                         return RegisterName.EBX;
                     }
-        
+
                     case OpcodeEncoding.rCX:
                     {
                         return RegisterName.ECX;
                     }
-        
+
                     case OpcodeEncoding.rDX:
                     {
                         return RegisterName.EDX;
@@ -337,13 +339,13 @@ namespace bugreport
                 {
                     return ModRM.GetGv(code);
                 }
-        
+
                 case OpcodeEncoding.rAxIv:
                 case OpcodeEncoding.rAxIz:
                 {
                     return RegisterName.EAX;
                 }
-        
+
                 case OpcodeEncoding.EbGb:
                 case OpcodeEncoding.EbIb:
                 case OpcodeEncoding.EvGv:
@@ -359,7 +361,7 @@ namespace bugreport
                         return ModRM.GetEv(code);
                     }
                 }
-        
+
                 default:
                 {
                     return RegisterName.None;
@@ -373,62 +375,62 @@ namespace bugreport
             {
                 case 0x05:
                     return OperatorEffect.Add;
-        
+
                 case 0x29:
                     return OperatorEffect.Sub;
-        
+
                 case 0x31:
                     return OperatorEffect.Xor;
-        
+
                 case 0x75:
                     return OperatorEffect.Jnz;
-        
+
                 case 0x83:
                 {
                     Byte rm = ModRM.GetOpcodeGroupIndex(code);
-        
+
                     switch (rm)
                     {
-                    case 0:
-                        return OperatorEffect.Add;
-                    case 4:
-                        return OperatorEffect.And;
-                    case 5:
-                        return OperatorEffect.Sub;
-                    case 7:
-                        return OperatorEffect.Cmp;
-                    default:
-                        return OperatorEffect.Unknown;
+                        case 0:
+                            return OperatorEffect.Add;
+                        case 4:
+                            return OperatorEffect.And;
+                        case 5:
+                            return OperatorEffect.Sub;
+                        case 7:
+                            return OperatorEffect.Cmp;
+                        default:
+                            return OperatorEffect.Unknown;
                     }
                 }
-        
+
                 case 0xc9:
                     return OperatorEffect.Leave;
-        
+
                 case 0xc3:
                     return OperatorEffect.Return;
-        
+
                 case 0x90:
                     return OperatorEffect.None;
-        
+
                 case 0xc1:
                 {
                     Byte rm = ModRM.GetOpcodeGroupIndex(code);
-        
+
                     switch (rm)
                     {
-                    case 4:
-                        return OperatorEffect.Shl;
-                    case 5:
-                        return OperatorEffect.Shr;
-                    default:
-                        return OperatorEffect.Unknown;
+                        case 4:
+                            return OperatorEffect.Shl;
+                        case 5:
+                            return OperatorEffect.Shr;
+                        default:
+                            return OperatorEffect.Unknown;
                     }
                 }
-        
+
                 case 0xe8:
                     return OperatorEffect.Call;
-        
+
                 default:
                     return OperatorEffect.Assignment;
             }
@@ -448,7 +450,7 @@ namespace bugreport
         public Byte GetInstructionLength(Byte[] code)
         {
             Byte instructionLength = GetOpcodeLength(code);
-            
+
             if (HasModRM(code))
             {
                 instructionLength++;
@@ -486,27 +488,27 @@ namespace bugreport
 
             return instructionLength;
         }
-        
+
         public Byte GetInstructionLength(Byte[] code, UInt32 index)
         {
-            Byte[] shortCode = new Byte[15];
-            
-            Int32 minLength = (Int32)Math.Min(15, code.Length - index);
-            Array.ConstrainedCopy(code, (Int32)index, shortCode, 0, minLength);
-            
+            var shortCode = new Byte[15];
+
+            var minLength = (Int32) Math.Min(15, code.Length - index);
+            Array.ConstrainedCopy(code, (Int32) index, shortCode, 0, minLength);
+
             return GetInstructionLength(shortCode);
         }
-        
+
         public Boolean HasOffset(Byte[] code)
         {
             OpcodeEncoding encoding = GetEncoding(code);
-            
-            if (encoding == OpcodeEncoding.ObAL || 
+
+            if (encoding == OpcodeEncoding.ObAL ||
                 encoding == OpcodeEncoding.rAxOv)
             {
-                return true; 
+                return true;
             }
-            
+
             if (HasModRM(code))
             {
                 if (ModRM.HasOffset(code))
@@ -514,19 +516,19 @@ namespace bugreport
                     return true;
                 }
             }
-            
+
             return false;
         }
-        
+
         public Boolean TerminatesFunction(Byte[] code)
         {
-            if ( code[0] == 0xf4 || code[0] == 0xc3 )
+            if (code[0] == 0xf4 || code[0] == 0xc3)
             {
                 return true;
             }
             return false;
         }
-        
+
         public UInt32 GetEffectiveAddress(Byte[] code, UInt32 instructionPointer)
         {
             UInt32 offset = GetImmediate(code);
@@ -534,9 +536,10 @@ namespace bugreport
             unchecked
             {
                 //FIXME: find a way to do this without an unchecked operation
-                return instructionPointer + offset + (UInt32)code.Length;
+                return instructionPointer + offset + (UInt32) code.Length;
             }
         }
 
+        #endregion
     }
 }

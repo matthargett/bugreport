@@ -22,6 +22,16 @@ namespace bugreport
         }
 
         [Test]
+        public void IsEnter()
+        {
+            var command = new DebuggerCommand("");
+            Assert.IsTrue(command.IsEnter);
+
+            command = new DebuggerCommand("NOT");
+            Assert.IsFalse(command.IsEnter);
+        }
+
+        [Test]
         public void IsQuit()
         {
             var command = new DebuggerCommand("q");
@@ -29,8 +39,8 @@ namespace bugreport
 
             command = new DebuggerCommand("NOTq");
             Assert.IsFalse(command.IsQuit);
-        } 
-        
+        }
+
         [Test]
         public void IsStackPrint()
         {
@@ -39,16 +49,6 @@ namespace bugreport
 
             command = new DebuggerCommand("NOTp");
             Assert.IsFalse(command.IsStackPrint);
-        }     
-        
-        [Test]
-        public void IsEnter()
-        {
-            var command = new DebuggerCommand("");
-            Assert.IsTrue(command.IsEnter);
-
-            command = new DebuggerCommand("NOT");
-            Assert.IsFalse(command.IsEnter);
         }
     }
 }

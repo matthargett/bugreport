@@ -7,8 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Globalization;
+using System.IO;
 
 namespace bugreport
 {
@@ -18,19 +18,20 @@ namespace bugreport
 
         UInt32 BaseAddress { get; }
         UInt32 EntryPointAddress { get; }
-        
-        Byte [] GetBytes();
+
+        Byte[] GetBytes();
     }
 
     public sealed class DumpFileParser : IParsable, IDisposable
     {
-        private readonly Stream stream;
-        private readonly StreamReader reader;
-        private Boolean inTextSection;    
-        private readonly List<Byte[]> opCodeList;
         private readonly List<ReportItem> expectedReportItems;
-        private UInt32 entryPointAddress, baseAddress;
         private readonly String functionNameToParse = "main";
+        private readonly List<Byte[]> opCodeList;
+        private readonly StreamReader reader;
+        private readonly Stream stream;
+        private UInt32 baseAddress;
+        private UInt32 entryPointAddress;
+        private Boolean inTextSection;
 
         public DumpFileParser(Stream stream, String functionNameToParse)
         {
@@ -42,13 +43,19 @@ namespace bugreport
             opCodeList = parse();
         }
 
+        #region IDisposable Members
+
         public void Dispose()
         {
             if (null != reader)
             {
                 reader.Dispose();
             }
-        }   
+        }
+
+        #endregion
+
+        #region IParsable Members
 
         public Byte[] GetBytes()
         {
@@ -58,31 +65,28 @@ namespace bugreport
             }
 
             Int32 total = 0;
-            foreach (Byte[] bytes in opCodeList)
+            foreach (var bytes in opCodeList)
             {
                 total += bytes.Length;
             }
 
             int allByteCount = 0;
-            Byte[] allBytes = new Byte[total];
-            foreach (Byte[] bytes in opCodeList)
+            var allBytes = new Byte[total];
+            foreach (var bytes in opCodeList)
             {
-                for (int i=0;i<bytes.Length;i++)
+                for (int i = 0; i < bytes.Length; i++)
                 {
-                    allBytes[i+allByteCount] = bytes[i];
+                    allBytes[i + allByteCount] = bytes[i];
                 }
-                allByteCount+=bytes.Length;
+                allByteCount += bytes.Length;
             }
 
             return allBytes;
-        }   
+        }
 
         public ReadOnlyCollection<ReportItem> ExpectedReportItems
         {
-            get
-            {
-                return expectedReportItems.AsReadOnly();
-            }
+            get { return expectedReportItems.AsReadOnly(); }
         }
 
         public UInt32 BaseAddress
@@ -94,10 +98,12 @@ namespace bugreport
         {
             get { return entryPointAddress; }
         }
-        
+
+        #endregion
+
         private static UInt32 getAddressForLine(String line)
         {
-            String address = line.Substring(0,8);
+            String address = line.Substring(0, 8);
             return UInt32.Parse(address, NumberStyles.HexNumber);
         }
 
@@ -111,7 +117,7 @@ namespace bugreport
                     inTextSection = true;
                 }
 
-                if (line.Contains("<" + functionNameToParse +">:"))
+                if (line.Contains("<" + functionNameToParse + ">:"))
                 {
                     entryPointAddress = getAddressForLine(line);
                 }
@@ -131,12 +137,12 @@ namespace bugreport
                 return null;
             }
 
-            String afterColonToEnd = line.Substring(colonIndex+1).Trim();
+            String afterColonToEnd = line.Substring(colonIndex + 1).Trim();
             Int32 doubleSpaceIndex = afterColonToEnd.IndexOf("  ", StringComparison.Ordinal);
             Int32 spaceTabIndex = afterColonToEnd.IndexOf(" \t", StringComparison.Ordinal);
             Int32 endOfHexIndex;
 
-            if ( doubleSpaceIndex >= 0 && spaceTabIndex >= 0)
+            if (doubleSpaceIndex >= 0 && spaceTabIndex >= 0)
             {
                 endOfHexIndex = doubleSpaceIndex < spaceTabIndex ? doubleSpaceIndex : spaceTabIndex;
             }
@@ -157,9 +163,9 @@ namespace bugreport
 
         public static Byte[] getByteArrayFromHexString(String hex)
         {
-            String[] hexStrings = hex.Split(new Char[] {' '});
+            String[] hexStrings = hex.Split(new[] {' '});
 
-            Byte[] hexBytes = new Byte[hexStrings.Length];
+            var hexBytes = new Byte[hexStrings.Length];
 
             for (Int32 i = 0; i < hexStrings.Length; ++i)
             {
@@ -171,7 +177,6 @@ namespace bugreport
 
         private static Byte[] getHexFromString(String line)
         {
-
             if (line.Trim().Length == 0)
                 return null;
 
@@ -187,7 +192,7 @@ namespace bugreport
 
         private List<Byte[]> parse()
         {
-            List<Byte[]> opcodes = new List<Byte[]>();
+            var opcodes = new List<Byte[]>();
 
             while (!reader.EndOfStream)
             {
@@ -222,7 +227,8 @@ namespace bugreport
             Int32 locationIndex = line.IndexOf("=", StringComparison.Ordinal) + 1;
             UInt32 location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), NumberStyles.HexNumber);
             Int32 exploitableIndex = line.IndexOf("=", locationIndex + 1, StringComparison.Ordinal) + 1;
-            Boolean exploitable = Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex)-"/>".Length));
+            Boolean exploitable =
+                Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex) - "/>".Length));
             return new ReportItem(location, exploitable);
         }
     }

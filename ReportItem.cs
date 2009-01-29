@@ -15,28 +15,28 @@ namespace bugreport
 
         public ReportItem(UInt32 instructionPointer, Boolean isTainted)
         {
-            this.InstructionPointer = instructionPointer;
-            this.IsTainted = isTainted;
+            InstructionPointer = instructionPointer;
+            IsTainted = isTainted;
         }
 
         public override Boolean Equals(object obj)
         {
-            ReportItem report = (ReportItem)obj;
-            return this.InstructionPointer == report.InstructionPointer &&
-                   this.IsTainted == report.IsTainted;
+            var report = (ReportItem) obj;
+            return InstructionPointer == report.InstructionPointer &&
+                   IsTainted == report.IsTainted;
         }
 
         public override Int32 GetHashCode()
         {
-            return this.InstructionPointer.GetHashCode() ^ this.IsTainted.GetHashCode();
+            return InstructionPointer.GetHashCode() ^ IsTainted.GetHashCode();
         }
 
-        public static Boolean operator== (ReportItem a, ReportItem b)
+        public static Boolean operator ==(ReportItem a, ReportItem b)
         {
             return a.Equals(b);
         }
 
-        public static Boolean operator!= (ReportItem a, ReportItem b)
+        public static Boolean operator !=(ReportItem a, ReportItem b)
         {
             return !a.Equals(b);
         }

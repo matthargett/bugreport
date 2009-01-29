@@ -12,9 +12,19 @@ namespace bugreport
     [TestFixture]
     public class MachineStateTest
     {
-        MachineState state;
-        readonly AbstractValue one = new AbstractValue(1);
-        readonly AbstractValue two = new AbstractValue(2).AddTaint();
+        #region Setup/Teardown
+
+        [SetUp]
+        public void SetUp()
+        {
+            state = new MachineState(new RegisterCollection());
+        }
+
+        #endregion
+
+        private MachineState state;
+        private readonly AbstractValue one = new AbstractValue(1);
+        private readonly AbstractValue two = new AbstractValue(2).AddTaint();
 
         private AbstractValue eax
         {
@@ -33,22 +43,26 @@ namespace bugreport
             set { state.Registers[RegisterName.ESP] = value; }
         }
 
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public void Add()
         {
-            state = new MachineState(new RegisterCollection());
+            eax = one;
+            ebx = two;
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
+
+            Assert.AreEqual(3, eax.Value);
+            Assert.IsTrue(eax.IsTainted);
         }
 
         [Test]
-        public void Copy()
+        public void And()
         {
-            state.Registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
-            MachineState newState = new MachineState(state);
-            Assert.AreNotSame(newState, state);
-            Assert.AreNotSame(newState.Registers, state.Registers);
-            Assert.AreNotSame(newState.DataSegment, state.DataSegment);
-            Assert.AreNotSame(newState.ReturnValue, state.ReturnValue);
-            Assert.AreSame(newState.TopOfStack, state.TopOfStack);
+            eax = new AbstractValue(0x350).AddTaint();
+            ebx = new AbstractValue(0xff);
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.And, RegisterName.EBX);
+
+            Assert.AreEqual(0x50, eax.Value);
+            Assert.IsTrue(eax.IsTainted);
         }
 
         [Test]
@@ -65,7 +79,7 @@ namespace bugreport
         [Test]
         public void AssignmentRetainsOOB()
         {
-            AbstractValue oob = new AbstractValue(1);
+            var oob = new AbstractValue(1);
             oob.IsOOB = true;
 
             state = state.DoOperation(RegisterName.EAX, OperatorEffect.Assignment, oob);
@@ -73,74 +87,15 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void NonAssignmentOfPointer()
+        public void Copy()
         {
-            eax = one;
-            ebx = new AbstractValue(new[] {two});
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
-        }
-
-        [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void Unknown()
-        {
-            state.DoOperation(RegisterName.EAX, OperatorEffect.Unknown, RegisterName.EBX);
-        }
-
-        [Test]
-        public void Add()
-        {
-            eax = one;
-            ebx = two;
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
-
-            Assert.AreEqual(3, eax.Value);
-            Assert.IsTrue(eax.IsTainted);
-        }
-
-        [Test]
-        public void Sub()
-        {
-            eax = one;
-            ebx = two;
-            state = state.DoOperation(RegisterName.EBX, OperatorEffect.Sub, RegisterName.EAX);
-
-            Assert.AreEqual(1, ebx.Value);
-            Assert.IsTrue(ebx.IsTainted);
-        }
-
-        [Test]
-        public void And()
-        {
-            eax = new AbstractValue(0x350).AddTaint();
-            ebx = new AbstractValue(0xff);
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.And, RegisterName.EBX);
-
-            Assert.AreEqual(0x50, eax.Value);
-            Assert.IsTrue(eax.IsTainted);
-        }
-
-        [Test]
-        public void Xor()
-        {
-            eax = new AbstractValue(0xff).AddTaint();
-            ebx = new AbstractValue(0xff);
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Xor, RegisterName.EBX);
-
-            Assert.AreEqual(0x0, eax.Value);
-            Assert.IsTrue(eax.IsTainted);
-        }
-
-        [Test]
-        public void Shr()
-        {
-            eax = new AbstractValue(0x8).AddTaint();
-            ebx = new AbstractValue(0x3);
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Shr, RegisterName.EBX);
-
-            Assert.AreEqual(0x1, eax.Value);
-            Assert.IsTrue(eax.IsTainted);
+            state.Registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
+            var newState = new MachineState(state);
+            Assert.AreNotSame(newState, state);
+            Assert.AreNotSame(newState.Registers, state.Registers);
+            Assert.AreNotSame(newState.DataSegment, state.DataSegment);
+            Assert.AreNotSame(newState.ReturnValue, state.ReturnValue);
+            Assert.AreSame(newState.TopOfStack, state.TopOfStack);
         }
 
         [Test]
@@ -155,6 +110,90 @@ namespace bugreport
         }
 
         [Test]
+        public void Equality()
+        {
+            var same = new MachineState(new RegisterCollection());
+            same.DataSegment[0] = new AbstractValue(2);
+            var same2 = new MachineState(new RegisterCollection());
+            same2.DataSegment[0] = new AbstractValue(2);
+
+            var registers = new RegisterCollection();
+            registers[RegisterName.EAX] = new AbstractValue(1);
+            var differentViaRegisters = new MachineState(registers);
+            differentViaRegisters.DataSegment[0] = new AbstractValue(2);
+
+            Assert.IsTrue(same.Equals(same2));
+            Assert.IsFalse(differentViaRegisters.Equals(same));
+
+            Assert.IsTrue(same == same2);
+            Assert.IsTrue(same != differentViaRegisters);
+
+            Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
+            Assert.AreNotEqual(same.GetHashCode(), differentViaRegisters.GetHashCode());
+
+            registers = new RegisterCollection();
+            var differentViaDataSegmentKey = new MachineState(registers);
+            differentViaDataSegmentKey.DataSegment[1] = new AbstractValue(2);
+
+            Assert.IsFalse(same.Equals(differentViaDataSegmentKey));
+
+            registers = new RegisterCollection();
+            var differentViaDataSegmentValue = new MachineState(registers);
+            differentViaDataSegmentValue.DataSegment[0] = new AbstractValue(1);
+
+            Assert.IsFalse(same.Equals(differentViaDataSegmentValue));
+        }
+
+        [Test]
+        public void Jnz()
+        {
+            Byte offset = 6;
+            eax = two;
+            ebx = one;
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EAX);
+            state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));
+            Assert.AreEqual(0, state.InstructionPointer);
+
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EBX);
+            state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));
+            Assert.AreEqual(offset, state.InstructionPointer);
+        }
+
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void JnzPointerOffset()
+        {
+            var pointer = new AbstractValue(AbstractValue.GetNewBuffer(1));
+            state = state.DoOperation(OperatorEffect.Jnz, pointer);
+        }
+
+        [Test]
+        [ExpectedException(typeof (ArgumentException))]
+        public void NonAssignmentOfPointer()
+        {
+            eax = one;
+            ebx = new AbstractValue(new[] {two});
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
+        }
+
+        [Test]
+        public void OperationResultEquality()
+        {
+            var same = new OperationResult(new AbstractValue(1), false);
+            var same2 = new OperationResult(new AbstractValue(1), false);
+            var different = new OperationResult(new AbstractValue(2), true);
+
+            Assert.IsTrue(same.Equals(same2));
+            Assert.IsFalse(same.Equals(different));
+
+            Assert.IsTrue(same == same2);
+            Assert.IsTrue(same != different);
+
+            Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
+            Assert.AreNotEqual(same.GetHashCode(), different.GetHashCode());
+        }
+
+        [Test]
         public void PointerAdd()
         {
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
@@ -163,6 +202,26 @@ namespace bugreport
 
             state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, new AbstractValue(0x4));
             Assert.AreEqual(one, eax.PointsTo[0]);
+        }
+
+        [Test]
+        public void PointerAnd()
+        {
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
+            buffer[4] = one;
+
+            eax = new AbstractValue(buffer);
+
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, new AbstractValue(0x4));
+            Assert.AreEqual(one, eax.PointsTo[0]);
+
+            var andValue = new AbstractValue(0xfffffff0);
+            MachineState newState = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
+            Assert.AreNotSame(newState, state);
+            Assert.AreNotEqual(newState, state);
+
+            state = newState;
+            Assert.AreEqual(one, eax.PointsTo[4]);
         }
 
         [Test]
@@ -204,98 +263,43 @@ namespace bugreport
         }
 
         [Test]
-        public void PointerAnd()
+        public void Shr()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
-            buffer[4] = one;
+            eax = new AbstractValue(0x8).AddTaint();
+            ebx = new AbstractValue(0x3);
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Shr, RegisterName.EBX);
 
-            eax = new AbstractValue(buffer);
-
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, new AbstractValue(0x4));
-            Assert.AreEqual(one, eax.PointsTo[0]);
-
-            AbstractValue andValue = new AbstractValue(0xfffffff0);
-            MachineState newState = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
-            Assert.AreNotSame(newState, state);
-            Assert.AreNotEqual(newState, state);
-
-            state = newState;
-            Assert.AreEqual(one, eax.PointsTo[4]);
+            Assert.AreEqual(0x1, eax.Value);
+            Assert.IsTrue(eax.IsTainted);
         }
 
         [Test]
-        public void Jnz()
+        public void Sub()
         {
-            Byte offset = 6;
-            eax = two;
-            ebx = one;
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EAX);
-            state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));
-            Assert.AreEqual(0, state.InstructionPointer);
+            eax = one;
+            ebx = two;
+            state = state.DoOperation(RegisterName.EBX, OperatorEffect.Sub, RegisterName.EAX);
 
-            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EBX);
-            state = state.DoOperation(OperatorEffect.Jnz, new AbstractValue(offset));
-            Assert.AreEqual(offset, state.InstructionPointer);
+            Assert.AreEqual(1, ebx.Value);
+            Assert.IsTrue(ebx.IsTainted);
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void JnzPointerOffset()
+        [ExpectedException(typeof (ArgumentException))]
+        public void Unknown()
         {
-            AbstractValue pointer = new AbstractValue(AbstractValue.GetNewBuffer(1));
-            state = state.DoOperation(OperatorEffect.Jnz, pointer);
+            state.DoOperation(RegisterName.EAX, OperatorEffect.Unknown, RegisterName.EBX);
         }
 
         [Test]
-        public void OperationResultEquality()
+        public void Xor()
         {
-            var same = new OperationResult(new AbstractValue(1), false);
-            var same2 = new OperationResult(new AbstractValue(1), false);
-            var different = new OperationResult(new AbstractValue(2), true);
+            eax = new AbstractValue(0xff).AddTaint();
+            ebx = new AbstractValue(0xff);
+            state = state.DoOperation(RegisterName.EAX, OperatorEffect.Xor, RegisterName.EBX);
 
-            Assert.IsTrue(same.Equals(same2));
-            Assert.IsFalse(same.Equals(different));
-
-            Assert.IsTrue(same == same2);
-            Assert.IsTrue(same != different);
-
-            Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
-            Assert.AreNotEqual(same.GetHashCode(), different.GetHashCode());
-        }
-
-        [Test]
-        public void Equality()
-        {
-            MachineState same = new MachineState(new RegisterCollection());
-            same.DataSegment[0] = new AbstractValue(2);
-            MachineState same2 = new MachineState(new RegisterCollection());
-            same2.DataSegment[0] = new AbstractValue(2);
-
-            RegisterCollection registers = new RegisterCollection();
-            registers[RegisterName.EAX] = new AbstractValue(1);
-            MachineState differentViaRegisters = new MachineState(registers);
-            differentViaRegisters.DataSegment[0] = new AbstractValue(2);
-
-            Assert.IsTrue(same.Equals(same2));
-            Assert.IsFalse(differentViaRegisters.Equals(same));
-
-            Assert.IsTrue(same == same2);
-            Assert.IsTrue(same != differentViaRegisters);
-
-            Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
-            Assert.AreNotEqual(same.GetHashCode(), differentViaRegisters.GetHashCode());
-
-            registers = new RegisterCollection();
-            MachineState differentViaDataSegmentKey = new MachineState(registers);
-            differentViaDataSegmentKey.DataSegment[1] = new AbstractValue(2);
-
-            Assert.IsFalse(same.Equals(differentViaDataSegmentKey));
-
-            registers = new RegisterCollection();
-            MachineState differentViaDataSegmentValue = new MachineState(registers);
-            differentViaDataSegmentValue.DataSegment[0] = new AbstractValue(1);
-
-            Assert.IsFalse(same.Equals(differentViaDataSegmentValue));
+            Assert.AreEqual(0x0, eax.Value);
+            Assert.IsTrue(eax.IsTainted);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace bugreport
     [TestFixture]
     public class RegisterCollectionTest
     {
-        RegisterCollection registers;
+        #region Setup/Teardown
 
         [SetUp]
         public void SetUp()
@@ -20,14 +20,18 @@ namespace bugreport
             registers = new RegisterCollection();
         }
 
+        #endregion
+
+        private RegisterCollection registers;
+
         [Test]
         public void Copy()
         {
             registers[RegisterName.ESP] = new AbstractValue(new AbstractBuffer(AbstractValue.GetNewBuffer(10)));
-            RegisterCollection newRegisters = new RegisterCollection(registers);
+            var newRegisters = new RegisterCollection(registers);
             for (UInt32 i = 0; i < 7; i++)
             {
-                RegisterName register = (RegisterName)i;
+                var register = (RegisterName) i;
                 Assert.AreNotSame(newRegisters[register], registers[register]);
             }
 
@@ -39,21 +43,21 @@ namespace bugreport
         {
             for (UInt32 i = 0; i < 7; i++)
             {
-                RegisterName register = (RegisterName)i;
+                var register = (RegisterName) i;
                 Assert.IsFalse(registers[register].IsInitialized);
             }
-        }
-
-        [Test]
-        public void ToStringOutput()
-        {
-            StringAssert.StartsWith("EAX=?", registers.ToString());
         }
 
         [Test]
         public void Equals()
         {
             Assert.IsFalse(registers.Equals(null));
+        }
+
+        [Test]
+        public void ToStringOutput()
+        {
+            StringAssert.StartsWith("EAX=?", registers.ToString());
         }
     }
 }

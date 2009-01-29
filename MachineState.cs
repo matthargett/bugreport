@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace bugreport
 {
@@ -16,27 +17,27 @@ namespace bugreport
 
         public OperationResult(AbstractValue value, Boolean zeroFlag)
         {
-            this.Value = value;
-            this.ZeroFlag = zeroFlag;
+            Value = value;
+            ZeroFlag = zeroFlag;
         }
 
         public override Boolean Equals(object obj)
         {
-            OperationResult opResult = (OperationResult)obj;
-            return (this.Value.Equals(opResult.Value)) && (this.ZeroFlag == opResult.ZeroFlag);
+            var opResult = (OperationResult) obj;
+            return (Value.Equals(opResult.Value)) && (ZeroFlag == opResult.ZeroFlag);
         }
 
         public override Int32 GetHashCode()
         {
-            return this.Value.GetHashCode() ^ this.ZeroFlag.GetHashCode();
+            return Value.GetHashCode() ^ ZeroFlag.GetHashCode();
         }
 
-        public static Boolean operator== (OperationResult a, OperationResult b)
+        public static Boolean operator ==(OperationResult a, OperationResult b)
         {
             return a.Equals(b);
         }
 
-        public static Boolean operator!= (OperationResult a, OperationResult b)
+        public static Boolean operator !=(OperationResult a, OperationResult b)
         {
             return !a.Equals(b);
         }
@@ -44,10 +45,10 @@ namespace bugreport
 
     public struct MachineState
     {
-        private UInt32 instructionPointer;
-        private readonly RegisterCollection registers;
         private readonly Dictionary<UInt32, AbstractValue> dataSegment;
-        Boolean zeroFlag;
+        private readonly RegisterCollection registers;
+        private UInt32 instructionPointer;
+        private Boolean zeroFlag;
 
         public MachineState(RegisterCollection registers)
         {
@@ -59,61 +60,10 @@ namespace bugreport
 
         public MachineState(MachineState copyMe)
         {
-            this.instructionPointer = copyMe.instructionPointer;
-            this.registers = new RegisterCollection(copyMe.registers);
-            this.dataSegment = new Dictionary<UInt32, AbstractValue>(copyMe.dataSegment);
-            this.zeroFlag = copyMe.zeroFlag;
-        }
-
-        public override Boolean Equals(object obj)
-        {
-            MachineState other = (MachineState)obj;
-
-            if (!(this.instructionPointer == other.instructionPointer &&
-                    this.registers.Equals(other.registers) &&
-                    this.zeroFlag == other.zeroFlag))
-            {
-                return false;
-            }
-
-            foreach (UInt32 key in this.dataSegment.Keys)
-            {
-                if (!other.dataSegment.ContainsKey(key))
-                {
-                    return false;
-                }
-
-                if (!this.dataSegment[key].Equals(other.dataSegment[key]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public override Int32 GetHashCode()
-        {
-            Int32 hashCode = this.instructionPointer.GetHashCode() ^
-                             this.registers.GetHashCode() ^
-                             this.zeroFlag.GetHashCode();
-
-            foreach (UInt32 key in this.dataSegment.Keys)
-            {
-                hashCode ^= this.dataSegment[key].GetHashCode();
-            }
-
-            return hashCode;
-        }
-
-        public static Boolean operator== (MachineState a, MachineState b)
-        {
-            return a.Equals(b);
-        }
-
-        public static Boolean operator!= (MachineState a, MachineState b)
-        {
-            return !a.Equals(b);
+            instructionPointer = copyMe.instructionPointer;
+            registers = new RegisterCollection(copyMe.registers);
+            dataSegment = new Dictionary<UInt32, AbstractValue>(copyMe.dataSegment);
+            zeroFlag = copyMe.zeroFlag;
         }
 
         public Boolean ZeroFlag
@@ -124,14 +74,8 @@ namespace bugreport
 
         public UInt32 InstructionPointer
         {
-            get
-            {
-                return instructionPointer;
-            }
-            set
-            {
-                instructionPointer = value;
-            }
+            get { return instructionPointer; }
+            set { instructionPointer = value; }
         }
 
         public RegisterCollection Registers
@@ -148,29 +92,74 @@ namespace bugreport
         {
             get
             {
-                System.Diagnostics.Debug.Assert(registers[RegisterName.ESP] != null);
-                System.Diagnostics.Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
+                Debug.Assert(registers[RegisterName.ESP] != null);
+                Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
                 return registers[RegisterName.ESP].PointsTo[0];
             }
 
             set
             {
-                System.Diagnostics.Debug.Assert(registers[RegisterName.ESP] != null);
-                System.Diagnostics.Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
+                Debug.Assert(registers[RegisterName.ESP] != null);
+                Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
                 registers[RegisterName.ESP].PointsTo[0] = value;
             }
         }
 
         public AbstractValue ReturnValue
         {
-            get
+            get { return registers[RegisterName.EAX]; }
+            set { registers[RegisterName.EAX] = value; }
+        }
+
+        public override Boolean Equals(object obj)
+        {
+            var other = (MachineState) obj;
+
+            if (!(instructionPointer == other.instructionPointer &&
+                  registers.Equals(other.registers) &&
+                  zeroFlag == other.zeroFlag))
             {
-                return registers[RegisterName.EAX];
+                return false;
             }
-            set
+
+            foreach (UInt32 key in dataSegment.Keys)
             {
-                registers[RegisterName.EAX] = value;
+                if (!other.dataSegment.ContainsKey(key))
+                {
+                    return false;
+                }
+
+                if (!dataSegment[key].Equals(other.dataSegment[key]))
+                {
+                    return false;
+                }
             }
+
+            return true;
+        }
+
+        public override Int32 GetHashCode()
+        {
+            Int32 hashCode = instructionPointer.GetHashCode() ^
+                             registers.GetHashCode() ^
+                             zeroFlag.GetHashCode();
+
+            foreach (UInt32 key in dataSegment.Keys)
+            {
+                hashCode ^= dataSegment[key].GetHashCode();
+            }
+
+            return hashCode;
+        }
+
+        public static Boolean operator ==(MachineState a, MachineState b)
+        {
+            return a.Equals(b);
+        }
+
+        public static Boolean operator !=(MachineState a, MachineState b)
+        {
+            return !a.Equals(b);
         }
 
         public MachineState PushOntoStack(AbstractValue value)
@@ -188,7 +177,7 @@ namespace bugreport
                 throw new ArgumentException("_offset pointer not supported.");
             }
 
-            MachineState newState = new MachineState(this);
+            var newState = new MachineState(this);
             switch (_operatorEffect)
             {
                 case OperatorEffect.Jnz:
@@ -197,12 +186,13 @@ namespace bugreport
                     {
                         newState.instructionPointer += _offset.Value;
                     }
-        
+
                     break;
                 }
                 default:
                 {
-                    throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+                    throw new ArgumentException(
+                        String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
                 }
             }
             return newState;
@@ -210,13 +200,14 @@ namespace bugreport
 
         public MachineState DoOperation(UInt32 offset, OperatorEffect _operatorEffect, AbstractValue rhs)
         {
-            MachineState newState = new MachineState(this);
+            var newState = new MachineState(this);
 
             switch (_operatorEffect)
             {
                 case OperatorEffect.Assignment:
                 {
-                    newState.dataSegment[offset] = newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
+                    newState.dataSegment[offset] =
+                        newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
                     break;
                 }
             }
@@ -225,7 +216,7 @@ namespace bugreport
 
         public MachineState DoOperation(RegisterName lhs, Int32 index, OperatorEffect _operatorEffect, AbstractValue rhs)
         {
-            MachineState newState = new MachineState(this);
+            var newState = new MachineState(this);
 
             switch (_operatorEffect)
             {
@@ -244,7 +235,7 @@ namespace bugreport
 
         public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
         {
-            MachineState newState = new MachineState(this);
+            var newState = new MachineState(this);
 
             if (Registers[lhs].IsPointer && _operatorEffect != OperatorEffect.Assignment)
             {
@@ -253,7 +244,7 @@ namespace bugreport
             }
             else
             {
-                OperationResult result = newState.DoOperation(this.Registers[lhs], _operatorEffect, rhs);
+                OperationResult result = newState.DoOperation(Registers[lhs], _operatorEffect, rhs);
                 newState.Registers[lhs] = result.Value;
                 newState.ZeroFlag = result.ZeroFlag;
             }
@@ -263,7 +254,7 @@ namespace bugreport
 
         public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, RegisterName rhs)
         {
-            MachineState newState = new MachineState(this);
+            var newState = new MachineState(this);
             OperationResult result = newState.DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
             newState.Registers[lhs] = result.Value;
             newState.ZeroFlag = result.ZeroFlag;
@@ -277,14 +268,14 @@ namespace bugreport
                 throw new ArgumentException("rhs pointer only supported for OperatorEffect.Assignment.");
             }
 
-            OperationResult result = new OperationResult();
+            var result = new OperationResult();
             AbstractValue totalValue;
             UInt32 total;
 
 
             if (_operatorEffect == OperatorEffect.Assignment)
             {
-                AbstractValue newValue = new AbstractValue(rhs);
+                var newValue = new AbstractValue(rhs);
                 if (rhs.IsInitialized && rhs.IsOOB)
                 {
                     newValue.IsOOB = true;
@@ -338,35 +329,36 @@ namespace bugreport
                 {
                     return lhs + rhs;
                 }
-        
+
                 case OperatorEffect.Sub:
                 {
                     return lhs - rhs;
                 }
-        
+
                 case OperatorEffect.And:
                 {
                     return lhs & rhs;
                 }
-        
+
                 case OperatorEffect.Xor:
                 {
                     return lhs ^ rhs;
                 }
-        
+
                 case OperatorEffect.Shr:
                 {
-                    return lhs >> (Byte)rhs;
+                    return lhs >> (Byte) rhs;
                 }
-        
+
                 case OperatorEffect.Shl:
                 {
-                    return lhs << (Byte)rhs;
+                    return lhs << (Byte) rhs;
                 }
-        
+
                 default:
                 {
-                    throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", operatorEffect), "operatorEffect");
+                    throw new ArgumentException(
+                        String.Format("Unsupported OperatorEffect: {0}", operatorEffect), "operatorEffect");
                 }
             }
         }

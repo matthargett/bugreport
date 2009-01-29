@@ -29,7 +29,7 @@ namespace bugreport
         {
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(state.TopOfStack.Value);
             state.ReturnValue = new AbstractValue(buffer);
-            
+
             return state;
         }
     }

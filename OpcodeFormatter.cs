@@ -11,12 +11,12 @@ namespace bugreport
 {
     public static class OpcodeFormatter
     {
-        static readonly Opcode opcode = new X86Opcode();
+        private static readonly Opcode opcode = new X86Opcode();
 
         public static String GetInstructionName(Byte[] code)
         {
             String instructionName = String.Empty;
-            
+
             StackEffect stackEffect = opcode.GetStackEffect(code);
 
             if (stackEffect != StackEffect.None)
@@ -39,7 +39,7 @@ namespace bugreport
                 }
                 else if (OperatorEffect.None == effect)
                 {
-                    instructionName +="nop";
+                    instructionName += "nop";
                 }
                 else
                 {
@@ -60,8 +60,8 @@ namespace bugreport
             }
 
             if (opcode.HasSourceRegister(code) ||
-                    opcode.HasImmediate(code) ||
-                    opcode.HasModRM(code))
+                opcode.HasImmediate(code) ||
+                opcode.HasModRM(code))
             {
                 count++;
             }
@@ -105,7 +105,7 @@ namespace bugreport
             {
                 return String.Format("0x{0:x}", opcode.GetImmediate(code));
             }
-            
+
             if (opcode.HasOffset(code) && opcode.HasModRM(code))
             {
                 String offset = String.Format("0x{0:x}", ModRM.GetOffset(code));
@@ -113,10 +113,10 @@ namespace bugreport
             }
 
             String sourceOperand;
-            Boolean sourceIsEffectiveAddress = 
-                            opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
-                            opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
-                            opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
+            Boolean sourceIsEffectiveAddress =
+                opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
+                opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
+                opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
 
             if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
             {
@@ -137,7 +137,7 @@ namespace bugreport
                     sourceOperand = baseRegister + "+" + scaled + "*" + scaler;
                 }
 
-                sourceOperand =  encaseInSquareBrackets(sourceOperand);
+                sourceOperand = encaseInSquareBrackets(sourceOperand);
                 return sourceOperand;
             }
 
@@ -151,26 +151,25 @@ namespace bugreport
                     {
                         sourceOperand += "+" + ModRM.GetIndex(code);
                     }
-        
+
                     Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
                     if (evDereferenced)
                     {
                         sourceOperand = encaseInSquareBrackets(sourceOperand);
-                    }                
+                    }
                 }
-                
-                return sourceOperand;
 
+                return sourceOperand;
             }
 
             throw new ArgumentException(
                 "don't know how to render this code's source operand: " + formatCode(code)
-            );
+                );
         }
 
         private static String formatCode(Byte[] code)
         {
-            StringBuilder formattedCode = new StringBuilder();
+            var formattedCode = new StringBuilder();
             foreach (Byte codeByte in code)
             {
                 formattedCode.Append(String.Format("{0:x2} ", codeByte));
@@ -182,7 +181,7 @@ namespace bugreport
         private static String getDestinationOperand(Byte[] code)
         {
             String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
-            Boolean destinationIsEffectiveAddress = 
+            Boolean destinationIsEffectiveAddress =
                 opcode.GetEncoding(code).ToString().StartsWith("Ev", StringComparison.Ordinal) ||
                 opcode.GetEncoding(code).ToString().StartsWith("Eb", StringComparison.Ordinal);
 
@@ -234,20 +233,20 @@ namespace bugreport
                 {
                     return String.Empty;
                 }
-        
+
                 case 1:
                 {
                     return getSingleOperand(code, instructionPointer);
                 }
-        
+
                 case 2:
                 {
                     String destinationOperand = getDestinationOperand(code);
                     String sourceOperand = getSourceOperand(code);
-        
+
                     return destinationOperand + ", " + sourceOperand;
                 }
-        
+
                 default:
                 {
                     throw new InvalidOperationException("don't know how to display " + operandCount + " operands");

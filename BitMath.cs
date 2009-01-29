@@ -16,12 +16,13 @@ namespace bugreport
 
             if (data.Length < index + 4)
             {
-                throw new ArgumentException(String.Format("Not enough bytes for DWORD: need {0}, got {1}", index + 4, data.Length), "data");
+                throw new ArgumentException(
+                    String.Format("Not enough bytes for DWORD: need {0}, got {1}", index + 4, data.Length), "data");
             }
-            
+
             for (Byte i = 0; i < 4; ++i)
             {
-                result |= (UInt32) (data[i + index]) << (8*i);
+                result |= (UInt32) (data[i + index]) << (8 * i);
             }
 
             return result;
