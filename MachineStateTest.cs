@@ -12,19 +12,9 @@ namespace bugreport
     [TestFixture]
     public class MachineStateTest
     {
-        #region Setup/Teardown
-
-        [SetUp]
-        public void SetUp()
-        {
-            state = new MachineState(new RegisterCollection());
-        }
-
-        #endregion
-
-        private MachineState state;
         private readonly AbstractValue one = new AbstractValue(1);
         private readonly AbstractValue two = new AbstractValue(2).AddTaint();
+        private MachineState state;
 
         private AbstractValue eax
         {
@@ -41,6 +31,12 @@ namespace bugreport
         private AbstractValue esp
         {
             set { state.Registers[RegisterName.ESP] = value; }
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            state = new MachineState(new RegisterCollection());
         }
 
         [Test]
@@ -160,7 +156,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void JnzPointerOffset()
         {
             var pointer = new AbstractValue(AbstractValue.GetNewBuffer(1));
@@ -168,7 +164,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void NonAssignmentOfPointer()
         {
             eax = one;
@@ -244,7 +240,7 @@ namespace bugreport
             esp = new AbstractValue(buffer);
             state = state.PushOntoStack(one);
 
-            //TODO(matt_hargett): extract into state.PopOffStack()
+            // TODO(matt_hargett): extract into state.PopOffStack()
             state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(0x4));
             state = state.DoOperation(RegisterName.ESP, 0, OperatorEffect.Assignment, two);
             Assert.AreEqual(two, state.TopOfStack);
@@ -285,7 +281,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void Unknown()
         {
             state.DoOperation(RegisterName.EAX, OperatorEffect.Unknown, RegisterName.EBX);

@@ -50,6 +50,49 @@ namespace bugreport
             return instructionName;
         }
 
+        public static String GetOperands(Byte[] code, UInt32 instructionPointer)
+        {
+            UInt32 operandCount = getOperandCount(code);
+
+            switch (operandCount)
+            {
+                case 0:
+                {
+                    return String.Empty;
+                }
+
+                case 1:
+                {
+                    return getSingleOperand(code, instructionPointer);
+                }
+
+                case 2:
+                {
+                    String destinationOperand = getDestinationOperand(code);
+                    String sourceOperand = getSourceOperand(code);
+
+                    return destinationOperand + ", " + sourceOperand;
+                }
+
+                default:
+                {
+                    throw new InvalidOperationException("don't know how to display " + operandCount + " operands");
+                }
+            }
+        }
+
+        public static String GetEncoding(Byte[] code)
+        {
+            String encoding = String.Empty;
+
+            if (OpcodeEncoding.None != opcode.GetEncoding(code))
+            {
+                encoding += "(" + opcode.GetEncoding(code) + ")";
+            }
+
+            return encoding;
+        }
+    
         private static UInt32 getOperandCount(Byte[] code)
         {
             UInt32 count = 0;
@@ -152,8 +195,8 @@ namespace bugreport
                         sourceOperand += "+" + ModRM.GetIndex(code);
                     }
 
-                    Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
-                    if (evDereferenced)
+                    Boolean effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                    if (effectiveAddressIsDereferenced)
                     {
                         sourceOperand = encaseInSquareBrackets(sourceOperand);
                     }
@@ -213,57 +256,14 @@ namespace bugreport
                     destinationOperand += "+" + ModRM.GetIndex(code);
                 }
 
-                Boolean evDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
-                if (evDereferenced)
+                Boolean effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                if (effectiveAddressIsDereferenced)
                 {
                     destinationOperand = encaseInSquareBrackets(destinationOperand);
                 }
             }
 
             return destinationOperand;
-        }
-
-        public static String GetOperands(Byte[] code, UInt32 instructionPointer)
-        {
-            UInt32 operandCount = getOperandCount(code);
-
-            switch (operandCount)
-            {
-                case 0:
-                {
-                    return String.Empty;
-                }
-
-                case 1:
-                {
-                    return getSingleOperand(code, instructionPointer);
-                }
-
-                case 2:
-                {
-                    String destinationOperand = getDestinationOperand(code);
-                    String sourceOperand = getSourceOperand(code);
-
-                    return destinationOperand + ", " + sourceOperand;
-                }
-
-                default:
-                {
-                    throw new InvalidOperationException("don't know how to display " + operandCount + " operands");
-                }
-            }
-        }
-
-        public static String GetEncoding(Byte[] code)
-        {
-            String encoding = String.Empty;
-
-            if (OpcodeEncoding.None != opcode.GetEncoding(code))
-            {
-                encoding += "(" + opcode.GetEncoding(code) + ")";
-            }
-
-            return encoding;
         }
     }
 }

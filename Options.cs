@@ -11,14 +11,6 @@ using System.IO;
 
 namespace bugreport
 {
-    internal class FileResolver
-    {
-        public virtual ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
-        {
-            return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
-        }
-    }
-
     public static class Options
     {
         private static ReadOnlyCollection<String> filenames;
@@ -27,11 +19,6 @@ namespace bugreport
         private static String functionToAnalyze;
         private static Boolean isDebugging;
         private static Boolean isTracing;
-
-        internal static FileResolver FileResolver
-        {
-            set { fileResolver = value; }
-        }
 
         public static String FunctionToAnalyze
         {
@@ -51,6 +38,11 @@ namespace bugreport
         public static Boolean IsDebugging
         {
             get { return isDebugging; }
+        }
+
+        internal static FileResolver FileResolver
+        {
+            set { fileResolver = value; }
         }
 
         public static void ParseArguments(String[] commandLine)
@@ -77,6 +69,7 @@ namespace bugreport
                     {
                         throw new ArgumentException("--function malformed, should be in the form of --function=name");
                     }
+                    
                     return arguments[i].Substring(indexOfEquals + 1);
                 }
             }
@@ -151,6 +144,14 @@ namespace bugreport
             }
 
             return false;
+        }
+    }
+
+    internal class FileResolver
+    {
+        public virtual ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
+        {
+            return new ReadOnlyCollection<String>(Directory.GetFiles(path, fileName));
         }
     }
 }

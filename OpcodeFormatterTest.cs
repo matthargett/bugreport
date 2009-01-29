@@ -71,7 +71,8 @@ namespace bugreport
         public void MovZxEaxBytePtr()
         {
             code = new Byte[] {0x0f, 0xb6, 0x05, 0x00, 0x96, 0x04, 0x08};
-            //TODO: this should actually be movzx
+
+            // TODO: this should actually be movzx
             Assert.AreEqual("mov", OpcodeFormatter.GetInstructionName(code));
             Assert.AreEqual("eax, [0x8049600]", OpcodeFormatter.GetOperands(code, 0));
         }

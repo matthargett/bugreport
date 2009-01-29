@@ -28,6 +28,16 @@ namespace bugreport
             Array.Copy(_copyMe.storage, storage, _copyMe.storage.Length);
         }
 
+        public UInt32 BaseIndex
+        {
+            get { return baseIndex; }
+        }
+
+        public Int32 Length
+        {
+            get { return allocatedLength; }
+        }
+
         public AbstractValue this[Int32 index]
         {
             get
@@ -61,22 +71,11 @@ namespace bugreport
             }
         }
 
-        public UInt32 BaseIndex
-        {
-            get { return baseIndex; }
-        }
-
-        public Int32 Length
-        {
-            get { return allocatedLength; }
-        }
-
         public AbstractBuffer DoOperation(OperatorEffect _operatorEffect, AbstractValue _rhs)
         {
             AbstractBuffer lhs = this;
 
-            // TODO: should have a guard for if _rhs isnt a pointer
-
+            // TODO: should have a guard for if _rhs isn't a pointer
             switch (_operatorEffect)
             {
                 case OperatorEffect.Assignment:
@@ -103,7 +102,10 @@ namespace bugreport
                         throw new ArgumentOutOfRangeException(
                             String.Format(
                                 "Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}",
-                                result.baseIndex, _rhs.Value));
+                                result.baseIndex, 
+                                _rhs.Value
+                            )
+                        );
                     }
 
                     result.baseIndex -= _rhs.Value;
@@ -126,7 +128,7 @@ namespace bugreport
 
         private Boolean IsIndexPastBounds(Int32 index)
         {
-            return (((baseIndex + index) >= allocatedLength) && ((baseIndex + index) >= storage.Length));
+            return ((baseIndex + index) >= allocatedLength) && ((baseIndex + index) >= storage.Length);
         }
 
         private void extend(UInt32 _newLength)

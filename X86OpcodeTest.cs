@@ -12,9 +12,9 @@ namespace bugreport
     [TestFixture]
     public class X86OpcodeTest
     {
+        private readonly Opcode opcode = new X86Opcode();
         private Byte[] code;
         private OpcodeEncoding encoding;
-        private readonly Opcode opcode = new X86Opcode();
 
         [Test]
         public void AnotherGvM()
@@ -79,7 +79,7 @@ namespace bugreport
         [Test]
         public void EvIbAdd()
         {
-            //  83 c0 0f                add    eax,0xf
+            // 83 c0 0f                add    eax,0xf
             code = new Byte[] {0x83, 0xc0, 0x0f};
             Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
             encoding = opcode.GetEncoding(code);
@@ -177,7 +177,7 @@ namespace bugreport
         [Test]
         public void GvEbRegisterToRegister()
         {
-            //  movzx  ebx,BYTE PTR [eax]
+            // movzx  ebx,BYTE PTR [eax]
             code = new Byte[] {0x0f, 0xb6, 0x18};
             Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
             encoding = opcode.GetEncoding(code);
@@ -239,7 +239,6 @@ namespace bugreport
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
         }
 
-
         [Test]
         public void Halt()
         {
@@ -252,7 +251,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void InvalidGetImmediate()
         {
             code = new Byte[] {0x90};
@@ -395,7 +394,6 @@ namespace bugreport
         [Test]
         public void PoprSP()
         {
-            //Push ESP
             code = new Byte[] {0x5c};
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.rSP, encoding);
@@ -541,7 +539,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOpcodeException))]
+        [ExpectedException(typeof(InvalidOpcodeException))]
         public void UnknownOpcode()
         {
             code = new Byte[] {0xf0, 0x00};
@@ -551,7 +549,7 @@ namespace bugreport
         [Test]
         public void XorEvGv()
         {
-            //Xor EBP,EBP
+            // xor EBP,EBP
             code = new Byte[] {0x31, 0xed};
             Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
             encoding = opcode.GetEncoding(code);

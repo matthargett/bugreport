@@ -152,6 +152,7 @@ namespace bugreport
                 {
                     return code[valueIndex];
                 }
+
                 case OpcodeEncoding.EvIz:
                 case OpcodeEncoding.rAxIz:
                 case OpcodeEncoding.rAxIv:
@@ -526,6 +527,7 @@ namespace bugreport
             {
                 return true;
             }
+            
             return false;
         }
 
@@ -535,7 +537,7 @@ namespace bugreport
 
             unchecked
             {
-                //FIXME: find a way to do this without an unchecked operation
+                // FIXME: find a way to do this without an unchecked operation
                 return instructionPointer + offset + (UInt32) code.Length;
             }
         }

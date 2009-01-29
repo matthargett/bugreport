@@ -4,6 +4,7 @@
 // Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
+using System;
 using NUnit.Framework;
 
 namespace bugreport
@@ -24,7 +25,7 @@ namespace bugreport
         [Test]
         public void IsEnter()
         {
-            var command = new DebuggerCommand("");
+            var command = new DebuggerCommand(String.Empty);
             Assert.IsTrue(command.IsEnter);
 
             command = new DebuggerCommand("NOT");

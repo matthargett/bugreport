@@ -15,32 +15,9 @@ namespace bugreport
     [TestFixture]
     public sealed class AnalyzerTest : IDisposable
     {
-        private Analyzer analyzer;
         private readonly MemoryStream stream = new MemoryStream(new Byte[] {0, 1, 2});
         private readonly Byte[] code = new Byte[] {0x90};
-
-        private class FakeAnalyzer : Analyzer
-        {
-            private readonly UInt32 actualReportItemCount;
-
-            public FakeAnalyzer(IParsable parser, UInt32 actualReportItemCount)
-                : base(parser)
-            {
-                this.actualReportItemCount = actualReportItemCount;
-            }
-
-            protected override MachineState runCode(MachineState _machineState, Byte[] _instructionBytes)
-            {
-                for (UInt32 i = 0; i < actualReportItemCount; i++)
-                {
-                    reportItems.Add(new ReportItem(i, false));
-                }
-
-                _machineState.InstructionPointer += (UInt32) _instructionBytes.Length;
-
-                return _machineState;
-            }
-        }
+        private Analyzer analyzer;
 
         public void Dispose()
         {
@@ -48,22 +25,6 @@ namespace bugreport
             {
                 stream.Dispose();
             }
-        }
-
-        private IParsable createMockParser(UInt32 expectedReportItemCount)
-        {
-            var control = new DynamicMock(typeof (IParsable));
-            control.ExpectAndReturn("GetBytes", code, null);
-
-            var reportItemList = new List<ReportItem>();
-
-            for (UInt32 i = 0; i < expectedReportItemCount; i++)
-            {
-                reportItemList.Add(new ReportItem(i, false));
-            }
-            control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
-            control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
-            return control.MockInstance as IParsable;
         }
 
         [Test]
@@ -76,7 +37,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void NullStream()
         {
             analyzer = new Analyzer(null);
@@ -118,5 +79,45 @@ namespace bugreport
             Assert.AreEqual(0, reportItems[0].InstructionPointer);
             Assert.AreEqual(1, reportItems[1].InstructionPointer);
         }
-    }
+        
+        private IParsable createMockParser(UInt32 expectedReportItemCount)
+        {
+            var control = new DynamicMock(typeof(IParsable));
+            control.ExpectAndReturn("GetBytes", code, null);
+
+            var reportItemList = new List<ReportItem>();
+
+            for (UInt32 i = 0; i < expectedReportItemCount; i++)
+            {
+                reportItemList.Add(new ReportItem(i, false));
+            }
+            
+            control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
+            control.ExpectAndReturn("get_ExpectedReportItems", reportItemList.AsReadOnly(), null);
+            return control.MockInstance as IParsable;
+        }
+        
+        private class FakeAnalyzer : Analyzer
+        {
+            private readonly UInt32 actualReportItemCount;
+
+            public FakeAnalyzer(IParsable parser, UInt32 actualReportItemCount)
+                : base(parser)
+            {
+                this.actualReportItemCount = actualReportItemCount;
+            }
+
+            protected override MachineState runCode(MachineState _machineState, Byte[] _instructionBytes)
+            {
+                for (UInt32 i = 0; i < actualReportItemCount; i++)
+                {
+                    ReportItems.Add(new ReportItem(i, false));
+                }
+
+                _machineState.InstructionPointer += (UInt32) _instructionBytes.Length;
+
+                return _machineState;
+            }
+        }
+    } 
 }

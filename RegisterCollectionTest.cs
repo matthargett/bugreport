@@ -12,17 +12,13 @@ namespace bugreport
     [TestFixture]
     public class RegisterCollectionTest
     {
-        #region Setup/Teardown
+        private RegisterCollection registers;
 
         [SetUp]
         public void SetUp()
         {
             registers = new RegisterCollection();
         }
-
-        #endregion
-
-        private RegisterCollection registers;
 
         [Test]
         public void Copy()

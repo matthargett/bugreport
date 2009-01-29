@@ -17,7 +17,7 @@ namespace bugreport
         [Test]
         public void EaxEaxNoIndex()
         {
-            //  mov    eax,DWORD PTR [eax]
+            // mov    eax,DWORD PTR [eax]
             code = new Byte[] {0x8b, 0x00};
             Assert.AreEqual(RegisterName.EAX, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));
@@ -26,7 +26,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (NotImplementedException))]
+        [ExpectedException(typeof(NotImplementedException))]
         public void EaxEbpPlusDword12()
         {
             Int32 index = 0x0c;
@@ -38,7 +38,7 @@ namespace bugreport
         [Test]
         public void EaxEbpPlusSByte12()
         {
-            //  mov    eax,DWORD PTR [ebp+index]
+            // mov    eax,DWORD PTR [ebp+index]
             Int32 index = 0x0c;
             code = new Byte[] {0x8b, 0x45, (Byte) index};
             Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
@@ -49,7 +49,7 @@ namespace bugreport
         [Test]
         public void EaxEbx4()
         {
-            //  mov    eax,DWORD PTR [ebx-4]
+            // mov    eax,DWORD PTR [ebx-4]
             code = new Byte[] {0x8b, 0x43, 0xfc};
             Assert.AreEqual(RegisterName.EBX, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));
@@ -59,7 +59,7 @@ namespace bugreport
         [Test]
         public void EbxEbp12()
         {
-            //  mov    ebx,DWORD PTR [ebp-12]
+            // mov    ebx,DWORD PTR [ebp-12]
             code = new Byte[] {0x8b, 0x5d, 0xf4};
             Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.EBX, ModRM.GetGv(code));
@@ -70,9 +70,9 @@ namespace bugreport
         [Test]
         public void EbxEsp0()
         {
-            //  mov    ebx,DWORD PTR [esp]
+            // mov    ebx,DWORD PTR [esp]
             code = new Byte[] {0x8b, 0x1c, 0x24};
-            //	Assert.AreEqual(RegisterName.ESP, ModRM.GetEv(code));
+            //// Assert.AreEqual(RegisterName.ESP, ModRM.GetEv(code));
             Assert.IsTrue(ModRM.HasSIB(code));
             Assert.AreEqual(RegisterName.EBX, ModRM.GetGv(code));
             Assert.IsFalse(ModRM.HasIndex(code));
@@ -91,7 +91,7 @@ namespace bugreport
         [Test]
         public void EsiEbp8()
         {
-            //  mov    esi,DWORD PTR [ebp-8]
+            // mov    esi,DWORD PTR [ebp-8]
             code = new Byte[] {0x8b, 0x75, 0xf8};
             Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.ESI, ModRM.GetGv(code));
@@ -99,7 +99,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void GetEvWithSIB()
         {
             code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
@@ -108,7 +108,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void GetIndexWithNoIndex()
         {
             code = new Byte[] {0x89, 0xe5};
@@ -171,7 +171,7 @@ namespace bugreport
         [Test]
         public void TwoByteWithModRMNoIndex()
         {
-            //  movzx  ebx,BYTE PTR [eax]
+            // movzx  ebx,BYTE PTR [eax]
             code = new Byte[] {0x0f, 0xb6, 0x18};
             Assert.AreEqual(RegisterName.EAX, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.EBX, ModRM.GetGv(code));
@@ -182,7 +182,7 @@ namespace bugreport
         [Test]
         public void TwoByteWithModRMWithIndex()
         {
-            //  movzx  eax,BYTE PTR [ebp-5]
+            // movzx  eax,BYTE PTR [ebp-5]
             code = new Byte[] {0x0f, 0xb6, 0x45, 0xfb};
             Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));

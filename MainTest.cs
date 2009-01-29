@@ -14,59 +14,13 @@ using NUnit.Framework;
 namespace bugreport
 {
     [TestFixture]
-    //[Ignore("long")]
+    ////[Ignore("long")]
     [Platform(Exclude = "Mono")]
     public class MainTest
     {
         // TODO: This assumes that the test runner is run from the build directory.
         private readonly String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
         private readonly String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
-
-        private void waitForAnalysisToFinish(Process analysisProcess)
-        {
-            TimeSpan maximumTimeAllowed = TimeSpan.FromSeconds(10);
-            while (!analysisProcess.HasExited && (DateTime.Now - analysisProcess.StartTime < maximumTimeAllowed))
-            {
-                Thread.Sleep(100);
-            }
-        }
-
-        private List<String> getOutputFromAnalysis(Process analysisProcess)
-        {
-            var messages = new List<String>();
-
-            analysisProcess.StandardOutput.ReadLine(); // version string
-            analysisProcess.StandardOutput.ReadLine(); // blank line
-            analysisProcess.StandardOutput.ReadLine(); // file name
-            while (!analysisProcess.StandardOutput.EndOfStream)
-            {
-                messages.Add(analysisProcess.StandardOutput.ReadLine());
-            }
-
-            return messages;
-        }
-
-        private Process getAnalysisProcessForFileName(String fileName)
-        {
-            var analysisProcess = new Process();
-            analysisProcess.StartInfo.FileName = "bugreport.exe";
-            analysisProcess.StartInfo.Arguments = "\"" + fileName + "\"";
-            analysisProcess.StartInfo.RedirectStandardOutput = true;
-            analysisProcess.StartInfo.UseShellExecute = false;
-            analysisProcess.StartInfo.CreateNoWindow = false;
-
-            return analysisProcess;
-        }
-
-        private List<String> getOutputForFilename(String fileName)
-        {
-            Process analysisProcess = getAnalysisProcessForFileName(fileName);
-            analysisProcess.Start();
-
-            waitForAnalysisToFinish(analysisProcess);
-
-            return getOutputFromAnalysis(analysisProcess);
-        }
 
         [Test]
         [Category("long")]
@@ -112,5 +66,51 @@ namespace bugreport
                 }
             }
         }
+        
+        private void waitForAnalysisToFinish(Process analysisProcess)
+        {
+            TimeSpan maximumTimeAllowed = TimeSpan.FromSeconds(10);
+            while (!analysisProcess.HasExited && (DateTime.Now - analysisProcess.StartTime < maximumTimeAllowed))
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        private List<String> getOutputFromAnalysis(Process analysisProcess)
+        {
+            var messages = new List<String>();
+
+            analysisProcess.StandardOutput.ReadLine(); // version string
+            analysisProcess.StandardOutput.ReadLine(); // blank line
+            analysisProcess.StandardOutput.ReadLine(); // file name
+            while (!analysisProcess.StandardOutput.EndOfStream)
+            {
+                messages.Add(analysisProcess.StandardOutput.ReadLine());
+            }
+
+            return messages;
+        }
+
+        private Process getAnalysisProcessForFileName(String fileName)
+        {
+            var analysisProcess = new Process();
+            analysisProcess.StartInfo.FileName = "bugreport.exe";
+            analysisProcess.StartInfo.Arguments = "\"" + fileName + "\"";
+            analysisProcess.StartInfo.RedirectStandardOutput = true;
+            analysisProcess.StartInfo.UseShellExecute = false;
+            analysisProcess.StartInfo.CreateNoWindow = false;
+
+            return analysisProcess;
+        }
+
+        private List<String> getOutputForFilename(String fileName)
+        {
+            Process analysisProcess = getAnalysisProcessForFileName(fileName);
+            analysisProcess.Start();
+
+            waitForAnalysisToFinish(analysisProcess);
+
+            return getOutputFromAnalysis(analysisProcess);
+        }        
     }
 }

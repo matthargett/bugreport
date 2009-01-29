@@ -12,30 +12,6 @@ namespace bugreport
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        private static Byte getIndex(Byte[] code)
-        {
-            return (Byte) ((getSIB(code) >> 3) & 7);
-        }
-
-        private static Byte getSIB(Byte[] code)
-        {
-            return code[opcode.GetOpcodeLength(code) + 1];
-        }
-
-        public static RegisterName GetBaseRegister(Byte[] code)
-        {
-            if (!ModRM.HasSIB(code))
-            {
-                throw new InvalidOperationException(
-                    "For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
-            }
-
-            Byte sib = getSIB(code);
-            var register = (RegisterName) (sib & 7);
-
-            return register;
-        }
-
         public static RegisterName GetScaledRegister(Byte[] code)
         {
             if (!ModRM.HasSIB(code))
@@ -61,8 +37,32 @@ namespace bugreport
                     "For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
             }
 
-            var S = (Byte) ((getSIB(code) >> 6) & 3);
-            return (UInt32) Math.Pow(2, S);
+            var s = (Byte)((getSIB(code) >> 6) & 3);
+            return (UInt32)Math.Pow(2, s);
         }
+        
+        public static RegisterName GetBaseRegister(Byte[] code)
+        {
+            if (!ModRM.HasSIB(code))
+            {
+                throw new InvalidOperationException(
+                    "For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
+            }
+
+            Byte sib = getSIB(code);
+            var register = (RegisterName)(sib & 7);
+
+            return register;
+        }
+        
+        private static Byte getIndex(Byte[] code)
+        {
+            return (Byte)((getSIB(code) >> 3) & 7);
+        }
+
+        private static Byte getSIB(Byte[] code)
+        {
+            return code[opcode.GetOpcodeLength(code) + 1];
+        }        
     }
 }
