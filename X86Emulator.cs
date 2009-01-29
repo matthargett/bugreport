@@ -11,32 +11,12 @@ using System.Text;
 
 namespace bugreport
 {
-    public class InvalidOpcodeException : Exception
-    {
-        public InvalidOpcodeException(params Byte[] code)
-            : base(FormatOpcodes(code))
-        {
-        }
-
-        public static String FormatOpcodes(params Byte[] code)
-        {
-            var message = new StringBuilder("Invalid opcode: ");
-
-
-            foreach (Byte opcode in code)
-            {
-                message.Append(String.Format(" 0x{0:x2}", opcode));
-            }
-
-            return message.ToString();
-        }
-    }
-
     public static class X86Emulator
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState,
+        public static MachineState Run(Collection<ReportItem> reportItemCollector, 
+                                       MachineState machineState,
                                        Byte[] code)
         {
             if (code.Length == 0)
@@ -50,6 +30,7 @@ namespace bugreport
             {
                 afterState.InstructionPointer += opcode.GetInstructionLength(code);
             }
+            
             return afterState;
         }
 
@@ -58,7 +39,8 @@ namespace bugreport
             return before.InstructionPointer != after.InstructionPointer;
         }
 
-        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, MachineState machineState,
+        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, 
+                                                  MachineState machineState, 
                                                   Byte[] code)
         {
             MachineState state = machineState;
@@ -104,6 +86,7 @@ namespace bugreport
                             state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));
                             break;
                         }
+
                         case StackEffect.Push:
                         {
                             state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
@@ -129,7 +112,6 @@ namespace bugreport
 
                             // TODO(matt_hargett): next step in correct stack emulation,, but breaks PushESPPopESP test
                             //                        state = state.PushOntoStack(sourceValue);
-
                             break;
                         }
                     }
@@ -161,12 +143,12 @@ namespace bugreport
                         sourceValue = state.Registers[sourceRegister];
                     }
 
-                    //if (ModRM.HasOffset(code))
-                    //{
-                    //    UInt32 offset = ModRM.GetOffset(code);
-                    //    state.DataSegment[offset] = sourceValue;
-                    //    return state;
-                    //}
+                    ////if (ModRM.HasOffset(code))
+                    ////{
+                    ////    UInt32 offset = ModRM.GetOffset(code);
+                    ////    state.DataSegment[offset] = sourceValue;
+                    ////    return state;
+                    ////}
 
                     if (ModRM.IsEffectiveAddressDereferenced(code))
                     {
@@ -218,9 +200,12 @@ namespace bugreport
                         index = 0;
 
                         if (ModRM.HasIndex(code))
+                        {
                             index = ModRM.GetIndex(code);
+                        }
 
                         sourceValue = sourceValue.PointsTo[index];
+                        
                         if (sourceValue.IsOOB)
                         {
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
@@ -249,7 +234,7 @@ namespace bugreport
                         UInt32 scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
                         UInt32 scaler = SIB.GetScaler(code);
                         baseRegisterValue = state.Registers[SIB.GetBaseRegister(code)];
-                        index = (Int32) (scaledRegisterValue * scaler);
+                        index = (Int32)(scaledRegisterValue * scaler);
                     }
                     else
                     {
@@ -300,7 +285,7 @@ namespace bugreport
 
                 case OpcodeEncoding.Jz:
                 {
-                    //TODO: should push EIP + code.Length onto stack
+                    // TODO: should push EIP + code.Length onto stack
                     Boolean contractSatisfied = false;
                     var mallocContract = new MallocContract();
                     var glibcStartMainContract = new GLibcStartMainContract();
@@ -349,5 +334,5 @@ namespace bugreport
                 }
             }
         }
-    }
+    }    
 }

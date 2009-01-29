@@ -14,35 +14,6 @@ namespace bugreport
     [TestFixture]
     public class OptionsTest
     {
-        private class FakeFileResolver : FileResolver
-        {
-            private readonly String expectedFileName;
-            private readonly String expectedPath;
-            private readonly Int32 numberOfFilesFound;
-
-            public FakeFileResolver(String expectedPath, String expectedFileName, Int32 numberOfFilesFound)
-            {
-                this.expectedPath = expectedPath;
-                this.expectedFileName = expectedFileName;
-                this.numberOfFilesFound = numberOfFilesFound;
-            }
-
-            [CoverageExclude]
-            public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
-            {
-                if (path == expectedPath && fileName == expectedFileName)
-                {
-                    return new ReadOnlyCollection<String>(new String[numberOfFilesFound]);
-                }
-
-                throw new ArgumentException(
-                    String.Format(
-                        "expectations not met: path = {0} , expected = {1} ; fileName = {2} , expected = {3}", path,
-                        expectedPath, fileName, expectedFileName)
-                    );
-            }
-        }
-
         private FakeFileResolver fileResolver;
         private String[] commandLine;
 
@@ -87,21 +58,18 @@ namespace bugreport
             Assert.IsNotNull(files);
         }
 
-
         [Test]
         public void FunctionName()
         {
             commandLine = new[]
                           {
                               "--function=nomain",
-                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump"
-                              ,
+                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump",
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
             Options.ParseArguments(commandLine);
             Assert.AreEqual("nomain", Options.FunctionToAnalyze);
             Assert.AreEqual(2, Options.Filenames.Count);
-
 
             commandLine = new[]
                           {
@@ -112,7 +80,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void FunctionNameWithoutEquals()
         {
             commandLine = new[]
@@ -129,8 +97,7 @@ namespace bugreport
         {
             commandLine = new[]
                           {
-                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump"
-                              ,
+                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump",
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
             Options.ParseArguments(commandLine);
@@ -202,11 +169,43 @@ namespace bugreport
                 Options.ParseArguments(commandLine);
                 Assert.AreEqual(12, Options.Filenames.Count);
             }
-
             finally
             {
                 Directory.SetCurrentDirectory(oldDirectory);
             }
         }
+
+        private class FakeFileResolver : FileResolver
+        {
+            private readonly String expectedFileName;
+            private readonly String expectedPath;
+            private readonly Int32 numberOfFilesFound;
+
+            public FakeFileResolver(String expectedPath, String expectedFileName, Int32 numberOfFilesFound)
+            {
+                this.expectedPath = expectedPath;
+                this.expectedFileName = expectedFileName;
+                this.numberOfFilesFound = numberOfFilesFound;
+            }
+
+            [CoverageExclude]
+            public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
+            {
+                if (path == expectedPath && fileName == expectedFileName)
+                {
+                    return new ReadOnlyCollection<String>(new String[numberOfFilesFound]);
+                }
+
+                throw new ArgumentException(
+                    String.Format(
+                        "expectations not met: path = {0} , expected = {1} ; fileName = {2} , expected = {3}", 
+                        path,
+                        expectedPath, 
+                        fileName, 
+                        expectedFileName
+                    )
+                );
+            }
+        }        
     }
 }

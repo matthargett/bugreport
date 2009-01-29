@@ -94,6 +94,23 @@ namespace bugreport
         {
             get { return pointsTo != null; }
         }
+        
+        public static AbstractValue[] GetNewBuffer(UInt32 size)
+        {
+            if (size > MAX_BUFFER_SIZE)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "size", "Size specified larger than maximum allowed: " + MAX_BUFFER_SIZE);
+            }
+
+            var buffer = new AbstractValue[size];
+            for (UInt32 i = 0; i < size; i++)
+            {
+                buffer[i] = new AbstractValue();
+            }
+
+            return buffer;
+        }
 
         public override Boolean Equals(object obj)
         {
@@ -121,23 +138,6 @@ namespace bugreport
             }
 
             return hashCode;
-        }
-
-        public static AbstractValue[] GetNewBuffer(UInt32 size)
-        {
-            if (size > MAX_BUFFER_SIZE)
-            {
-                throw new ArgumentOutOfRangeException(
-                    "size", "Size specified larger than maximum allowed: " + MAX_BUFFER_SIZE);
-            }
-
-            var buffer = new AbstractValue[size];
-            for (UInt32 i = 0; i < size; i++)
-            {
-                buffer[i] = new AbstractValue();
-            }
-
-            return buffer;
         }
 
         public AbstractValue TruncateValueToByte()
@@ -176,7 +176,9 @@ namespace bugreport
             String result = String.Empty;
 
             if (tainted)
+            {
                 result += "t";
+            }
 
             UInt32 valueToPrint = Value;
 
@@ -186,8 +188,8 @@ namespace bugreport
 
                 var newResult = new StringBuilder(result);
 
-                const Byte maximumPointerDepth = 100;
-                Int32 count = maximumPointerDepth;
+                const Byte MAXIMUM_DISPLAYED_POINTER_DEPTH = 100;
+                Int32 count = MAXIMUM_DISPLAYED_POINTER_DEPTH;
                 while ((pointer != null) && (count-- > 0))
                 {
                     newResult.Append("*");
@@ -202,6 +204,7 @@ namespace bugreport
                         pointer = null;
                     }
                 }
+                
                 result = newResult.ToString();
             }
 

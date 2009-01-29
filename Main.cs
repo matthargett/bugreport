@@ -72,8 +72,9 @@ namespace bugreport
                     Environment.Exit(-1);
                     return; // needed to hush up a false warning in mono
                 }
-
-                //IParsable parser = new DumpFileParser(fileStream, Options.FunctionToAnalyze);
+                
+                // TODO (matt_hargett): have a factory auto-detect the file type and return the right kind of IParsable
+                // IParsable parser = new DumpFileParser(fileStream, Options.FunctionToAnalyze);
                 IParsable parser = new ElfFileParser(fileStream);
 
                 analyzer = new Analyzer(parser);
@@ -94,7 +95,10 @@ namespace bugreport
 
             String message = "***";
             if (item.IsTainted)
+            {
                 message += "Exploitable ";
+            }
+            
             message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
             Console.WriteLine(message);
             Console.WriteLine();

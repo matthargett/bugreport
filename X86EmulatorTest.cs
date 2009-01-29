@@ -12,7 +12,10 @@ namespace bugreport
     [TestFixture]
     public class X86EmulatorTest
     {
-        #region Setup/Teardown
+        private readonly AbstractValue one = new AbstractValue(1);
+        private MachineState state;
+        private Byte[] code;
+        private ReportCollection reportItems;
 
         [SetUp]
         public void SetUp()
@@ -25,13 +28,6 @@ namespace bugreport
             state.Registers[RegisterName.EBP] = state.Registers[RegisterName.ESP];
         }
 
-        #endregion
-
-        private MachineState state;
-        private Byte[] code;
-        private ReportCollection reportItems;
-        private readonly AbstractValue one = new AbstractValue(1);
-
         [Test]
         public void AddEax0x1()
         {
@@ -43,7 +39,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void AddImmediateNonPointerDeref()
         {
             // add    [eax], 0x00
@@ -107,12 +103,12 @@ namespace bugreport
         public void CmpUnknownEax0()
         {
             // cmp eax, 0
-            //			MachineState[] possibleStates;
-            //
-            //			code = new Byte[] {0x83, 0xf8, 0x0};
-            //			state.Registers[RegisterName.EAX] = new AbstractValue();
-            //			possibleStates = X86Emulator.Run(reportItems, state, code);
-            //			Assert.AreEqual(2, possibleStates.Length);
+            ////MachineState[] possibleStates;
+            ////
+            ////code = new Byte[] {0x83, 0xf8, 0x0};
+            ////state.Registers[RegisterName.EAX] = new AbstractValue();
+            ////possibleStates = X86Emulator.Run(reportItems, state, code);
+            ////Assert.AreEqual(2, possibleStates.Length);
         }
 
         [Test]
@@ -122,10 +118,10 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void DereferenceRegisterWithNonPointer()
         {
-            //  mov    eax,DWORD PTR [eax]
+            // mov    eax,DWORD PTR [eax]
             code = new Byte[] {0x8b, 0x00};
             state.Registers[RegisterName.EAX] = one;
             Assert.IsFalse(one.IsPointer);
@@ -151,7 +147,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void EmptyCodeArray()
         {
             code = new Byte[] {};
@@ -181,7 +177,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOpcodeException))]
+        [ExpectedException(typeof(InvalidOpcodeException))]
         public void InvalidOpcode()
         {
             // int3 -- not really invalid, but we probably won't see it in any program we care about
@@ -215,7 +211,7 @@ namespace bugreport
         [Test]
         public void LeaEaxFromEdxPlusEax()
         {
-            //  lea    eax,[edx+eax]
+            // lea    eax,[edx+eax]
             code = new Byte[] {0x8d, 0x04, 0x02};
 
             var zero = new AbstractValue(0);
@@ -233,7 +229,7 @@ namespace bugreport
         [Test]
         public void LeaEdxFromEaxPlus16()
         {
-            //  lea    edx,[eax+index]
+            // lea    edx,[eax+index]
             Byte index = 0x1;
             code = new Byte[] {0x8d, 0x50, index};
 
@@ -248,12 +244,12 @@ namespace bugreport
             Assert.AreEqual(one, edx.PointsTo[0]);
         }
 
-
         [Test]
         public void MallocCall()
         {
             UInt32 initialInstructionPointer = 0x804838f;
-            //TODO: need to reconcile with esp/ebp handling
+
+            // TODO: need to reconcile with esp/ebp handling
             state = state.PushOntoStack(new AbstractValue(16));
             state.InstructionPointer = initialInstructionPointer;
             code = new Byte[] {0xe8, 0x14, 0xff, 0xff, 0xff};
@@ -265,7 +261,7 @@ namespace bugreport
         [Test]
         public void MovBytePtrEaxInBounds()
         {
-            //	mov    BYTE PTR [eax], value
+            // mov    BYTE PTR [eax], value
             Byte value = 0x01;
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
             var pointer = new AbstractValue(buffer);
@@ -320,7 +316,6 @@ namespace bugreport
         public void MovEax0x10()
         {
             // mov    DWORD PTR [eax],0x10
-
             AbstractValue[] value = AbstractValue.GetNewBuffer(1);
             state.Registers[RegisterName.EAX] = new AbstractValue(value);
             code = new Byte[] {0xc7, 0x00, 0x10, 0x00, 0x00, 0x00};
@@ -342,9 +337,9 @@ namespace bugreport
         [Test]
         public void MovEaxEaxFourByteValue()
         {
-            //  mov    eax,DWORD PTR [eax]
+            // mov    eax,DWORD PTR [eax]
             UInt32 value = 0x31337;
-            var buffer = new[] {new AbstractValue(value)};
+            var buffer = new[] { new AbstractValue(value) };
             var pointer = new AbstractValue(buffer);
             state.Registers[RegisterName.EAX] = pointer;
 
@@ -358,7 +353,7 @@ namespace bugreport
         [Test]
         public void MovEaxEaxPointerPointerValue()
         {
-            //  mov    eax,DWORD PTR [eax]
+            // mov    eax,DWORD PTR [eax]
             UInt32 value = 0x31337;
             var argv = new AbstractValue(value);
             var argvBuffer = new[] {argv};
@@ -407,7 +402,6 @@ namespace bugreport
         public void MovEbpMinus8()
         {
             // mov    DWORD PTR [ebp-8],0xf
-
             Byte fifteen = 0x0f;
             AbstractValue[] value = AbstractValue.GetNewBuffer(0x100);
             state.Registers[RegisterName.EBP] = new AbstractValue(value);
@@ -675,7 +669,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void SubNonPointerDeref()
         {
             // sub eax, [eax]

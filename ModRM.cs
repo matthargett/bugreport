@@ -12,14 +12,9 @@ namespace bugreport
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        private static Byte getMod(Byte modrm)
-        {
-            return (Byte) ((modrm >> 6) & 3);
-        }
-
         public static Byte GetRM(Byte modrm)
         {
-            return (Byte) (modrm & 7);
+            return (Byte)(modrm & 7);
         }
 
         public static RegisterName GetEv(Byte[] code)
@@ -30,33 +25,37 @@ namespace bugreport
             }
 
             Byte modRM = getModRM(code);
-            return (RegisterName) (modRM & 7);
+            return (RegisterName)(modRM & 7);
         }
 
         public static RegisterName GetGv(Byte[] code)
         {
             Byte modRM = getModRM(code);
-            return (RegisterName) ((modRM >> 3) & 7);
+            return (RegisterName)((modRM >> 3) & 7);
         }
 
         public static Byte GetOpcodeGroupIndex(Byte[] _code)
         {
             Byte modRM = getModRM(_code);
-            return (Byte) ((modRM >> 3) & 7);
+            return (Byte)((modRM >> 3) & 7);
         }
 
         public static Boolean HasIndex(Byte[] _code)
         {
             Byte modRM = getModRM(_code);
             Byte mod = getMod(modRM);
-            return (mod == 1 || mod == 2);
+            
+            return mod == 1 || mod == 2;
         }
 
         public static Byte GetIndex(Byte[] _code)
         {
             if (!HasIndex(_code))
+            {
                 throw new InvalidOperationException(
-                    "For ModRM that does not specify an index, usage of GetIndex is invalid.");
+                    "For ModRM that does not specify an index, usage of GetIndex is invalid."
+                );
+            }
 
             UInt32 modRMIndex = opcode.GetOpcodeLength(_code);
             Byte modRM = getModRM(_code);
@@ -68,6 +67,7 @@ namespace bugreport
                 {
                     return _code[modRMIndex + 1];
                 }
+                    
                 default:
                 {
                     throw new NotImplementedException(String.Format("Unsupported Mod: 0x{0:x2}", mod));
@@ -90,7 +90,7 @@ namespace bugreport
             }
 
             Byte modRM = getModRM(_code);
-            return (GetRM(modRM) == 5 && getMod(modRM) == 0);
+            return GetRM(modRM) == 5 && getMod(modRM) == 0;
         }
 
         public static UInt32 GetOffset(Byte[] code)
@@ -105,7 +105,7 @@ namespace bugreport
         {
             Byte modRM = getModRM(_code);
 
-            return ((GetRM(modRM) == 4) && (IsEffectiveAddressDereferenced(_code)));
+            return GetRM(modRM) == 4 && IsEffectiveAddressDereferenced(_code);
         }
 
         public static Boolean IsEvDword(Byte[] code)
@@ -132,5 +132,10 @@ namespace bugreport
 
             return _code[modRMIndex];
         }
+        
+        private static Byte getMod(Byte modrm)
+        {
+            return (Byte)((modrm >> 6) & 3);
+        }        
     }
 }

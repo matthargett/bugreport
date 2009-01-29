@@ -40,7 +40,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void AddTaintOnPointer()
         {
             var buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(1));
@@ -80,7 +80,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void EmptyBuffer()
         {
             pointer = new AbstractValue(new AbstractBuffer(new AbstractValue[] {}));
@@ -120,7 +120,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void NullCopyCtor()
         {
             pointer = new AbstractValue((AbstractValue) null);
@@ -178,7 +178,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void RequestedBufferTooLarge()
         {
             AbstractValue.GetNewBuffer(AbstractValue.MAX_BUFFER_SIZE + 1);
@@ -193,7 +193,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void ZeroSizeBuffer()
         {
             pointer = new AbstractValue(new AbstractValue[] {});

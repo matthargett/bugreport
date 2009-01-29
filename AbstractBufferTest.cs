@@ -27,7 +27,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void InvalidPointerAnd()
         {
             var one = new AbstractValue(0x1);
@@ -92,14 +92,14 @@ namespace bugreport
             var two = new AbstractValue(0x2);
             var three = new AbstractValue(0x3);
             var four = new AbstractValue(0x4);
-            AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
+            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
 
-            avBuffer[0] = one;
-            avBuffer[1] = two;
-            avBuffer[2] = three;
-            avBuffer[3] = four;
+            values[0] = one;
+            values[1] = two;
+            values[2] = three;
+            values[3] = four;
 
-            var buffer = new AbstractBuffer(avBuffer);
+            var buffer = new AbstractBuffer(values);
             Assert.AreEqual(one, buffer[0]);
             AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(3));
             Assert.AreEqual(four, modifiedBuffer[0]);
@@ -159,7 +159,7 @@ namespace bugreport
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
             var pointer = new AbstractBuffer(buffer);
 
-            //Access beyond buffer bounds forcing buffer to expand
+            // Access beyond buffer bounds forcing buffer to expand
             Assert.IsTrue(pointer[17].IsOOB);
             Assert.IsFalse(pointer[17].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[17].Value);
@@ -200,14 +200,14 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void PointerSubUnderflow()
         {
             new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Sub, new AbstractValue(1));
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void PointerUnknownOperation()
         {
             new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Unknown, null);

@@ -38,7 +38,7 @@ namespace bugreport
     [TestFixture]
     public class WellFormatted : ElfFileParserFixture
     {
-        #region Setup/Teardown
+        private Byte[] textData;
 
         [SetUp]
         public override void SetUp()
@@ -51,10 +51,6 @@ namespace bugreport
             stream.Write(textData, 0, textData.Length);
             parser = new ElfFileParser(stream);
         }
-
-        #endregion
-
-        private Byte[] textData;
 
         [Test]
         public void GetBytes()

@@ -21,17 +21,6 @@ namespace bugreport
             ZeroFlag = zeroFlag;
         }
 
-        public override Boolean Equals(object obj)
-        {
-            var opResult = (OperationResult) obj;
-            return (Value.Equals(opResult.Value)) && (ZeroFlag == opResult.ZeroFlag);
-        }
-
-        public override Int32 GetHashCode()
-        {
-            return Value.GetHashCode() ^ ZeroFlag.GetHashCode();
-        }
-
         public static Boolean operator ==(OperationResult a, OperationResult b)
         {
             return a.Equals(b);
@@ -40,6 +29,17 @@ namespace bugreport
         public static Boolean operator !=(OperationResult a, OperationResult b)
         {
             return !a.Equals(b);
+        }
+
+        public override Boolean Equals(object obj)
+        {
+            var operationResult = (OperationResult)obj;
+            return Value.Equals(operationResult.Value) && ZeroFlag == operationResult.ZeroFlag;
+        }
+
+        public override Int32 GetHashCode()
+        {
+            return Value.GetHashCode() ^ ZeroFlag.GetHashCode();
         }
     }
 
@@ -111,6 +111,16 @@ namespace bugreport
             set { registers[RegisterName.EAX] = value; }
         }
 
+        public static Boolean operator ==(MachineState a, MachineState b)
+        {
+            return a.Equals(b);
+        }
+
+        public static Boolean operator !=(MachineState a, MachineState b)
+        {
+            return !a.Equals(b);
+        }
+
         public override Boolean Equals(object obj)
         {
             var other = (MachineState) obj;
@@ -152,23 +162,12 @@ namespace bugreport
             return hashCode;
         }
 
-        public static Boolean operator ==(MachineState a, MachineState b)
-        {
-            return a.Equals(b);
-        }
-
-        public static Boolean operator !=(MachineState a, MachineState b)
-        {
-            return !a.Equals(b);
-        }
-
         public MachineState PushOntoStack(AbstractValue value)
         {
             MachineState newState = DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x4));
             newState.TopOfStack = new AbstractValue(value);
             return newState;
         }
-
 
         public MachineState DoOperation(OperatorEffect _operatorEffect, AbstractValue _offset)
         {
@@ -189,12 +188,14 @@ namespace bugreport
 
                     break;
                 }
+
                 default:
                 {
                     throw new ArgumentException(
                         String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
                 }
             }
+            
             return newState;
         }
 
@@ -211,6 +212,7 @@ namespace bugreport
                     break;
                 }
             }
+            
             return newState;
         }
 
@@ -271,7 +273,6 @@ namespace bugreport
             var result = new OperationResult();
             AbstractValue totalValue;
             UInt32 total;
-
 
             if (_operatorEffect == OperatorEffect.Assignment)
             {

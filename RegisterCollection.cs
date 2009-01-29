@@ -21,7 +21,7 @@ namespace bugreport
         EDI,
         Unknown,
         None
-    } ;
+    }
 
     public class RegisterCollection
     {
@@ -89,7 +89,7 @@ namespace bugreport
             for (UInt32 i = 0; i < registers.Length; ++i)
             {
                 AbstractValue value = registers[i];
-                result.Append(Enum.GetName(typeof (RegisterName), i) + "=" + value + "\t");
+                result.Append(Enum.GetName(typeof(RegisterName), i) + "=" + value + "\t");
                 if (value.ToString().Length < 8)
                 {
                     result.Append("\t");
@@ -100,6 +100,7 @@ namespace bugreport
                     result.Append(Environment.NewLine);
                 }
             }
+            
             return result.ToString();
         }
     }

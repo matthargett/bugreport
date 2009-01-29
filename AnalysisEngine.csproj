@@ -60,8 +60,6 @@
     <Compile Include="AbstractValueTest.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="AnalyzerTest.cs" />
-    <Compile Include="ArmEmulator.cs" />
-    <Compile Include="ArmEmulatorTest.cs" />
     <Compile Include="BitMathTest.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="CoverageExcludeAttribute.cs" />
@@ -70,6 +68,7 @@
     <Compile Include="ElfFileParserTest.cs" />
     <Compile Include="GLibcStartMainContract.cs" />
     <Compile Include="GLibcStartMainContractTest.cs" />
+    <Compile Include="InvalidOpcodeException.cs" />
     <Compile Include="MachineStateTest.cs" />
     <Compile Include="MallocContract.cs" />
     <Compile Include="ModRMTest.cs" />

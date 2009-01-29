@@ -33,6 +33,46 @@ namespace bugreport
             handleInputIfNecessary();
         }
 
+        protected void handleInputIfNecessary()
+        {
+            // TODO: cover this with a system-level test
+            Boolean enterPressed = false;
+            if (interactive)
+            {
+                while (!enterPressed)
+                {
+                    string input = getInput();
+                    var command = new DebuggerCommand(input);
+                    if (command.IsEnter)
+                    {
+                        enterPressed = true;
+                        continue;
+                    }
+                    
+                    if (command.IsStackPrint)
+                    {
+                        printStackFor(state);
+                        continue;
+                    }
+                    
+                    if (command.IsDisassemble)
+                    {
+                        string hex = input.Substring("disasm".Length + 1);
+                        byte[] code = DumpFileParser.getByteArrayFromHexString(hex);
+                        printOpcodeInfo(code);
+                        continue;
+                    }
+                    
+                    if (command.IsQuit)
+                    {
+                        Environment.Exit(0);
+                    }
+
+                    Console.WriteLine("invalid command");
+                }
+            }
+        }
+
         private void printOpcodeInfo(byte[] code)
         {
             foreach (Byte codeByte in code)
@@ -41,9 +81,11 @@ namespace bugreport
             }
 
             // magic numbers that happen to look good :)
-            Int32 numberOfTabs = 3 - code.Length / 3;
+            Int32 numberOfTabs = 3 - (code.Length / 3);
             for (Int32 i = 0; i < numberOfTabs; i++)
+            {
                 Console.Write("\t");
+            }
 
             Console.Write(OpcodeFormatter.GetInstructionName(code));
             Console.Write("\t");
@@ -51,7 +93,9 @@ namespace bugreport
             String operands = OpcodeFormatter.GetOperands(code, state.InstructionPointer);
             Console.Write(operands);
             if (operands.Length < 8)
+            {
                 Console.Write("\t");
+            }
 
             String encoding = OpcodeFormatter.GetEncoding(code);
             Console.Write("\t");
@@ -65,50 +109,11 @@ namespace bugreport
             return code;
         }
 
-
         private string getEffectiveAddressFor(EmulationEventArgs e)
         {
             state = e.MachineState;
             String address = String.Format("{0:x8}", state.InstructionPointer);
             return address;
-        }
-
-
-        protected void handleInputIfNecessary()
-        {
-            //TODO: cover this with a system-level test
-            Boolean enterPressed = false;
-            if (interactive)
-            {
-                while (!enterPressed)
-                {
-                    string input = getInput();
-                    var command = new DebuggerCommand(input);
-                    if (command.IsEnter)
-                    {
-                        enterPressed = true;
-                        continue;
-                    }
-                    if (command.IsStackPrint)
-                    {
-                        printStackFor(state);
-                        continue;
-                    }
-                    if (command.IsDisassemble)
-                    {
-                        string hex = input.Substring("disasm".Length + 1);
-                        byte[] code = DumpFileParser.getByteArrayFromHexString(hex);
-                        printOpcodeInfo(code);
-                        continue;
-                    }
-                    if (command.IsQuit)
-                    {
-                        Environment.Exit(0);
-                    }
-
-                    Console.WriteLine("invalid command");
-                }
-            }
         }
 
         private string getInput()

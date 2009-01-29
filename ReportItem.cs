@@ -19,6 +19,16 @@ namespace bugreport
             IsTainted = isTainted;
         }
 
+        public static Boolean operator ==(ReportItem a, ReportItem b)
+        {
+            return a.Equals(b);
+        }
+
+        public static Boolean operator !=(ReportItem a, ReportItem b)
+        {
+            return !a.Equals(b);
+        }
+        
         public override Boolean Equals(object obj)
         {
             var report = (ReportItem) obj;
@@ -29,16 +39,6 @@ namespace bugreport
         public override Int32 GetHashCode()
         {
             return InstructionPointer.GetHashCode() ^ IsTainted.GetHashCode();
-        }
-
-        public static Boolean operator ==(ReportItem a, ReportItem b)
-        {
-            return a.Equals(b);
-        }
-
-        public static Boolean operator !=(ReportItem a, ReportItem b)
-        {
-            return !a.Equals(b);
         }
     }
 }

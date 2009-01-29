@@ -63,11 +63,10 @@ namespace bugreport
 
     public class Analyzer
     {
+        public EventHandler<EmulationEventArgs> OnEmulationComplete;
         private readonly Opcode opcode = new X86Opcode();
         private readonly IParsable parser;
-        public EventHandler<EmulationEventArgs> OnEmulationComplete;
-
-        protected ReportCollection reportItems;
+        private ReportCollection reportItems;
 
         public Analyzer(IParsable parser)
         {
@@ -80,7 +79,7 @@ namespace bugreport
 
             reportItems = new ReportCollection();
         }
-
+        
         public ReadOnlyCollection<ReportItem> ActualReportItems
         {
             get { return new ReadOnlyCollection<ReportItem>(reportItems); }
@@ -97,38 +96,9 @@ namespace bugreport
             set { reportItems.OnReport = value; }
         }
 
-
-        private static RegisterCollection getRegistersForLinuxStart()
+        protected ReportCollection ReportItems
         {
-            var linuxMainDefaultValues = new RegisterCollection();
-
-            AbstractValue arg0 = new AbstractValue(1).AddTaint();
-
-            var argvBuffer = new[] {arg0};
-            var argvPointer = new AbstractValue(argvBuffer);
-            var argvPointerBuffer = new[] {argvPointer};
-            var argvPointerPointer = new AbstractValue(argvPointerBuffer);
-            AbstractValue[] stackBuffer = AbstractValue.GetNewBuffer(0x200);
-
-            var buffer = new AbstractBuffer(stackBuffer);
-            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
-
-            // linux ABI dictates
-            modifiedBuffer[5] = argvPointerPointer;
-
-            // gcc generates code that accesses this at some optimization levels
-            modifiedBuffer[0xfc] = new AbstractValue(1);
-
-            var stackPointer = new AbstractValue(modifiedBuffer);
-            linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
-
-            return linuxMainDefaultValues;
-        }
-
-
-        protected virtual MachineState runCode(MachineState _machineState, Byte[] code)
-        {
-            return X86Emulator.Run(reportItems, _machineState, code);
+            get { return reportItems; }
         }
 
         public void Run()
@@ -157,6 +127,38 @@ namespace bugreport
                     break;
                 }
             }
+        }
+
+        protected virtual MachineState runCode(MachineState _machineState, Byte[] code)
+        {
+            return X86Emulator.Run(reportItems, _machineState, code);
+        }
+
+        private static RegisterCollection getRegistersForLinuxStart()
+        {
+            var linuxMainDefaultValues = new RegisterCollection();
+
+            AbstractValue arg0 = new AbstractValue(1).AddTaint();
+
+            var argvBuffer = new[] {arg0};
+            var argvPointer = new AbstractValue(argvBuffer);
+            var argvPointerBuffer = new[] {argvPointer};
+            var argvPointerPointer = new AbstractValue(argvPointerBuffer);
+            AbstractValue[] stackBuffer = AbstractValue.GetNewBuffer(0x200);
+
+            var buffer = new AbstractBuffer(stackBuffer);
+            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
+
+            // linux ABI dictates
+            modifiedBuffer[5] = argvPointerPointer;
+
+            // gcc generates code that accesses this at some optimization levels
+            modifiedBuffer[0xfc] = new AbstractValue(1);
+
+            var stackPointer = new AbstractValue(modifiedBuffer);
+            linuxMainDefaultValues[RegisterName.ESP] = stackPointer;
+
+            return linuxMainDefaultValues;
         }
 
         private Byte[] extractInstruction(Byte[] instructions, UInt32 index)

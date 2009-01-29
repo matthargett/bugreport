@@ -17,6 +17,7 @@ namespace bugreport
         ReadOnlyCollection<ReportItem> ExpectedReportItems { get; }
 
         UInt32 BaseAddress { get; }
+        
         UInt32 EntryPointAddress { get; }
 
         Byte[] GetBytes();
@@ -26,7 +27,7 @@ namespace bugreport
     {
         private readonly List<ReportItem> expectedReportItems;
         private readonly String functionNameToParse = "main";
-        private readonly List<Byte[]> opCodeList;
+        private readonly List<Byte[]> opcodeList;
         private readonly StreamReader reader;
         private readonly Stream stream;
         private UInt32 baseAddress;
@@ -40,48 +41,7 @@ namespace bugreport
             this.stream.Position = 0;
             reader = new StreamReader(this.stream);
             expectedReportItems = new List<ReportItem>();
-            opCodeList = parse();
-        }
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            if (null != reader)
-            {
-                reader.Dispose();
-            }
-        }
-
-        #endregion
-
-        #region IParsable Members
-
-        public Byte[] GetBytes()
-        {
-            if (opCodeList.Count == 0)
-            {
-                return null;
-            }
-
-            Int32 total = 0;
-            foreach (var bytes in opCodeList)
-            {
-                total += bytes.Length;
-            }
-
-            int allByteCount = 0;
-            var allBytes = new Byte[total];
-            foreach (var bytes in opCodeList)
-            {
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    allBytes[i + allByteCount] = bytes[i];
-                }
-                allByteCount += bytes.Length;
-            }
-
-            return allBytes;
+            opcodeList = parse();
         }
 
         public ReadOnlyCollection<ReportItem> ExpectedReportItems
@@ -99,29 +59,60 @@ namespace bugreport
             get { return entryPointAddress; }
         }
 
-        #endregion
+        public static Byte[] getByteArrayFromHexString(String hex)
+        {
+            String[] hexStrings = hex.Split(new[] {' '});
+
+            var hexBytes = new Byte[hexStrings.Length];
+
+            for (Int32 i = 0; i < hexStrings.Length; ++i)
+            {
+                hexBytes[i] = Byte.Parse(hexStrings[i], NumberStyles.HexNumber);
+            }
+
+            return hexBytes;
+        }
+
+        public void Dispose()
+        {
+            if (null != reader)
+            {
+                reader.Dispose();
+            }
+        }
+
+        public Byte[] GetBytes()
+        {
+            if (opcodeList.Count == 0)
+            {
+                return null;
+            }
+
+            Int32 total = 0;
+            foreach (var bytes in opcodeList)
+            {
+                total += bytes.Length;
+            }
+
+            int allByteCount = 0;
+            var allBytes = new Byte[total];
+            foreach (var bytes in opcodeList)
+            {
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    allBytes[i + allByteCount] = bytes[i];
+                }
+                
+                allByteCount += bytes.Length;
+            }
+
+            return allBytes;
+        }
 
         private static UInt32 getAddressForLine(String line)
         {
             String address = line.Substring(0, 8);
             return UInt32.Parse(address, NumberStyles.HexNumber);
-        }
-
-        private void updateMainInfo(String line)
-        {
-            if (line.Length > 0 && line[0] >= '0' && line[0] <= '7')
-            {
-                if (line.Contains("<_start>:"))
-                {
-                    baseAddress = getAddressForLine(line);
-                    inTextSection = true;
-                }
-
-                if (line.Contains("<" + functionNameToParse + ">:"))
-                {
-                    entryPointAddress = getAddressForLine(line);
-                }
-            }
         }
 
         private static String getHexWithSpaces(String line)
@@ -161,33 +152,55 @@ namespace bugreport
             return hexString;
         }
 
-        public static Byte[] getByteArrayFromHexString(String hex)
-        {
-            String[] hexStrings = hex.Split(new[] {' '});
-
-            var hexBytes = new Byte[hexStrings.Length];
-
-            for (Int32 i = 0; i < hexStrings.Length; ++i)
-            {
-                hexBytes[i] = Byte.Parse(hexStrings[i], NumberStyles.HexNumber);
-            }
-
-            return hexBytes;
-        }
-
         private static Byte[] getHexFromString(String line)
         {
             if (line.Trim().Length == 0)
+            {
                 return null;
+            }
 
             String hex = getHexWithSpaces(line);
 
             if (null == hex)
+            {
                 return null;
+            }
 
             Byte[] hexBytes = getByteArrayFromHexString(hex);
 
             return hexBytes;
+        }
+
+        private static Boolean hasAnnotation(String line)
+        {
+            return line.Contains("//<OutOfBoundsMemoryAccess ");
+        }
+
+        private static ReportItem getAnnotation(String line)
+        {
+            Int32 locationIndex = line.IndexOf("=", StringComparison.Ordinal) + 1;
+            UInt32 location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), NumberStyles.HexNumber);
+            Int32 exploitableIndex = line.IndexOf("=", locationIndex + 1, StringComparison.Ordinal) + 1;
+            Boolean exploitable =
+                Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex) - "/>".Length));
+            return new ReportItem(location, exploitable);
+        }
+
+        private void updateMainInfo(String line)
+        {
+            if (line.Length > 0 && line[0] >= '0' && line[0] <= '7')
+            {
+                if (line.Contains("<_start>:"))
+                {
+                    baseAddress = getAddressForLine(line);
+                    inTextSection = true;
+                }
+
+                if (line.Contains("<" + functionNameToParse + ">:"))
+                {
+                    entryPointAddress = getAddressForLine(line);
+                }
+            }
         }
 
         private List<Byte[]> parse()
@@ -207,29 +220,15 @@ namespace bugreport
 
                 if (inTextSection)
                 {
-                    Byte[] opCode = getHexFromString(currentLine);
-                    if (opCode != null)
+                    Byte[] opcode = getHexFromString(currentLine);
+                    if (opcode != null)
                     {
                         opcodes.Add(getHexFromString(currentLine));
                     }
                 }
             }
+            
             return opcodes;
-        }
-
-        private static Boolean hasAnnotation(String line)
-        {
-            return line.Contains("//<OutOfBoundsMemoryAccess ");
-        }
-
-        private static ReportItem getAnnotation(String line)
-        {
-            Int32 locationIndex = line.IndexOf("=", StringComparison.Ordinal) + 1;
-            UInt32 location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), NumberStyles.HexNumber);
-            Int32 exploitableIndex = line.IndexOf("=", locationIndex + 1, StringComparison.Ordinal) + 1;
-            Boolean exploitable =
-                Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex) - "/>".Length));
-            return new ReportItem(location, exploitable);
         }
     }
 }
