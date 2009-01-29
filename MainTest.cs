@@ -5,22 +5,22 @@
 // See LICENSE.txt for details.
 
 using System;
-using NUnit.Framework;
-using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
+using NUnit.Framework;
 
 namespace bugreport
 {
     [TestFixture]
     //[Ignore("long")]
-    [Platform(Exclude="Mono")]
+    [Platform(Exclude = "Mono")]
     public class MainTest
     {
         // TODO: This assumes that the test runner is run from the build directory.
-        private String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
-        private String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
+        private readonly String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
+        private readonly String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
         private void waitForAnalysisToFinish(Process analysisProcess)
         {
@@ -33,7 +33,7 @@ namespace bugreport
 
         private List<String> getOutputFromAnalysis(Process analysisProcess)
         {
-            List<String> messages = new List<String>();
+            var messages = new List<String>();
 
             analysisProcess.StandardOutput.ReadLine(); // version string
             analysisProcess.StandardOutput.ReadLine(); // blank line
@@ -48,7 +48,7 @@ namespace bugreport
 
         private Process getAnalysisProcessForFileName(String fileName)
         {
-            Process analysisProcess = new Process();
+            var analysisProcess = new Process();
             analysisProcess.StartInfo.FileName = "bugreport.exe";
             analysisProcess.StartInfo.Arguments = "\"" + fileName + "\"";
             analysisProcess.StartInfo.RedirectStandardOutput = true;
@@ -74,7 +74,7 @@ namespace bugreport
         {
             String[] testSpecifications = File.ReadAllLines(testDataFile);
 
-            foreach(String testSpecification in testSpecifications)
+            foreach (String testSpecification in testSpecifications)
             {
                 if (testSpecification.Trim().StartsWith("#") || testSpecification.Trim().Length == 0)
                 {

@@ -11,8 +11,8 @@ namespace bugreport
     public class AbstractBuffer
     {
         private readonly Int32 allocatedLength;
-        private AbstractValue[] storage;
         private UInt32 baseIndex;
+        private AbstractValue[] storage;
 
         public AbstractBuffer(AbstractValue[] _buffer)
         {
@@ -35,7 +35,7 @@ namespace bugreport
                 // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
                 if (IsIndexPastBounds(index))
                 {
-                    extend(baseIndex + (UInt32)index);
+                    extend(baseIndex + (UInt32) index);
                     return storage[baseIndex + index];
                 }
 
@@ -51,7 +51,7 @@ namespace bugreport
 
                 if (IsIndexPastBounds(index))
                 {
-                    extend(baseIndex + (UInt32)index);
+                    extend(baseIndex + (UInt32) index);
                     storage[baseIndex + index] = value;
                 }
                 else
@@ -81,42 +81,46 @@ namespace bugreport
             {
                 case OperatorEffect.Assignment:
                 {
-                    AbstractBuffer result = new AbstractBuffer(lhs);
-        
+                    var result = new AbstractBuffer(lhs);
+
                     return result;
                 }
 
                 case OperatorEffect.Add:
                 {
-                    AbstractBuffer result = new AbstractBuffer(lhs);
+                    var result = new AbstractBuffer(lhs);
                     result.baseIndex += _rhs.Value;
-        
+
                     return result;
                 }
-        
+
                 case OperatorEffect.Sub:
                 {
-                    AbstractBuffer result = new AbstractBuffer(lhs);
-        
+                    var result = new AbstractBuffer(lhs);
+
                     if (result.baseIndex < _rhs.Value)
                     {
-                        throw new ArgumentOutOfRangeException(String.Format("Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}", result.baseIndex, _rhs.Value));
+                        throw new ArgumentOutOfRangeException(
+                            String.Format(
+                                "Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}",
+                                result.baseIndex, _rhs.Value));
                     }
-        
+
                     result.baseIndex -= _rhs.Value;
                     return result;
                 }
-        
+
                 case OperatorEffect.And:
                 {
-                    AbstractBuffer result = new AbstractBuffer(lhs);
-        
+                    var result = new AbstractBuffer(lhs);
+
                     result.baseIndex &= _rhs.Value;
                     return result;
                 }
-        
+
                 default:
-                    throw new ArgumentException(String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+                    throw new ArgumentException(
+                        String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
             }
         }
 
@@ -131,7 +135,7 @@ namespace bugreport
             _newLength = _newLength + 1;
             if (_newLength >= Length)
             {
-                AbstractValue[] _copyTo = new AbstractValue[_newLength];
+                var _copyTo = new AbstractValue[_newLength];
 
                 Int32 i;
                 for (i = 0; i < storage.Length; i++)

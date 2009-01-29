@@ -7,14 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using bugreport;
 
 namespace bugreport
 {
     public static class MainClass
     {
-        const String VERSION = "0.1";
-        static Analyzer analyzer;
+        private const String VERSION = "0.1";
+        private static Analyzer analyzer;
 
         public static void Main(String[] arguments)
         {
@@ -45,17 +44,19 @@ namespace bugreport
 
             analyzeFiles(Options.Filenames, Options.IsTracing, Options.IsDebugging);
 
-            if (analyzer.ExpectedReportItems.Count != 0 && (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count) )
+            if (analyzer.ExpectedReportItems.Count != 0 &&
+                (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count))
             {
                 Console.WriteLine("Expectations Were Not Met:");
-                Console.WriteLine("Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
+                Console.WriteLine(
+                    "Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
                 Environment.Exit(-1);
             }
         }
 
         private static void analyzeFiles(IEnumerable<string> _fileNames, Boolean _isTracing, Boolean _isDebugging)
         {
-            foreach(String fileName in _fileNames)
+            foreach (String fileName in _fileNames)
             {
                 Console.WriteLine();
                 Console.WriteLine("Interpreting file: " + fileName);

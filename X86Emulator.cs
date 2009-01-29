@@ -14,13 +14,13 @@ namespace bugreport
     public class InvalidOpcodeException : Exception
     {
         public InvalidOpcodeException(params Byte[] code)
-                : base(FormatOpcodes(code))
+            : base(FormatOpcodes(code))
         {
         }
 
         public static String FormatOpcodes(params Byte[] code)
         {
-            StringBuilder message = new StringBuilder("Invalid opcode: ");
+            var message = new StringBuilder("Invalid opcode: ");
 
 
             foreach (Byte opcode in code)
@@ -36,7 +36,8 @@ namespace bugreport
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState, Byte[] code)
+        public static MachineState Run(Collection<ReportItem> reportItemCollector, MachineState machineState,
+                                       Byte[] code)
         {
             if (code.Length == 0)
             {
@@ -44,20 +45,21 @@ namespace bugreport
             }
 
             MachineState afterState = emulateOpcode(reportItemCollector, machineState, code);
-            
+
             if (!branchTaken(machineState, afterState))
             {
                 afterState.InstructionPointer += opcode.GetInstructionLength(code);
             }
             return afterState;
         }
-        
+
         private static Boolean branchTaken(MachineState before, MachineState after)
         {
             return before.InstructionPointer != after.InstructionPointer;
         }
 
-        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, MachineState machineState, Byte[] code)
+        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, MachineState machineState,
+                                                  Byte[] code)
         {
             MachineState state = machineState;
             RegisterName sourceRegister, destinationRegister;
@@ -77,13 +79,13 @@ namespace bugreport
                     state = state.DoOperation(destinationRegister, op, new AbstractValue(immediate));
                     return state;
                 }
-        
+
                 case OpcodeEncoding.rAxOv:
                 {
                     state.Registers[RegisterName.EAX] = state.DataSegment[BitMath.BytesToDword(code, 1)];
                     return state;
                 }
-        
+
                 case OpcodeEncoding.rBP:
                 case OpcodeEncoding.rSI:
                 case OpcodeEncoding.rSP:
@@ -105,7 +107,7 @@ namespace bugreport
                         case StackEffect.Push:
                         {
                             state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
-            
+
                             if (opcode.HasSourceRegister(code))
                             {
                                 sourceRegister = opcode.GetSourceRegister(code);
@@ -117,21 +119,24 @@ namespace bugreport
                             }
                             else
                             {
-                                throw new InvalidOperationException(String.Format("tried to push something that wasn't a register or an immediate @ 0x{0:x8}", state.InstructionPointer));
+                                throw new InvalidOperationException(
+                                    String.Format(
+                                        "tried to push something that wasn't a register or an immediate @ 0x{0:x8}",
+                                        state.InstructionPointer));
                             }
-            
+
                             state.Registers[RegisterName.ESP].PointsTo[0] = sourceValue;
 
                             // TODO(matt_hargett): next step in correct stack emulation,, but breaks PushESPPopESP test
                             //                        state = state.PushOntoStack(sourceValue);
-            
+
                             break;
                         }
                     }
-        
+
                     return state;
                 }
-        
+
                 case OpcodeEncoding.EvIz:
                 case OpcodeEncoding.EvIb:
                 case OpcodeEncoding.EbIb:
@@ -140,12 +145,12 @@ namespace bugreport
                 {
                     destinationRegister = opcode.GetDestinationRegister(code);
                     index = 0;
-        
+
                     if (ModRM.HasIndex(code))
                     {
                         index = ModRM.GetIndex(code);
                     }
-        
+
                     if (opcode.HasImmediate(code))
                     {
                         sourceValue = new AbstractValue(opcode.GetImmediate(code));
@@ -155,23 +160,23 @@ namespace bugreport
                         sourceRegister = ModRM.GetGv(code);
                         sourceValue = state.Registers[sourceRegister];
                     }
-        
+
                     //if (ModRM.HasOffset(code))
                     //{
                     //    UInt32 offset = ModRM.GetOffset(code);
                     //    state.DataSegment[offset] = sourceValue;
                     //    return state;
                     //}
-        
+
                     if (ModRM.IsEffectiveAddressDereferenced(code))
                     {
                         if (!state.Registers[destinationRegister].IsPointer)
                         {
                             throw new InvalidOperationException(
                                 "Trying to dereference non-pointer in register " + destinationRegister
-                            );
+                                );
                         }
-        
+
                         state = state.DoOperation(destinationRegister, index, op, sourceValue);
                         if (state.Registers[destinationRegister].PointsTo[index].IsOOB)
                         {
@@ -186,17 +191,17 @@ namespace bugreport
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
                         }
                     }
-        
+
                     return state;
                 }
-        
+
                 case OpcodeEncoding.GvEv:
                 case OpcodeEncoding.GvEb:
                 {
                     sourceRegister = ModRM.GetEv(code);
                     destinationRegister = ModRM.GetGv(code);
                     sourceValue = state.Registers[sourceRegister];
-        
+
                     if (ModRM.HasOffset(code))
                     {
                         UInt32 offset = ModRM.GetOffset(code);
@@ -206,25 +211,26 @@ namespace bugreport
                     {
                         if (!sourceValue.IsPointer)
                         {
-                            throw new InvalidOperationException(String.Format("Trying to dereference null pointer in register {0}.", sourceRegister));
+                            throw new InvalidOperationException(
+                                String.Format("Trying to dereference null pointer in register {0}.", sourceRegister));
                         }
-        
+
                         index = 0;
-        
+
                         if (ModRM.HasIndex(code))
                             index = ModRM.GetIndex(code);
-        
+
                         sourceValue = sourceValue.PointsTo[index];
                         if (sourceValue.IsOOB)
                         {
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
                         }
                     }
-        
+
                     state = state.DoOperation(destinationRegister, op, sourceValue);
                     return state;
                 }
-        
+
                 case OpcodeEncoding.GvM:
                 {
                     // GvM, M may refer to [base register + offset]
@@ -232,18 +238,18 @@ namespace bugreport
                     {
                         throw new InvalidOperationException("GvM must be dereferenced");
                     }
-        
+
                     destinationRegister = opcode.GetDestinationRegister(code);
                     AbstractValue baseRegisterValue;
                     index = 0;
-        
+
                     // TODO: handle the [dword] special case
                     if (ModRM.HasSIB(code))
                     {
                         UInt32 scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
                         UInt32 scaler = SIB.GetScaler(code);
                         baseRegisterValue = state.Registers[SIB.GetBaseRegister(code)];
-                        index = (Int32)(scaledRegisterValue * scaler);
+                        index = (Int32) (scaledRegisterValue * scaler);
                     }
                     else
                     {
@@ -252,56 +258,56 @@ namespace bugreport
                         {
                             index = ModRM.GetIndex(code);
                         }
-        
+
                         baseRegisterValue = state.Registers[sourceRegister];
                     }
-        
+
                     // TODO: review these casts of index for possible elimination
                     sourceValue = new AbstractValue(
-                                      baseRegisterValue.PointsTo.DoOperation(
-                                          OperatorEffect.Add,
-                                          new AbstractValue((UInt32)index)
-                                      )
-                                  );
-        
+                        baseRegisterValue.PointsTo.DoOperation(
+                            OperatorEffect.Add,
+                            new AbstractValue((UInt32) index)
+                            )
+                        );
+
                     state = state.DoOperation(destinationRegister, OperatorEffect.Assignment, sourceValue);
                     if (state.Registers[destinationRegister].IsOOB)
                     {
-                        ReportItem reportItem = new ReportItem(state.InstructionPointer, sourceValue.IsTainted);
+                        var reportItem = new ReportItem(state.InstructionPointer, sourceValue.IsTainted);
                         reportItems.Add(reportItem);
                     }
-        
+
                     return state;
                 }
-        
+
                 case OpcodeEncoding.ObAL:
                 {
                     UInt32 offset;
-        
+
                     AbstractValue dwordValue = state.Registers[RegisterName.EAX];
                     AbstractValue byteValue = dwordValue.TruncateValueToByte();
-        
+
                     offset = BitMath.BytesToDword(code, 1); // This is 1 for ObAL
-        
+
                     if (!state.DataSegment.ContainsKey(offset))
                     {
                         state.DataSegment[offset] = new AbstractValue();
                     }
-        
+
                     state = state.DoOperation(offset, op, byteValue);
                     return state;
                 }
-        
+
                 case OpcodeEncoding.Jz:
                 {
                     //TODO: should push EIP + code.Length onto stack
                     Boolean contractSatisfied = false;
-                    MallocContract mallocContract = new MallocContract();
-                    GLibcStartMainContract glibcStartMainContract = new GLibcStartMainContract();
-                    List<Contract> contracts = new List<Contract>();                
+                    var mallocContract = new MallocContract();
+                    var glibcStartMainContract = new GLibcStartMainContract();
+                    var contracts = new List<Contract>();
                     contracts.Add(mallocContract);
                     contracts.Add(glibcStartMainContract);
-                    
+
                     foreach (Contract contract in contracts)
                     {
                         if (contract.IsSatisfiedBy(state, code))
@@ -310,33 +316,33 @@ namespace bugreport
                             state = contract.Execute(state);
                         }
                     }
-                    
-                    if ( !contractSatisfied )
+
+                    if (!contractSatisfied)
                     {
-                        UInt32 returnAddress = state.InstructionPointer + (UInt32)code.Length;
+                        UInt32 returnAddress = state.InstructionPointer + (UInt32) code.Length;
                         state = state.PushOntoStack(new AbstractValue(returnAddress));
                         state.InstructionPointer = opcode.GetEffectiveAddress(code, state.InstructionPointer);
-                    }                
-                    
+                    }
+
                     return state;
                 }
-        
+
                 case OpcodeEncoding.Jb:
                 {
                     UInt32 offset;
                     offset = code[1];
-                    
+
                     state = state.DoOperation(op, new AbstractValue(offset));
                     state.InstructionPointer += opcode.GetInstructionLength(code);
-        
+
                     return state;
                 }
-        
+
                 case OpcodeEncoding.None:
                 {
                     return state;
                 }
-        
+
                 default:
                 {
                     throw new InvalidOpcodeException(code);

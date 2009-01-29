@@ -11,15 +11,13 @@ namespace bugreport
 {
     public class AbstractValue
     {
-        AbstractBuffer pointsTo;
-        UInt32 storage;
-        Boolean tainted;
-        Boolean isOOB;
-
-        public const UInt32 UNKNOWN = 0xb4dc0d3d;
         public const UInt32 MAX_BUFFER_SIZE = 25600000;
+        public const UInt32 UNKNOWN = 0xb4dc0d3d;
+        private readonly AbstractBuffer pointsTo;
+        private readonly UInt32 storage;
+        private Boolean tainted;
 
-        public AbstractValue() 
+        public AbstractValue()
         {
             storage = UNKNOWN;
         }
@@ -30,7 +28,7 @@ namespace bugreport
             {
                 throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
             }
-              
+
             storage = 0xdeadbeef;
             pointsTo = new AbstractBuffer(_willPointTo);
         }
@@ -41,7 +39,7 @@ namespace bugreport
             {
                 throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
             }
-            
+
             storage = 0xdeadbeef;
             pointsTo = new AbstractBuffer(_willPointTo);
         }
@@ -55,7 +53,7 @@ namespace bugreport
 
             storage = _copyMe.Value;
             tainted = _copyMe.IsTainted;
-            isOOB = _copyMe.IsOOB;
+            IsOOB = _copyMe.IsOOB;
 
             if (_copyMe.PointsTo != null)
             {
@@ -66,81 +64,6 @@ namespace bugreport
         public AbstractValue(UInt32 _value)
         {
             storage = _value;
-        }
-
-        public override Boolean Equals(object obj)
-        {
-            AbstractValue other = obj as AbstractValue;
-
-            if (null == other)
-            {
-                return false;
-            }
-
-            return this.Value == other.Value &&
-                   this.IsOOB == other.IsOOB &&
-                   this.IsTainted == other.IsTainted &&
-                   this.PointsTo == other.PointsTo;
-        }
-
-        public override Int32 GetHashCode()
-        {
-            Int32 hashCode = this.Value.GetHashCode() ^ this.IsOOB.GetHashCode() ^
-                             this.IsTainted.GetHashCode();
-
-            if (this.PointsTo != null)
-            {
-                hashCode ^= this.PointsTo.GetHashCode();
-            }
-
-            return hashCode;
-        }
-
-        public static AbstractValue[] GetNewBuffer(UInt32 size)
-        {
-            if (size > MAX_BUFFER_SIZE)
-            {
-                throw new ArgumentOutOfRangeException("size", "Size specified larger than maximum allowed: " + MAX_BUFFER_SIZE);
-            }
-            
-            AbstractValue[] buffer = new AbstractValue[size];
-            for (UInt32 i = 0; i < size; i++)
-            {
-                buffer[i] = new AbstractValue();
-            }
-            
-            return buffer;
-        }
-
-        public AbstractValue TruncateValueToByte()
-        {
-            UInt32 byteValue = this.Value & 0xff;
-            AbstractValue truncatedValue = new AbstractValue(byteValue);
-            truncatedValue.IsTainted = this.IsTainted;
-
-            return truncatedValue;
-        }
-
-        public AbstractValue AddTaint()
-        {
-            if (this.PointsTo != null)
-            {
-                throw new InvalidOperationException("Cannot AddTaint to a pointer");
-            }
-
-            AbstractValue taintedValue = new AbstractValue(this);
-            taintedValue.IsTainted = true;
-            return taintedValue;
-        }
-
-        public AbstractValue AddTaintIf(Boolean condition)
-        {
-            if (condition)
-            {
-                return AddTaint();
-            }
-
-            return this;
         }
 
         public AbstractBuffer PointsTo
@@ -155,11 +78,7 @@ namespace bugreport
             private set { tainted = value; }
         }
 
-        public Boolean IsOOB
-        {
-            get { return isOOB; }
-            set { isOOB = value; }
-        }
+        public Boolean IsOOB { get; set; }
 
         public Boolean IsInitialized
         {
@@ -176,6 +95,82 @@ namespace bugreport
             get { return pointsTo != null; }
         }
 
+        public override Boolean Equals(object obj)
+        {
+            var other = obj as AbstractValue;
+
+            if (null == other)
+            {
+                return false;
+            }
+
+            return Value == other.Value &&
+                   IsOOB == other.IsOOB &&
+                   IsTainted == other.IsTainted &&
+                   PointsTo == other.PointsTo;
+        }
+
+        public override Int32 GetHashCode()
+        {
+            Int32 hashCode = Value.GetHashCode() ^ IsOOB.GetHashCode() ^
+                             IsTainted.GetHashCode();
+
+            if (PointsTo != null)
+            {
+                hashCode ^= PointsTo.GetHashCode();
+            }
+
+            return hashCode;
+        }
+
+        public static AbstractValue[] GetNewBuffer(UInt32 size)
+        {
+            if (size > MAX_BUFFER_SIZE)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "size", "Size specified larger than maximum allowed: " + MAX_BUFFER_SIZE);
+            }
+
+            var buffer = new AbstractValue[size];
+            for (UInt32 i = 0; i < size; i++)
+            {
+                buffer[i] = new AbstractValue();
+            }
+
+            return buffer;
+        }
+
+        public AbstractValue TruncateValueToByte()
+        {
+            UInt32 byteValue = Value & 0xff;
+            var truncatedValue = new AbstractValue(byteValue);
+            truncatedValue.IsTainted = IsTainted;
+
+            return truncatedValue;
+        }
+
+        public AbstractValue AddTaint()
+        {
+            if (PointsTo != null)
+            {
+                throw new InvalidOperationException("Cannot AddTaint to a pointer");
+            }
+
+            var taintedValue = new AbstractValue(this);
+            taintedValue.IsTainted = true;
+            return taintedValue;
+        }
+
+        public AbstractValue AddTaintIf(Boolean condition)
+        {
+            if (condition)
+            {
+                return AddTaint();
+            }
+
+            return this;
+        }
+
         public override String ToString()
         {
             String result = String.Empty;
@@ -183,13 +178,13 @@ namespace bugreport
             if (tainted)
                 result += "t";
 
-            UInt32 valueToPrint = this.Value;
+            UInt32 valueToPrint = Value;
 
             if (pointsTo != null)
             {
                 AbstractValue pointer = pointsTo[0];
 
-                StringBuilder newResult = new StringBuilder(result);
+                var newResult = new StringBuilder(result);
 
                 const Byte maximumPointerDepth = 100;
                 Int32 count = maximumPointerDepth;

@@ -14,9 +14,9 @@ namespace bugreport
         [Test]
         public void Equality()
         {
-            ReportItem same = new ReportItem(123, false);
-            ReportItem same2 = new ReportItem(123, false);
-            ReportItem different = new ReportItem(456, false);
+            var same = new ReportItem(123, false);
+            var same2 = new ReportItem(123, false);
+            var different = new ReportItem(456, false);
 
             Assert.IsTrue(same.Equals(same2));
             Assert.IsFalse(same.Equals(different));
@@ -24,8 +24,8 @@ namespace bugreport
             Assert.IsTrue(same == same2);
             Assert.IsTrue(same != different);
 
-            Assert.AreEqual(same.GetHashCode(),same2.GetHashCode());
-            Assert.AreNotEqual(same.GetHashCode(),different.GetHashCode());
+            Assert.AreEqual(same.GetHashCode(), same2.GetHashCode());
+            Assert.AreNotEqual(same.GetHashCode(), different.GetHashCode());
         }
     }
 }

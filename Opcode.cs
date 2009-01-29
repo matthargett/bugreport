@@ -8,23 +8,60 @@ using System;
 
 namespace bugreport
 {
-    public enum StackEffect {None, Push, Pop};
-
-    public enum OperatorEffect 
+    public enum StackEffect
     {
-        Unknown, Assignment, Add, Sub, None,
-        And, Shr, Shl, Xor,
-        Return, Leave, Jump, Cmp, Jnz, Call,
-    };
+        None,
+        Push,
+        Pop
+    } ;
+
+    public enum OperatorEffect
+    {
+        Unknown,
+        Assignment,
+        Add,
+        Sub,
+        None,
+        And,
+        Shr,
+        Shl,
+        Xor,
+        Return,
+        Leave,
+        Jump,
+        Cmp,
+        Jnz,
+        Call,
+    } ;
 
     public enum OpcodeEncoding
     {
-        Unknown, None, EvGv, EvIb, EbGb,  EvIz, EbIb,
-        GvEv, GvEb, Iz, GvM,
-        rAxIv, rAxIz, rAxOv, ObAL, 
-        rAX, rBX, rCX, rDX, rSI, rSP, rBP,
-        Jz, Jb, Int3
-    };
+        Unknown,
+        None,
+        EvGv,
+        EvIb,
+        EbGb,
+        EvIz,
+        EbIb,
+        GvEv,
+        GvEb,
+        Iz,
+        GvM,
+        rAxIv,
+        rAxIz,
+        rAxOv,
+        ObAL,
+        rAX,
+        rBX,
+        rCX,
+        rDX,
+        rSI,
+        rSP,
+        rBP,
+        Jz,
+        Jb,
+        Int3
+    } ;
 
     public interface Opcode
     {
@@ -37,11 +74,11 @@ namespace bugreport
 
         Boolean HasImmediate(Byte[] code);
         UInt32 GetImmediate(Byte[] code);
-        
+
         Byte GetInstructionLength(Byte[] code);
         Byte GetInstructionLength(Byte[] code, UInt32 index);
         Byte GetOpcodeLength(Byte[] code);
-        
+
         RegisterName GetSourceRegister(Byte[] code);
         RegisterName GetDestinationRegister(Byte[] code);
         Boolean HasSourceRegister(Byte[] code);

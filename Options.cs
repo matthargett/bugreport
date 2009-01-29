@@ -5,9 +5,9 @@
 // See LICENSE.txt for details.
 
 using System;
-using System.IO;
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 
 namespace bugreport
 {
@@ -21,19 +21,36 @@ namespace bugreport
 
     public static class Options
     {
+        private static ReadOnlyCollection<String> filenames;
         private static FileResolver fileResolver = new FileResolver();
 
         private static String functionToAnalyze;
-        private static ReadOnlyCollection<String> filenames;
-        private static Boolean isTracing;
         private static Boolean isDebugging;
+        private static Boolean isTracing;
 
         internal static FileResolver FileResolver
         {
-            set
-            {
-                fileResolver = value;
-            }
+            set { fileResolver = value; }
+        }
+
+        public static String FunctionToAnalyze
+        {
+            get { return functionToAnalyze; }
+        }
+
+        public static ReadOnlyCollection<String> Filenames
+        {
+            get { return filenames; }
+        }
+
+        public static Boolean IsTracing
+        {
+            get { return isTracing; }
+        }
+
+        public static Boolean IsDebugging
+        {
+            get { return isDebugging; }
         }
 
         public static void ParseArguments(String[] commandLine)
@@ -46,12 +63,11 @@ namespace bugreport
             {
                 isTracing = true;
             }
-
         }
 
         private static String getFunctionToAnalyze(String[] arguments)
         {
-            for (Int32 i=0; i < arguments.Length; i++)
+            for (Int32 i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i].StartsWith("--function"))
                 {
@@ -68,14 +84,6 @@ namespace bugreport
             return "_start";
         }
 
-        public static String FunctionToAnalyze
-        {
-            get
-            {
-                return functionToAnalyze;
-            }
-        }
-
         private static ReadOnlyCollection<String> getFilenames(String[] arguments)
         {
             String fileArgument = arguments[arguments.Length - 1];
@@ -84,7 +92,8 @@ namespace bugreport
             {
                 String path;
 
-                if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) || fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
+                if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) ||
+                    fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
                 {
                     Int32 directorySeparatorIndex = fileArgument.LastIndexOf(Path.DirectorySeparatorChar);
                     if (-1 == directorySeparatorIndex)
@@ -105,7 +114,7 @@ namespace bugreport
             }
             else
             {
-                List<String> fileNames = new List<String>();
+                var fileNames = new List<String>();
                 foreach (String argument in arguments)
                 {
                     if (!argument.StartsWith("--"))
@@ -115,14 +124,6 @@ namespace bugreport
                 }
 
                 return fileNames.AsReadOnly();
-            }
-        }
-
-        public static ReadOnlyCollection<String> Filenames
-        {
-            get
-            {
-                return filenames;
             }
         }
 
@@ -150,22 +151,6 @@ namespace bugreport
             }
 
             return false;
-        }
-        
-        public static Boolean IsTracing
-        {
-            get
-            {
-                return isTracing;
-            }
-        }
-
-        public static Boolean IsDebugging
-        {
-            get
-            {
-                return isDebugging;
-            }
         }
     }
 }

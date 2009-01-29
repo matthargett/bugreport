@@ -10,17 +10,18 @@ namespace bugreport
 {
     public static class ModRM
     {
-        static readonly Opcode opcode = new X86Opcode();
+        private static readonly Opcode opcode = new X86Opcode();
 
         private static Byte getMod(Byte modrm)
         {
-            return (Byte)((modrm >> 6) & 3);
+            return (Byte) ((modrm >> 6) & 3);
         }
 
         public static Byte GetRM(Byte modrm)
         {
-            return (Byte)(modrm & 7);
+            return (Byte) (modrm & 7);
         }
+
         public static RegisterName GetEv(Byte[] code)
         {
             if (HasSIB(code))
@@ -29,19 +30,19 @@ namespace bugreport
             }
 
             Byte modRM = getModRM(code);
-            return (RegisterName)(modRM & 7);
+            return (RegisterName) (modRM & 7);
         }
 
         public static RegisterName GetGv(Byte[] code)
         {
             Byte modRM = getModRM(code);
-            return (RegisterName)((modRM >> 3) & 7);
+            return (RegisterName) ((modRM >> 3) & 7);
         }
 
         public static Byte GetOpcodeGroupIndex(Byte[] _code)
         {
             Byte modRM = getModRM(_code);
-            return (Byte)((modRM >> 3) & 7);
+            return (Byte) ((modRM >> 3) & 7);
         }
 
         public static Boolean HasIndex(Byte[] _code)
@@ -54,7 +55,8 @@ namespace bugreport
         public static Byte GetIndex(Byte[] _code)
         {
             if (!HasIndex(_code))
-                throw new InvalidOperationException("For ModRM that does not specify an index, usage of GetIndex is invalid.");
+                throw new InvalidOperationException(
+                    "For ModRM that does not specify an index, usage of GetIndex is invalid.");
 
             UInt32 modRMIndex = opcode.GetOpcodeLength(_code);
             Byte modRM = getModRM(_code);
@@ -64,7 +66,7 @@ namespace bugreport
             {
                 case 1:
                 {
-                    return _code[modRMIndex+1];
+                    return _code[modRMIndex + 1];
                 }
                 default:
                 {

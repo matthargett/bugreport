@@ -8,7 +8,7 @@ using System;
 
 namespace bugreport
 {
-    class DebuggerView
+    internal class DebuggerView
     {
         private readonly Boolean interactive;
         private MachineState state;
@@ -58,15 +58,15 @@ namespace bugreport
             Console.WriteLine(encoding);
         }
 
-        Byte[] getCodeFor(EmulationEventArgs e)
+        private Byte[] getCodeFor(EmulationEventArgs e)
         {
-            Byte[] code = new Byte[e.Code.Count];
+            var code = new Byte[e.Code.Count];
             e.Code.CopyTo(code, 0);
             return code;
         }
 
 
-        string getEffectiveAddressFor(EmulationEventArgs e)
+        private string getEffectiveAddressFor(EmulationEventArgs e)
         {
             state = e.MachineState;
             String address = String.Format("{0:x8}", state.InstructionPointer);
@@ -82,7 +82,7 @@ namespace bugreport
             {
                 while (!enterPressed)
                 {
-                    var input = getInput();
+                    string input = getInput();
                     var command = new DebuggerCommand(input);
                     if (command.IsEnter)
                     {
@@ -96,8 +96,8 @@ namespace bugreport
                     }
                     if (command.IsDisassemble)
                     {
-                        var hex = input.Substring("disasm".Length + 1);
-                        var code = DumpFileParser.getByteArrayFromHexString(hex);
+                        string hex = input.Substring("disasm".Length + 1);
+                        byte[] code = DumpFileParser.getByteArrayFromHexString(hex);
                         printOpcodeInfo(code);
                         continue;
                     }
@@ -120,7 +120,7 @@ namespace bugreport
         private void printStackFor(MachineState state)
         {
             AbstractValue esp = state.Registers[RegisterName.ESP];
-            
+
             Console.WriteLine("Stack dump");
             Console.WriteLine("esp-8\t\t esp-4\t\t esp");
             Console.WriteLine("{0}\t\t {1}\t\t {2}", esp.PointsTo[-2], esp.PointsTo[-1], esp.PointsTo[0]);

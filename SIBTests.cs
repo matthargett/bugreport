@@ -12,7 +12,7 @@ namespace bugreport
     [TestFixture]
     public class SIBTests
     {
-        Byte[] code;
+        private Byte[] code;
 
         [Test]
         public void EvGvSIBNoIndexToEspFromEax()
@@ -20,6 +20,36 @@ namespace bugreport
             code = new Byte[] {0x89, 0x04, 0x24};
             Assert.IsTrue(ModRM.HasSIB(code));
             Assert.AreEqual(RegisterName.ESP, SIB.GetBaseRegister(code));
+        }
+
+        [Test]
+        [ExpectedException(typeof (InvalidOperationException))]
+        public void GetBaseRegisterWhenNoSIBPresent()
+        {
+            // mov    ebp,esp
+            code = new Byte[] {0x89, 0xe5};
+            Assert.IsFalse(ModRM.HasSIB(code));
+            SIB.GetBaseRegister(code);
+        }
+
+        [Test]
+        [ExpectedException(typeof (InvalidOperationException))]
+        public void GetScaledRegisterWhenNoSIBPresent()
+        {
+            // mov    ebp,esp
+            code = new Byte[] {0x89, 0xe5};
+            Assert.IsFalse(ModRM.HasSIB(code));
+            SIB.GetScaledRegister(code);
+        }
+
+        [Test]
+        [ExpectedException(typeof (InvalidOperationException))]
+        public void GetScalerWhenNoSIBPresent()
+        {
+            // mov    ebp,esp
+            code = new Byte[] {0x89, 0xe5};
+            Assert.IsFalse(ModRM.HasSIB(code));
+            SIB.GetScaler(code);
         }
 
         [Test]
@@ -32,38 +62,11 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void HasSIBWhenNoModRMPresent()
         {
-            code = new Byte[] { 0x00 };
+            code = new Byte[] {0x00};
             ModRM.HasSIB(code);
-        }
-
-        [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public void GetBaseRegisterWhenNoSIBPresent()
-        { // mov    ebp,esp
-            code = new Byte[] { 0x89, 0xe5} ;
-            Assert.IsFalse(ModRM.HasSIB(code));
-            SIB.GetBaseRegister(code);
-        }
-
-        [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public void GetScaledRegisterWhenNoSIBPresent()
-        { // mov    ebp,esp
-            code = new Byte[] { 0x89, 0xe5} ;
-            Assert.IsFalse(ModRM.HasSIB(code));
-            SIB.GetScaledRegister(code);
-        }
-
-        [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public void GetScalerWhenNoSIBPresent()
-        { // mov    ebp,esp
-            code = new Byte[] { 0x89, 0xe5} ;
-            Assert.IsFalse(ModRM.HasSIB(code));
-            SIB.GetScaler(code);
         }
     }
 }

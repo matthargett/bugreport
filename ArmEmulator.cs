@@ -4,15 +4,9 @@
 // Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-
 namespace bugreport
 {
     public static class ArmEmulator
     {
-        
     }
 }
