@@ -42,18 +42,17 @@ namespace bugreport
             AbstractValue two = new AbstractValue(0x2);
             AbstractValue three = new AbstractValue(0x3);
             AbstractValue four = new AbstractValue(0x4);
-            AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
+            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
 
-            avBuffer[0] = one;
-            avBuffer[1] = two;
-            avBuffer[2] = three;
-            avBuffer[3] = four;
+            values[0] = one;
+            values[1] = two;
+            values[2] = three;
+            values[3] = four;
 
-            AbstractBuffer buffer = new AbstractBuffer(avBuffer);
+            AbstractBuffer buffer = new AbstractBuffer(values);
             Assert.AreEqual(one, buffer[0]);
             AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
             Assert.AreEqual(three, modifiedBuffer[0]);
-
         }
 
         [Test]
@@ -63,14 +62,14 @@ namespace bugreport
             AbstractValue two = new AbstractValue(0x2);
             AbstractValue three = new AbstractValue(0x3);
             AbstractValue four = new AbstractValue(0x4);
-            AbstractValue[] avBuffer = AbstractValue.GetNewBuffer(4);
+            AbstractValue[] values = AbstractValue.GetNewBuffer(4);
 
-            avBuffer[0] = one;
-            avBuffer[1] = two;
-            avBuffer[2] = three;
-            avBuffer[3] = four;
+            values[0] = one;
+            values[1] = two;
+            values[2] = three;
+            values[3] = four;
 
-            AbstractBuffer buffer = new AbstractBuffer(avBuffer);
+            AbstractBuffer buffer = new AbstractBuffer(values);
             Assert.AreEqual(one, buffer[0]);
             AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(2));
             Assert.AreEqual(three, modifiedBuffer[0]);
@@ -124,7 +123,6 @@ namespace bugreport
         {
             new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Unknown, null);
         }
-
 
         [Test]
         public void PointerOverflowByOne()
@@ -209,7 +207,8 @@ namespace bugreport
         }
 
         [Test]
-        public void OverflowZeroSizeBuffer() {
+        public void OverflowZeroSizeBuffer() 
+        {
             AbstractBuffer f = new AbstractBuffer(new AbstractValue[] {});
             Assert.IsFalse(f[0].IsInitialized);
         }

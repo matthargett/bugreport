@@ -4,8 +4,8 @@
 // Licensed under the GNU General Public License, Version 3 (GPLv3).
 // See LICENSE.txt for details.
 
-using System
-using NUnit.Framework
+using System;
+using NUnit.Framework;
 
 namespace bugreport
 {

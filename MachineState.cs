@@ -175,7 +175,7 @@ namespace bugreport
 
         public MachineState PushOntoStack(AbstractValue value)
         {
-            MachineState newState = DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x1));
+            MachineState newState = DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x4));
             newState.TopOfStack = new AbstractValue(value);
             return newState;
         }

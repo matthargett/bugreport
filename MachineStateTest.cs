@@ -30,7 +30,6 @@ namespace bugreport
 
         private AbstractValue esp
         {
-            get { return state.Registers[RegisterName.ESP]; }
             set { state.Registers[RegisterName.ESP] = value; }
         }
 
@@ -78,7 +77,7 @@ namespace bugreport
         public void NonAssignmentOfPointer()
         {
             eax = one;
-            ebx = new AbstractValue(new AbstractValue[] {two});
+            ebx = new AbstractValue(new[] {two});
             state = state.DoOperation(RegisterName.EAX, OperatorEffect.Add, RegisterName.EBX);
         }
 
@@ -185,11 +184,23 @@ namespace bugreport
             AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
             esp = new AbstractValue(buffer);
             state = state.PushOntoStack(one);
-            
+
             //TODO(matt_hargett): extract into state.PopOffStack()
-            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(0x1));
+            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(0x4));
             state = state.DoOperation(RegisterName.ESP, 0, OperatorEffect.Assignment, two);
             Assert.AreEqual(two, state.TopOfStack);
+        }
+
+        [Test]
+        public void PushTwiceThenManuallyAdjustStack()
+        {
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
+            esp = new AbstractValue(buffer);
+            state = state.PushOntoStack(one);
+            state = state.PushOntoStack(two);
+
+            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(0x4));
+            Assert.AreEqual(one, state.TopOfStack);
         }
 
         [Test]
@@ -238,9 +249,9 @@ namespace bugreport
         [Test]
         public void OperationResultEquality()
         {
-            OperationResult same = new OperationResult(new AbstractValue(1), false);
-            OperationResult same2 = new OperationResult(new AbstractValue(1), false);
-            OperationResult different = new OperationResult(new AbstractValue(2), true);
+            var same = new OperationResult(new AbstractValue(1), false);
+            var same2 = new OperationResult(new AbstractValue(1), false);
+            var different = new OperationResult(new AbstractValue(2), true);
 
             Assert.IsTrue(same.Equals(same2));
             Assert.IsFalse(same.Equals(different));

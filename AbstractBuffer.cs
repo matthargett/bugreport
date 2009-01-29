@@ -10,9 +10,9 @@ namespace bugreport
 {
     public class AbstractBuffer
     {
+        private readonly Int32 allocatedLength;
         private AbstractValue[] storage;
         private UInt32 baseIndex;
-        private readonly Int32 allocatedLength;
 
         public AbstractBuffer(AbstractValue[] _buffer)
         {
@@ -28,34 +28,55 @@ namespace bugreport
             Array.Copy(_copyMe.storage, storage, _copyMe.storage.Length);
         }
 
-        private void extend(UInt32 _newLength)
+        public AbstractValue this[Int32 index]
         {
-            // Account for element [0] of the array
-            _newLength = _newLength + 1;
-            if (_newLength >= Length)
+            get
             {
-                AbstractValue[] _copyTo = new AbstractValue[_newLength];
+                // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
+                if (IsIndexPastBounds(index))
+                {
+                    extend(baseIndex + (UInt32)index);
+                    return storage[baseIndex + index];
+                }
 
-                Int32 i;
-                for (i = 0; i < storage.Length; i++)
-                {
-                    _copyTo[i] = storage[i];
-                }
-                for (; i < _newLength; i++)
-                {
-                    _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN);
-                    _copyTo[i].IsOOB = true;
-                }
-                storage = _copyTo;
+                return storage[baseIndex + index];
             }
 
-            return;
+            set
+            {
+                if ((baseIndex + index) >= allocatedLength)
+                {
+                    value.IsOOB = true;
+                }
+
+                if (IsIndexPastBounds(index))
+                {
+                    extend(baseIndex + (UInt32)index);
+                    storage[baseIndex + index] = value;
+                }
+                else
+                {
+                    storage[baseIndex + index] = value;
+                }
+            }
+        }
+
+        public UInt32 BaseIndex
+        {
+            get { return baseIndex; }
+        }
+
+        public Int32 Length
+        {
+            get { return allocatedLength; }
         }
 
         public AbstractBuffer DoOperation(OperatorEffect _operatorEffect, AbstractValue _rhs)
         {
             AbstractBuffer lhs = this;
+
             // TODO: should have a guard for if _rhs isnt a pointer
+
             switch (_operatorEffect)
             {
                 case OperatorEffect.Assignment:
@@ -64,6 +85,7 @@ namespace bugreport
         
                     return result;
                 }
+
                 case OperatorEffect.Add:
                 {
                     AbstractBuffer result = new AbstractBuffer(lhs);
@@ -103,49 +125,30 @@ namespace bugreport
             return (((baseIndex + index) >= allocatedLength) && ((baseIndex + index) >= storage.Length));
         }
 
-        public AbstractValue this[Int32 index]
+        private void extend(UInt32 _newLength)
         {
-            get
+            // Account for element [0] of the array
+            _newLength = _newLength + 1;
+            if (_newLength >= Length)
             {
-                // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
-                if (IsIndexPastBounds(index))
+                AbstractValue[] _copyTo = new AbstractValue[_newLength];
+
+                Int32 i;
+                for (i = 0; i < storage.Length; i++)
                 {
-                    extend(baseIndex + (UInt32)index);
-                    return storage[baseIndex + index];
+                    _copyTo[i] = storage[i];
                 }
-                else
+
+                for (; i < _newLength; i++)
                 {
-                    return storage[baseIndex + index];
+                    _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN);
+                    _copyTo[i].IsOOB = true;
                 }
+
+                storage = _copyTo;
             }
 
-            set
-            {
-                if ((baseIndex + index) >= allocatedLength)
-                {
-                    value.IsOOB = true;
-                }
-                    
-                if (IsIndexPastBounds(index))
-                {
-                    extend(baseIndex + (UInt32)index);
-                    storage[baseIndex + index] = value;
-                }
-                else
-                {
-                    storage[baseIndex + index] = value;
-                }
-            }
-        }
-
-        public UInt32 BaseIndex
-        {
-            get { return baseIndex; }
-        }
-
-        public Int32 Length
-        {
-            get { return allocatedLength; }
+            return;
         }
     }
 }
