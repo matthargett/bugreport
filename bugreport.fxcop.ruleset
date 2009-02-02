@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Copy of Microsoft Extended Design Guideline Rules" Description="These rules expand on the basic design guideline rules to maximize the usability and maintainability issues that are reported. Extra emphasis is placed on naming guidelines. Consider including this rule set if your project includes library code or if you want to enforce the highest standards for writing maintainable code." ToolsVersion="10.0">
+  <Localization ResourceAssembly="Microsoft.VisualStudio.CodeAnalysis.RuleSets.Strings.dll" ResourceBaseName="Microsoft.VisualStudio.CodeAnalysis.RuleSets.Strings.Localized">
+    <Name Resource="ExtendedDesignGuidelineRules_Name" />
+    <Description Resource="ExtendedDesignGuidelineRules_Description" />
+  </Localization>
+  <Include Path="basicdesignguidelinerules.ruleset" Action="Default" />
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1014" Action="None" />
+    <Rule Id="CA1016" Action="None" />
+    <Rule Id="CA1017" Action="None" />
+    <Rule Id="CA1020" Action="Warn" />
+    <Rule Id="CA1021" Action="Warn" />
+    <Rule Id="CA1040" Action="Warn" />
+    <Rule Id="CA1045" Action="Warn" />
+    <Rule Id="CA1062" Action="Warn" />
+    <Rule Id="CA1301" Action="None" />
+    <Rule Id="CA1501" Action="Warn" />
+    <Rule Id="CA1504" Action="Warn" />
+    <Rule Id="CA1505" Action="Warn" />
+    <Rule Id="CA1506" Action="Warn" />
+    <Rule Id="CA1700" Action="Warn" />
+    <Rule Id="CA1712" Action="Warn" />
+    <Rule Id="CA1713" Action="Warn" />
+    <Rule Id="CA1714" Action="Warn" />
+    <Rule Id="CA1717" Action="Warn" />
+    <Rule Id="CA1719" Action="Warn" />
+    <Rule Id="CA1720" Action="Warn" />
+    <Rule Id="CA1721" Action="Warn" />
+    <Rule Id="CA1722" Action="Warn" />
+    <Rule Id="CA1724" Action="Warn" />
+    <Rule Id="CA1725" Action="Warn" />
+    <Rule Id="CA2101" Action="None" />
+  </Rules>
+</RuleSet>
