@@ -15,7 +15,7 @@ namespace bugreport
         private const String VERSION = "0.1";
         private static Analyzer analyzer;
 
-        public static void Main(String[] arguments)
+        internal static void Main(String[] arguments)
         {
             Console.WriteLine("bugreport " + VERSION);
 
@@ -33,13 +33,13 @@ namespace bugreport
             {
                 Console.WriteLine(e.Message);
                 printUsage();
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
 
             if (0 == Options.Filenames.Count)
             {
                 Console.WriteLine("No files found by name specified");
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
 
             analyzeFiles(Options.Filenames, Options.IsTracing, Options.IsDebugging);
@@ -53,7 +53,7 @@ namespace bugreport
             Console.WriteLine("Expectations Were Not Met:");
             Console.WriteLine(
                 "Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
-            Environment.Exit(-1);
+            Environment.Exit(2);
         }
 
         private static void analyzeFiles(IEnumerable<string> _fileNames, Boolean _isTracing, Boolean _isDebugging)
@@ -71,7 +71,7 @@ namespace bugreport
                 catch (IOException e)
                 {
                     Console.WriteLine(e.Message);
-                    Environment.Exit(-1);
+                    Environment.Exit(3);
                     return; // needed to hush up a false warning in mono
                 }
 
