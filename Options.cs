@@ -59,19 +59,18 @@ namespace bugreport
 
         private static String getFunctionToAnalyze(String[] arguments)
         {
-            for (Int32 i = 0; i < arguments.Length; i++)
+            for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].StartsWith("--function"))
-                {
-                    Int32 indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
+                if (!arguments[i].StartsWith("--function")) continue;
 
-                    if (indexOfEquals == -1)
-                    {
-                        throw new ArgumentException("--function malformed, should be in the form of --function=name");
-                    }
-                    
-                    return arguments[i].Substring(indexOfEquals + 1);
+                var indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
+
+                if (indexOfEquals == -1)
+                {
+                    throw new ArgumentException("--function malformed, should be in the form of --function=name");
                 }
+
+                return arguments[i].Substring(indexOfEquals + 1);
             }
 
             return "_start";
@@ -79,7 +78,7 @@ namespace bugreport
 
         private static ReadOnlyCollection<String> getFilenames(String[] arguments)
         {
-            String fileArgument = arguments[arguments.Length - 1];
+            var fileArgument = arguments[arguments.Length - 1];
 
             if (fileArgument.Contains("*"))
             {
@@ -88,7 +87,7 @@ namespace bugreport
                 if (fileArgument.Contains(Path.DirectorySeparatorChar.ToString()) ||
                     fileArgument.Contains(Path.AltDirectorySeparatorChar.ToString()))
                 {
-                    Int32 directorySeparatorIndex = fileArgument.LastIndexOf(Path.DirectorySeparatorChar);
+                    var directorySeparatorIndex = fileArgument.LastIndexOf(Path.DirectorySeparatorChar);
                     if (-1 == directorySeparatorIndex)
                     {
                         directorySeparatorIndex = fileArgument.LastIndexOf(Path.AltDirectorySeparatorChar);
@@ -101,28 +100,26 @@ namespace bugreport
                     path = Environment.CurrentDirectory;
                 }
 
-                String fileName = Path.GetFileName(fileArgument);
+                var fileName = Path.GetFileName(fileArgument);
 
                 return fileResolver.GetFilesFromDirectory(path, fileName);
             }
-            else
-            {
-                var fileNames = new List<String>();
-                foreach (String argument in arguments)
-                {
-                    if (!argument.StartsWith("--"))
-                    {
-                        fileNames.Add(argument);
-                    }
-                }
 
-                return fileNames.AsReadOnly();
+            var fileNames = new List<String>();
+            foreach (var argument in arguments)
+            {
+                if (!argument.StartsWith("--"))
+                {
+                    fileNames.Add(argument);
+                }
             }
+
+            return fileNames.AsReadOnly();
         }
 
         private static Boolean getIsTracing(IEnumerable<string> arguments)
         {
-            foreach (String argument in arguments)
+            foreach (var argument in arguments)
             {
                 if (argument == "--trace")
                 {
@@ -135,7 +132,7 @@ namespace bugreport
 
         private static Boolean getIsDebugging(IEnumerable<string> arguments)
         {
-            foreach (String argument in arguments)
+            foreach (var argument in arguments)
             {
                 if (argument == "--debug")
                 {

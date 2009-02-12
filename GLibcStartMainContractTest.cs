@@ -12,8 +12,7 @@ namespace bugreport
     [TestFixture]
     public class GLibcStartMainContractTest
     {
-        private GLibcStartMainContract contract;
-        private MachineState state;
+        #region Setup/Teardown
 
         [SetUp]
         public void SetUp()
@@ -23,6 +22,11 @@ namespace bugreport
             state = new MachineState(registers);
             contract = new GLibcStartMainContract();
         }
+
+        #endregion
+
+        private GLibcStartMainContract contract;
+        private MachineState state;
 
         [Test]
         public void Execute()

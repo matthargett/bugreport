@@ -28,7 +28,6 @@ namespace bugreport
         Xor,
         Return,
         Leave,
-        Jump,
         Cmp,
         Jnz,
         Call,
@@ -36,7 +35,6 @@ namespace bugreport
 
     public enum OpcodeEncoding
     {
-        Unknown,
         None,
         EvGv,
         EvIb,
@@ -66,35 +64,35 @@ namespace bugreport
     public interface Opcode
     {
         OpcodeEncoding GetEncoding(Byte[] code);
-        
+
         OperatorEffect GetOperatorEffect(Byte[] code);
-        
+
         StackEffect GetStackEffect(Byte[] code);
 
         Boolean HasModRM(Byte[] code);
-        
+
         Boolean HasOffset(Byte[] code);
 
         Boolean HasImmediate(Byte[] code);
-        
+
         UInt32 GetImmediate(Byte[] code);
 
         Byte GetInstructionLength(Byte[] code);
-        
+
         Byte GetInstructionLength(Byte[] code, UInt32 index);
-        
+
         Byte GetOpcodeLength(Byte[] code);
 
         RegisterName GetSourceRegister(Byte[] code);
-        
+
         RegisterName GetDestinationRegister(Byte[] code);
-        
+
         Boolean HasSourceRegister(Byte[] code);
-        
+
         Boolean HasDestinationRegister(Byte[] code);
 
         Boolean TerminatesFunction(Byte[] code);
-        
+
         UInt32 GetEffectiveAddress(Byte[] code, UInt32 instructionPointer);
     }
 }

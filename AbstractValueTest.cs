@@ -20,7 +20,7 @@ namespace bugreport
         {
             var clean = new AbstractValue(0x31337);
             Assert.IsFalse(clean.IsTainted);
-            AbstractValue tainted = clean.AddTaint();
+            var tainted = clean.AddTaint();
             Assert.IsTrue(tainted.IsTainted);
             Assert.AreNotSame(clean, tainted);
         }
@@ -30,20 +30,20 @@ namespace bugreport
         {
             var clean = new AbstractValue(0x31337);
             Assert.IsFalse(clean.IsTainted);
-            AbstractValue notTainted = clean.AddTaintIf(0 == 1);
+            var notTainted = clean.AddTaintIf(0 == 1);
             Assert.IsFalse(notTainted.IsTainted);
             Assert.AreSame(clean, notTainted);
 
-            AbstractValue tainted = clean.AddTaintIf(1 == 1);
+            var tainted = clean.AddTaintIf(1 == 1);
             Assert.IsTrue(tainted.IsTainted);
             Assert.AreNotSame(clean, tainted);
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void AddTaintOnPointer()
         {
-            var buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(1));
+            buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(1));
             var clean = new AbstractValue(buffer);
             clean.AddTaint();
         }
@@ -51,8 +51,8 @@ namespace bugreport
         [Test]
         public void AssignmentAtByteZero()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-            pointer = new AbstractValue(buffer);
+            var values = AbstractValue.GetNewBuffer(16);
+            pointer = new AbstractValue(values);
             pointer.PointsTo[0] = new AbstractValue(0x31337);
             Assert.AreEqual(0x31337, pointer.PointsTo[0].Value);
             Assert.AreEqual("*0x00031337", pointer.ToString());
@@ -61,26 +61,14 @@ namespace bugreport
         [Test]
         public void AssignmentAtEnd()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-            pointer = new AbstractValue(buffer);
+            var values = AbstractValue.GetNewBuffer(16);
+            pointer = new AbstractValue(values);
             pointer.PointsTo[15] = new AbstractValue(0x31337);
             Assert.AreEqual(0x31337, pointer.PointsTo[15].Value);
         }
 
         [Test]
-        public void CheckOOBAfterCopy()
-        {
-            var src = new AbstractValue(0x31337);
-            src.IsOOB = false;
-            var dest = new AbstractValue(0x1);
-            dest.IsOOB = true;
-            dest = new AbstractValue(src);
-
-            Assert.IsFalse(dest.IsOOB);
-        }
-
-        [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void EmptyBuffer()
         {
             pointer = new AbstractValue(new AbstractBuffer(new AbstractValue[] {}));
@@ -103,7 +91,7 @@ namespace bugreport
         [Test]
         public void NoPointer()
         {
-            AbstractValue value = new AbstractValue(2).AddTaint();
+            var value = new AbstractValue(2).AddTaint();
 
             Assert.IsNull(value.PointsTo);
             StringAssert.Contains("0x00000002", value.ToString());
@@ -120,10 +108,19 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof (ArgumentNullException))]
         public void NullCopyCtor()
         {
             pointer = new AbstractValue((AbstractValue) null);
+        }
+
+        [Test]
+        public void OOBSurvivesCopy()
+        {
+            var src = new AbstractValue(0x31337) {IsOOB = true};
+            var dest = new AbstractValue(src);
+
+            Assert.IsTrue(dest.IsOOB);
         }
 
         [Test]
@@ -169,16 +166,14 @@ namespace bugreport
         [Test]
         public void PreserveIsOOBAfterCopy()
         {
-            var src = new AbstractValue(0x31337);
-            var dest = new AbstractValue(0x1);
-            src.IsOOB = true;
-            dest = new AbstractValue(src);
+            var src = new AbstractValue(0x31337) {IsOOB = true};
+            var dest = new AbstractValue(src);
 
             Assert.IsTrue(dest.IsOOB);
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        [ExpectedException(typeof (ArgumentOutOfRangeException))]
         public void RequestedBufferTooLarge()
         {
             AbstractValue.GetNewBuffer(AbstractValue.MAX_BUFFER_SIZE + 1);
@@ -188,12 +183,12 @@ namespace bugreport
         public void TruncateValue()
         {
             var dwordValue = new AbstractValue(0xdeadbeef);
-            AbstractValue byteValue = dwordValue.TruncateValueToByte();
+            var byteValue = dwordValue.TruncateValueToByte();
             Assert.AreEqual(0xef, byteValue.Value);
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void ZeroSizeBuffer()
         {
             pointer = new AbstractValue(new AbstractValue[] {});

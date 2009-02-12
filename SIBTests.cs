@@ -23,7 +23,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void GetBaseRegisterWhenNoSIBPresent()
         {
             // mov    ebp,esp
@@ -33,7 +33,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void GetScaledRegisterWhenNoSIBPresent()
         {
             // mov    ebp,esp
@@ -43,7 +43,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void GetScalerWhenNoSIBPresent()
         {
             // mov    ebp,esp
@@ -62,7 +62,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void HasSIBWhenNoModRMPresent()
         {
             code = new Byte[] {0x00};

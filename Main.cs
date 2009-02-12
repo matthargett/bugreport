@@ -44,19 +44,21 @@ namespace bugreport
 
             analyzeFiles(Options.Filenames, Options.IsTracing, Options.IsDebugging);
 
-            if (analyzer.ExpectedReportItems.Count != 0 &&
-                (analyzer.ExpectedReportItems.Count != analyzer.ActualReportItems.Count))
+            if (analyzer.ExpectedReportItems.Count == 0 ||
+                (analyzer.ExpectedReportItems.Count == analyzer.ActualReportItems.Count))
             {
-                Console.WriteLine("Expectations Were Not Met:");
-                Console.WriteLine(
-                    "Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
-                Environment.Exit(-1);
+                return;
             }
+
+            Console.WriteLine("Expectations Were Not Met:");
+            Console.WriteLine(
+                "Expected: " + analyzer.ExpectedReportItems.Count + " Actual: " + analyzer.ActualReportItems.Count);
+            Environment.Exit(-1);
         }
 
         private static void analyzeFiles(IEnumerable<string> _fileNames, Boolean _isTracing, Boolean _isDebugging)
         {
-            foreach (String fileName in _fileNames)
+            foreach (var fileName in _fileNames)
             {
                 Console.WriteLine();
                 Console.WriteLine("Interpreting file: " + fileName);
@@ -72,7 +74,7 @@ namespace bugreport
                     Environment.Exit(-1);
                     return; // needed to hush up a false warning in mono
                 }
-                
+
                 // TODO (matt_hargett): have a factory auto-detect the file type and return the right kind of IParsable
                 // IParsable parser = new DumpFileParser(fileStream, Options.FunctionToAnalyze);
                 IParsable parser = new ElfFileParser(fileStream);
@@ -91,14 +93,14 @@ namespace bugreport
 
         private static void printReportItem(object sender, ReportEventArgs e)
         {
-            ReportItem item = e.ReportItem;
+            var item = e.ReportItem;
 
-            String message = "***";
+            var message = "***";
             if (item.IsTainted)
             {
                 message += "Exploitable ";
             }
-            
+
             message += String.Format("OOB at EIP 0x{0:x4}", item.InstructionPointer);
             Console.WriteLine(message);
             Console.WriteLine();

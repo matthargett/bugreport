@@ -8,21 +8,15 @@ using System;
 
 namespace bugreport
 {
-    public class GLibcStartMainContract : Contract
+    internal sealed class GLibcStartMainContract : Contract
     {
         public override Boolean IsSatisfiedBy(MachineState state, Byte[] code)
         {
-            UInt32 effectiveAddress = Opcode.GetEffectiveAddress(code, state.InstructionPointer);
+            var effectiveAddress = Opcode.GetEffectiveAddress(code, state.InstructionPointer);
 
             const UInt32 GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR = 0x80482b8;
-            if (effectiveAddress == GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            return effectiveAddress == GLIBC_START_MAIN_IMPORT_FUNCTION_ADDR;
         }
 
         public override MachineState Execute(MachineState state)

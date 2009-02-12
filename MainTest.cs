@@ -22,61 +22,16 @@ namespace bugreport
         private readonly String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
         private readonly String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
-        [Test]
-        [Category("long")]
-        public void SystemTest()
+        private static void waitForAnalysisToFinish(Process analysisProcess)
         {
-            String[] testSpecifications = File.ReadAllLines(testDataFile);
-
-            foreach (String testSpecification in testSpecifications)
-            {
-                if (testSpecification.Trim().StartsWith("#") || testSpecification.Trim().Length == 0)
-                {
-                    continue;
-                }
-
-                // format: filename.dump[,expectedOutput output]
-                String[] args = testSpecification.Split(',');
-                String fileName = (testRoot + args[0]).Trim();
-                String expectedOutput = args[1].Trim();
-
-                Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
-
-                List<String> messages = getOutputForFilename(fileName);
-
-                try
-                {
-                    if (String.IsNullOrEmpty(expectedOutput))
-                    {
-                        Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
-                    }
-                    else
-                    {
-                        StringAssert.Contains(expectedOutput, messages[0]);
-                    }
-                }
-                catch (AssertionException)
-                {
-                    foreach (String line in messages)
-                    {
-                        Console.WriteLine(line);
-                    }
-
-                    throw;
-                }
-            }
-        }
-        
-        private void waitForAnalysisToFinish(Process analysisProcess)
-        {
-            TimeSpan maximumTimeAllowed = TimeSpan.FromSeconds(10);
+            var maximumTimeAllowed = TimeSpan.FromSeconds(10);
             while (!analysisProcess.HasExited && (DateTime.Now - analysisProcess.StartTime < maximumTimeAllowed))
             {
                 Thread.Sleep(100);
             }
         }
 
-        private List<String> getOutputFromAnalysis(Process analysisProcess)
+        private static List<String> getOutputFromAnalysis(Process analysisProcess)
         {
             var messages = new List<String>();
 
@@ -91,7 +46,7 @@ namespace bugreport
             return messages;
         }
 
-        private Process getAnalysisProcessForFileName(String fileName)
+        private static Process getAnalysisProcessForFileName(String fileName)
         {
             var analysisProcess = new Process();
             analysisProcess.StartInfo.FileName = "bugreport.exe";
@@ -103,14 +58,59 @@ namespace bugreport
             return analysisProcess;
         }
 
-        private List<String> getOutputForFilename(String fileName)
+        private static List<String> getOutputForFilename(String fileName)
         {
-            Process analysisProcess = getAnalysisProcessForFileName(fileName);
+            var analysisProcess = getAnalysisProcessForFileName(fileName);
             analysisProcess.Start();
 
             waitForAnalysisToFinish(analysisProcess);
 
             return getOutputFromAnalysis(analysisProcess);
-        }        
+        }
+
+        [Test]
+        [Category("long")]
+        public void SystemTest()
+        {
+            var testSpecifications = File.ReadAllLines(testDataFile);
+
+            foreach (var testSpecification in testSpecifications)
+            {
+                if (testSpecification.Trim().StartsWith("#") || testSpecification.Trim().Length == 0)
+                {
+                    continue;
+                }
+
+                // format: filename.dump[,expectedOutput output]
+                var args = testSpecification.Split(',');
+                var fileName = (testRoot + args[0]).Trim();
+                var expectedOutput = args[1].Trim();
+
+                Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
+
+                var messages = getOutputForFilename(fileName);
+
+                try
+                {
+                    if (String.IsNullOrEmpty(expectedOutput))
+                    {
+                        Assert.IsEmpty(messages, fileName + " ==> not empty: " + messages);
+                    }
+                    else
+                    {
+                        StringAssert.Contains(expectedOutput, messages[0]);
+                    }
+                }
+                catch (AssertionException)
+                {
+                    foreach (var line in messages)
+                    {
+                        Console.WriteLine(line);
+                    }
+
+                    throw;
+                }
+            }
+        }
     }
 }

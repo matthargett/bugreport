@@ -12,9 +12,9 @@ namespace bugreport
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        public static Byte GetRM(Byte modrm)
+        private static Byte GetRM(Byte modrm)
         {
-            return (Byte)(modrm & 7);
+            return (Byte) (modrm & 7);
         }
 
         public static RegisterName GetEv(Byte[] code)
@@ -24,27 +24,27 @@ namespace bugreport
                 throw new InvalidOperationException("For ModRM that specifies SIB byte, usage of GetEv is invalid.");
             }
 
-            Byte modRM = getModRM(code);
-            return (RegisterName)(modRM & 7);
+            var modRM = getModRM(code);
+            return (RegisterName) (modRM & 7);
         }
 
-        public static RegisterName GetGv(Byte[] code)
+        internal static RegisterName GetGv(Byte[] code)
         {
-            Byte modRM = getModRM(code);
-            return (RegisterName)((modRM >> 3) & 7);
+            var modRM = getModRM(code);
+            return (RegisterName) ((modRM >> 3) & 7);
         }
 
-        public static Byte GetOpcodeGroupIndex(Byte[] _code)
+        internal static Byte GetOpcodeGroupIndex(Byte[] _code)
         {
-            Byte modRM = getModRM(_code);
-            return (Byte)((modRM >> 3) & 7);
+            var modRM = getModRM(_code);
+            return (Byte) ((modRM >> 3) & 7);
         }
 
         public static Boolean HasIndex(Byte[] _code)
         {
-            Byte modRM = getModRM(_code);
-            Byte mod = getMod(modRM);
-            
+            var modRM = getModRM(_code);
+            var mod = getMod(modRM);
+
             return mod == 1 || mod == 2;
         }
 
@@ -54,12 +54,12 @@ namespace bugreport
             {
                 throw new InvalidOperationException(
                     "For ModRM that does not specify an index, usage of GetIndex is invalid."
-                );
+                    );
             }
 
             UInt32 modRMIndex = opcode.GetOpcodeLength(_code);
-            Byte modRM = getModRM(_code);
-            Byte mod = getMod(modRM);
+            var modRM = getModRM(_code);
+            var mod = getMod(modRM);
 
             switch (mod)
             {
@@ -67,7 +67,7 @@ namespace bugreport
                 {
                     return _code[modRMIndex + 1];
                 }
-                    
+
                 default:
                 {
                     throw new NotImplementedException(String.Format("Unsupported Mod: 0x{0:x2}", mod));
@@ -77,7 +77,7 @@ namespace bugreport
 
         public static Boolean IsEffectiveAddressDereferenced(Byte[] _code)
         {
-            Byte modRM = getModRM(_code);
+            var modRM = getModRM(_code);
 
             return !(getMod(modRM) == 3);
         }
@@ -89,13 +89,13 @@ namespace bugreport
                 return false;
             }
 
-            Byte modRM = getModRM(_code);
+            var modRM = getModRM(_code);
             return GetRM(modRM) == 5 && getMod(modRM) == 0;
         }
 
         public static UInt32 GetOffset(Byte[] code)
         {
-            Byte offsetBeginsAt = opcode.GetOpcodeLength(code);
+            var offsetBeginsAt = opcode.GetOpcodeLength(code);
             offsetBeginsAt++; // for modRM byte
 
             return BitMath.BytesToDword(code, offsetBeginsAt);
@@ -103,22 +103,20 @@ namespace bugreport
 
         public static Boolean HasSIB(Byte[] _code)
         {
-            Byte modRM = getModRM(_code);
+            var modRM = getModRM(_code);
 
             return GetRM(modRM) == 4 && IsEffectiveAddressDereferenced(_code);
         }
 
         public static Boolean IsEvDword(Byte[] code)
         {
-            Byte modRM = getModRM(code);
+            var modRM = getModRM(code);
             if ((getMod(modRM) == 0) && (GetRM(modRM) == 5))
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         private static Byte getModRM(Byte[] _code)
@@ -132,10 +130,10 @@ namespace bugreport
 
             return _code[modRMIndex];
         }
-        
+
         private static Byte getMod(Byte modrm)
         {
-            return (Byte)((modrm >> 6) & 3);
-        }        
+            return (Byte) ((modrm >> 6) & 3);
+        }
     }
 }

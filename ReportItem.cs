@@ -10,8 +10,8 @@ namespace bugreport
 {
     public struct ReportItem
     {
-        public UInt32 InstructionPointer;
-        public Boolean IsTainted;
+        public readonly UInt32 InstructionPointer;
+        public readonly Boolean IsTainted;
 
         public ReportItem(UInt32 instructionPointer, Boolean isTainted)
         {
@@ -28,7 +28,7 @@ namespace bugreport
         {
             return !a.Equals(b);
         }
-        
+
         public override Boolean Equals(object obj)
         {
             var report = (ReportItem) obj;

@@ -8,7 +8,7 @@ using System;
 
 namespace bugreport
 {
-    public class AbstractBuffer
+    public sealed class AbstractBuffer
     {
         private readonly Int32 allocatedLength;
         private UInt32 baseIndex;
@@ -28,7 +28,7 @@ namespace bugreport
             Array.Copy(_copyMe.storage, storage, _copyMe.storage.Length);
         }
 
-        public UInt32 BaseIndex
+        private UInt32 BaseIndex
         {
             get { return baseIndex; }
         }
@@ -73,7 +73,7 @@ namespace bugreport
 
         public AbstractBuffer DoOperation(OperatorEffect _operatorEffect, AbstractValue _rhs)
         {
-            AbstractBuffer lhs = this;
+            var lhs = this;
 
             // TODO: should have a guard for if _rhs isn't a pointer
             switch (_operatorEffect)
@@ -102,10 +102,10 @@ namespace bugreport
                         throw new ArgumentOutOfRangeException(
                             String.Format(
                                 "Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}",
-                                result.baseIndex, 
+                                result.baseIndex,
                                 _rhs.Value
-                            )
-                        );
+                                )
+                            );
                     }
 
                     result.baseIndex -= _rhs.Value;
@@ -147,8 +147,7 @@ namespace bugreport
 
                 for (; i < _newLength; i++)
                 {
-                    _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN);
-                    _copyTo[i].IsOOB = true;
+                    _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN) {IsOOB = true};
                 }
 
                 storage = _copyTo;

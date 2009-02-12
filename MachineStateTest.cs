@@ -12,6 +12,12 @@ namespace bugreport
     [TestFixture]
     public class MachineStateTest
     {
+        [SetUp]
+        public void SetUp()
+        {
+            state = new MachineState(new RegisterCollection());
+        }
+
         private readonly AbstractValue one = new AbstractValue(1);
         private readonly AbstractValue two = new AbstractValue(2).AddTaint();
         private MachineState state;
@@ -31,12 +37,6 @@ namespace bugreport
         private AbstractValue esp
         {
             set { state.Registers[RegisterName.ESP] = value; }
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            state = new MachineState(new RegisterCollection());
         }
 
         [Test]
@@ -75,8 +75,7 @@ namespace bugreport
         [Test]
         public void AssignmentRetainsOOB()
         {
-            var oob = new AbstractValue(1);
-            oob.IsOOB = true;
+            var oob = new AbstractValue(1) {IsOOB = true};
 
             state = state.DoOperation(RegisterName.EAX, OperatorEffect.Assignment, oob);
             Assert.IsTrue(eax.IsOOB);
@@ -143,7 +142,7 @@ namespace bugreport
         [Test]
         public void Jnz()
         {
-            Byte offset = 6;
+            const byte offset = 6;
             eax = two;
             ebx = one;
             state = state.DoOperation(RegisterName.EAX, OperatorEffect.Cmp, RegisterName.EAX);
@@ -156,7 +155,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void JnzPointerOffset()
         {
             var pointer = new AbstractValue(AbstractValue.GetNewBuffer(1));
@@ -164,7 +163,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void NonAssignmentOfPointer()
         {
             eax = one;
@@ -192,7 +191,7 @@ namespace bugreport
         [Test]
         public void PointerAdd()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
+            var buffer = AbstractValue.GetNewBuffer(0x10);
             buffer[4] = one;
             eax = new AbstractValue(buffer);
 
@@ -203,7 +202,7 @@ namespace bugreport
         [Test]
         public void PointerAnd()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
+            var buffer = AbstractValue.GetNewBuffer(0x10);
             buffer[4] = one;
 
             eax = new AbstractValue(buffer);
@@ -212,7 +211,7 @@ namespace bugreport
             Assert.AreEqual(one, eax.PointsTo[0]);
 
             var andValue = new AbstractValue(0xfffffff0);
-            MachineState newState = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
+            var newState = state.DoOperation(RegisterName.EAX, OperatorEffect.And, andValue);
             Assert.AreNotSame(newState, state);
             Assert.AreNotEqual(newState, state);
 
@@ -223,7 +222,7 @@ namespace bugreport
         [Test]
         public void PointerSub()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x10);
+            var buffer = AbstractValue.GetNewBuffer(0x10);
             buffer[0] = one;
             eax = new AbstractValue(buffer);
             ebx = new AbstractValue(0x4);
@@ -236,7 +235,7 @@ namespace bugreport
         [Test]
         public void PushPopThenAssignToTop()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
+            var buffer = AbstractValue.GetNewBuffer(0x20);
             esp = new AbstractValue(buffer);
             state = state.PushOntoStack(one);
 
@@ -249,7 +248,7 @@ namespace bugreport
         [Test]
         public void PushTwiceThenManuallyAdjustStack()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
+            var buffer = AbstractValue.GetNewBuffer(0x20);
             esp = new AbstractValue(buffer);
             state = state.PushOntoStack(one);
             state = state.PushOntoStack(two);
@@ -281,7 +280,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void Unknown()
         {
             state.DoOperation(RegisterName.EAX, OperatorEffect.Unknown, RegisterName.EBX);

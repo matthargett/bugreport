@@ -10,15 +10,15 @@ namespace bugreport
 {
     public abstract class Contract
     {
-        private Opcode opcode = new X86Opcode();
-        
-        protected Opcode Opcode 
-        { 
-            get { return opcode; } 
+        private readonly Opcode opcode = new X86Opcode();
+
+        protected Opcode Opcode
+        {
+            get { return opcode; }
         }
 
         public abstract Boolean IsSatisfiedBy(MachineState state, Byte[] code);
-        
+
         public abstract MachineState Execute(MachineState state);
     }
 }
