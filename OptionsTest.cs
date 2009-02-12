@@ -17,6 +17,39 @@ namespace bugreport
         private FakeFileResolver fileResolver;
         private String[] commandLine;
 
+        private sealed class FakeFileResolver : FileResolver
+        {
+            private readonly String expectedFileName;
+            private readonly String expectedPath;
+            private readonly Int32 numberOfFilesFound;
+
+            public FakeFileResolver(String expectedPath, String expectedFileName, Int32 numberOfFilesFound)
+            {
+                this.expectedPath = expectedPath;
+                this.expectedFileName = expectedFileName;
+                this.numberOfFilesFound = numberOfFilesFound;
+            }
+
+            [CoverageExclude]
+            public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
+            {
+                if (path == expectedPath && fileName == expectedFileName)
+                {
+                    return new ReadOnlyCollection<String>(new String[numberOfFilesFound]);
+                }
+
+                throw new ArgumentException(
+                    String.Format(
+                        "expectations not met: path = {0} , expected = {1} ; fileName = {2} , expected = {3}",
+                        path,
+                        expectedPath,
+                        fileName,
+                        expectedFileName
+                        )
+                    );
+            }
+        }
+
         [Test]
         public void DebugOption()
         {
@@ -54,7 +87,7 @@ namespace bugreport
         public void FileResolver()
         {
             var realFileResolver = new FileResolver();
-            ReadOnlyCollection<String> files = realFileResolver.GetFilesFromDirectory(Environment.CurrentDirectory, "*");
+            var files = realFileResolver.GetFilesFromDirectory(Environment.CurrentDirectory, "*");
             Assert.IsNotNull(files);
         }
 
@@ -64,7 +97,8 @@ namespace bugreport
             commandLine = new[]
                           {
                               "--function=nomain",
-                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump",
+                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump"
+                              ,
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
             Options.ParseArguments(commandLine);
@@ -80,7 +114,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void FunctionNameWithoutEquals()
         {
             commandLine = new[]
@@ -97,7 +131,8 @@ namespace bugreport
         {
             commandLine = new[]
                           {
-                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump",
+                              @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump"
+                              ,
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
             Options.ParseArguments(commandLine);
@@ -155,10 +190,10 @@ namespace bugreport
 
             commandLine = new[] {"simple-malloc-via-immediate*.dump"};
 
-            String oldDirectory = Directory.GetCurrentDirectory();
+            var oldDirectory = Directory.GetCurrentDirectory();
             try
             {
-                String desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 Directory.SetCurrentDirectory(desktopPath);
                 fileResolver = new FakeFileResolver(
                     desktopPath,
@@ -174,38 +209,5 @@ namespace bugreport
                 Directory.SetCurrentDirectory(oldDirectory);
             }
         }
-
-        private class FakeFileResolver : FileResolver
-        {
-            private readonly String expectedFileName;
-            private readonly String expectedPath;
-            private readonly Int32 numberOfFilesFound;
-
-            public FakeFileResolver(String expectedPath, String expectedFileName, Int32 numberOfFilesFound)
-            {
-                this.expectedPath = expectedPath;
-                this.expectedFileName = expectedFileName;
-                this.numberOfFilesFound = numberOfFilesFound;
-            }
-
-            [CoverageExclude]
-            public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
-            {
-                if (path == expectedPath && fileName == expectedFileName)
-                {
-                    return new ReadOnlyCollection<String>(new String[numberOfFilesFound]);
-                }
-
-                throw new ArgumentException(
-                    String.Format(
-                        "expectations not met: path = {0} , expected = {1} ; fileName = {2} , expected = {3}", 
-                        path,
-                        expectedPath, 
-                        fileName, 
-                        expectedFileName
-                    )
-                );
-            }
-        }        
     }
 }

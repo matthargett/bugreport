@@ -9,7 +9,7 @@ using System.Text;
 
 namespace bugreport
 {
-    public class AbstractValue
+    public sealed class AbstractValue
     {
         public const UInt32 MAX_BUFFER_SIZE = 25600000;
         public const UInt32 UNKNOWN = 0xb4dc0d3d;
@@ -94,7 +94,7 @@ namespace bugreport
         {
             get { return pointsTo != null; }
         }
-        
+
         public static AbstractValue[] GetNewBuffer(UInt32 size)
         {
             if (size > MAX_BUFFER_SIZE)
@@ -129,8 +129,8 @@ namespace bugreport
 
         public override Int32 GetHashCode()
         {
-            Int32 hashCode = Value.GetHashCode() ^ IsOOB.GetHashCode() ^
-                             IsTainted.GetHashCode();
+            var hashCode = Value.GetHashCode() ^ IsOOB.GetHashCode() ^
+                           IsTainted.GetHashCode();
 
             if (PointsTo != null)
             {
@@ -142,7 +142,7 @@ namespace bugreport
 
         public AbstractValue TruncateValueToByte()
         {
-            UInt32 byteValue = Value & 0xff;
+            var byteValue = Value & 0xff;
             var truncatedValue = new AbstractValue(byteValue);
             truncatedValue.IsTainted = IsTainted;
 
@@ -156,8 +156,7 @@ namespace bugreport
                 throw new InvalidOperationException("Cannot AddTaint to a pointer");
             }
 
-            var taintedValue = new AbstractValue(this);
-            taintedValue.IsTainted = true;
+            var taintedValue = new AbstractValue(this) {IsTainted = true};
             return taintedValue;
         }
 
@@ -173,18 +172,18 @@ namespace bugreport
 
         public override String ToString()
         {
-            String result = String.Empty;
+            var result = String.Empty;
 
             if (tainted)
             {
                 result += "t";
             }
 
-            UInt32 valueToPrint = Value;
+            var valueToPrint = Value;
 
             if (pointsTo != null)
             {
-                AbstractValue pointer = pointsTo[0];
+                var pointer = pointsTo[0];
 
                 var newResult = new StringBuilder(result);
 
@@ -204,7 +203,7 @@ namespace bugreport
                         pointer = null;
                     }
                 }
-                
+
                 result = newResult.ToString();
             }
 

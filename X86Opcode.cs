@@ -13,8 +13,6 @@ namespace bugreport
     /// </summary>
     public sealed class X86Opcode : Opcode
     {
-        #region Opcode Members
-
         public OpcodeEncoding GetEncoding(Byte[] code)
         {
             switch (code[0])
@@ -208,7 +206,7 @@ namespace bugreport
 
         public RegisterName GetSourceRegister(Byte[] code)
         {
-            OpcodeEncoding opcodeEncoding = GetEncoding(code);
+            var opcodeEncoding = GetEncoding(code);
 
             if (GetStackEffect(code) == StackEffect.Push)
             {
@@ -270,14 +268,13 @@ namespace bugreport
                         // it currently returns RegisterName.None
                         return RegisterName.None;
                     }
-                    else if (ModRM.IsEvDword(code))
+
+                    if (ModRM.IsEvDword(code))
                     {
                         return RegisterName.None;
                     }
-                    else
-                    {
-                        return ModRM.GetEv(code);
-                    }
+
+                    return ModRM.GetEv(code);
                 }
 
                 default:
@@ -289,7 +286,7 @@ namespace bugreport
 
         public RegisterName GetDestinationRegister(Byte[] code)
         {
-            OpcodeEncoding opcodeEncoding = GetEncoding(code);
+            var opcodeEncoding = GetEncoding(code);
 
             if (GetStackEffect(code) == StackEffect.Pop)
             {
@@ -357,10 +354,8 @@ namespace bugreport
                     {
                         return SIB.GetBaseRegister(code);
                     }
-                    else
-                    {
-                        return ModRM.GetEv(code);
-                    }
+
+                    return ModRM.GetEv(code);
                 }
 
                 default:
@@ -388,7 +383,7 @@ namespace bugreport
 
                 case 0x83:
                 {
-                    Byte rm = ModRM.GetOpcodeGroupIndex(code);
+                    var rm = ModRM.GetOpcodeGroupIndex(code);
 
                     switch (rm)
                     {
@@ -416,7 +411,7 @@ namespace bugreport
 
                 case 0xc1:
                 {
-                    Byte rm = ModRM.GetOpcodeGroupIndex(code);
+                    var rm = ModRM.GetOpcodeGroupIndex(code);
 
                     switch (rm)
                     {
@@ -450,7 +445,7 @@ namespace bugreport
 
         public Byte GetInstructionLength(Byte[] code)
         {
-            Byte instructionLength = GetOpcodeLength(code);
+            var instructionLength = GetOpcodeLength(code);
 
             if (HasModRM(code))
             {
@@ -502,7 +497,7 @@ namespace bugreport
 
         public Boolean HasOffset(Byte[] code)
         {
-            OpcodeEncoding encoding = GetEncoding(code);
+            var encoding = GetEncoding(code);
 
             if (encoding == OpcodeEncoding.ObAL ||
                 encoding == OpcodeEncoding.rAxOv)
@@ -523,17 +518,12 @@ namespace bugreport
 
         public Boolean TerminatesFunction(Byte[] code)
         {
-            if (code[0] == 0xf4 || code[0] == 0xc3)
-            {
-                return true;
-            }
-            
-            return false;
+            return code[0] == 0xf4 || code[0] == 0xc3;
         }
 
         public UInt32 GetEffectiveAddress(Byte[] code, UInt32 instructionPointer)
         {
-            UInt32 offset = GetImmediate(code);
+            var offset = GetImmediate(code);
 
             unchecked
             {
@@ -541,7 +531,5 @@ namespace bugreport
                 return instructionPointer + offset + (UInt32) code.Length;
             }
         }
-
-        #endregion
     }
 }

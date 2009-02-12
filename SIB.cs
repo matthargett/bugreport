@@ -37,10 +37,10 @@ namespace bugreport
                     "For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
             }
 
-            var s = (Byte)((getSIB(code) >> 6) & 3);
-            return (UInt32)Math.Pow(2, s);
+            var s = (Byte) ((getSIB(code) >> 6) & 3);
+            return (UInt32) Math.Pow(2, s);
         }
-        
+
         public static RegisterName GetBaseRegister(Byte[] code)
         {
             if (!ModRM.HasSIB(code))
@@ -49,20 +49,20 @@ namespace bugreport
                     "For ModRM that does not specify a SIB, usage of GetBaseRegister is invalid.");
             }
 
-            Byte sib = getSIB(code);
-            var register = (RegisterName)(sib & 7);
+            var sib = getSIB(code);
+            var register = (RegisterName) (sib & 7);
 
             return register;
         }
-        
+
         private static Byte getIndex(Byte[] code)
         {
-            return (Byte)((getSIB(code) >> 3) & 7);
+            return (Byte) ((getSIB(code) >> 3) & 7);
         }
 
         private static Byte getSIB(Byte[] code)
         {
             return code[opcode.GetOpcodeLength(code) + 1];
-        }        
+        }
     }
 }

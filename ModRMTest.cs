@@ -26,10 +26,10 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(NotImplementedException))]
+        [ExpectedException(typeof (NotImplementedException))]
         public void EaxEbpPlusDword12()
         {
-            Int32 index = 0x0c;
+            var index = 0x0c;
             code = new Byte[] {0x8b, 0x85, (Byte) index, 0x00, 0x00, 0x00};
             Assert.IsTrue(ModRM.HasIndex(code));
             Assert.AreEqual(index, ModRM.GetIndex(code));
@@ -39,7 +39,7 @@ namespace bugreport
         public void EaxEbpPlusSByte12()
         {
             // mov    eax,DWORD PTR [ebp+index]
-            Int32 index = 0x0c;
+            var index = 0x0c;
             code = new Byte[] {0x8b, 0x45, (Byte) index};
             Assert.AreEqual(RegisterName.EBP, ModRM.GetEv(code));
             Assert.AreEqual(RegisterName.EAX, ModRM.GetGv(code));
@@ -99,7 +99,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void GetEvWithSIB()
         {
             code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
@@ -108,7 +108,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void GetIndexWithNoIndex()
         {
             code = new Byte[] {0x89, 0xe5};

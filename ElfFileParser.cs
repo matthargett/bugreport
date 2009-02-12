@@ -22,6 +22,20 @@ namespace bugreport
             textData = new Byte[stream.Length];
         }
 
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            if (null != stream)
+            {
+                stream.Dispose();
+            }
+        }
+
+        #endregion
+
+        #region IParsable Members
+
         public UInt32 BaseAddress
         {
             get { return 0x080482e0; }
@@ -40,16 +54,10 @@ namespace bugreport
         public Byte[] GetBytes()
         {
             stream.Seek(0x2e0, SeekOrigin.Begin);
-            stream.Read(textData, 0, (Int32)(stream.Length - stream.Position));
+            stream.Read(textData, 0, (Int32) (stream.Length - stream.Position));
             return textData;
         }
 
-        public void Dispose()
-        {
-            if (null != stream)
-            {
-                stream.Dispose();
-            }
-        }
+        #endregion
     }
 }

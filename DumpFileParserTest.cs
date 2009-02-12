@@ -27,11 +27,10 @@ namespace bugreport
         [TearDown]
         public void TearDown()
         {
-            if (parser != null)
-            {
-                parser.Dispose();
-                parser = null;
-            }
+            if (parser == null) return;
+
+            parser.Dispose();
+            parser = null;
         }
     }
 
@@ -91,7 +90,7 @@ namespace bugreport
             writer.Flush();
             parser = new DumpFileParser(stream, "main");
 
-            Byte[] code = parser.GetBytes();
+            var code = parser.GetBytes();
             CollectionAssert.AreEqual(new Byte[] {0xc9, 0xc3, 0x90}, code);
         }
 
@@ -114,7 +113,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(FormatException))]
+        [ExpectedException(typeof (FormatException))]
         public void LineWithBadHex()
         {
             writer.WriteLine(" 8048385:       83 ej 10                sub    esp,0x10");
@@ -176,7 +175,7 @@ namespace bugreport
             Assert.AreEqual(0x0804837c, parser.BaseAddress);
             Assert.AreEqual(0x0804837d, parser.EntryPointAddress);
 
-            Byte[] code = parser.GetBytes();
+            var code = parser.GetBytes();
             CollectionAssert.AreEqual(new Byte[] {0xc9, 0xc3}, code);
             Assert.AreEqual(2, code.Length);
             Assert.AreEqual(0, parser.ExpectedReportItems.Count);
@@ -195,7 +194,7 @@ namespace bugreport
             Assert.AreEqual(0x0804837c, parser.BaseAddress);
             Assert.AreEqual(0x0804837d, parser.EntryPointAddress);
 
-            Byte[] code = parser.GetBytes();
+            var code = parser.GetBytes();
             CollectionAssert.AreEqual(new Byte[] {0xc9, 0xc3, 0x90}, code);
             Assert.AreEqual(3, code.Length);
             Assert.AreEqual(0, parser.ExpectedReportItems.Count);
@@ -224,7 +223,7 @@ namespace bugreport
             Assert.AreEqual(0x0804837c, parser.BaseAddress);
             Assert.AreEqual(0x0804837c, parser.EntryPointAddress);
 
-            Byte[] code = parser.GetBytes();
+            var code = parser.GetBytes();
             Assert.AreEqual(0xc9, code[0]);
         }
 

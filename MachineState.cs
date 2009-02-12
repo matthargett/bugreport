@@ -33,7 +33,7 @@ namespace bugreport
 
         public override Boolean Equals(object obj)
         {
-            var operationResult = (OperationResult)obj;
+            var operationResult = (OperationResult) obj;
             return Value.Equals(operationResult.Value) && ZeroFlag == operationResult.ZeroFlag;
         }
 
@@ -97,7 +97,7 @@ namespace bugreport
                 return registers[RegisterName.ESP].PointsTo[0];
             }
 
-            set
+            private set
             {
                 Debug.Assert(registers[RegisterName.ESP] != null);
                 Debug.Assert(registers[RegisterName.ESP].PointsTo != null);
@@ -132,7 +132,7 @@ namespace bugreport
                 return false;
             }
 
-            foreach (UInt32 key in dataSegment.Keys)
+            foreach (var key in dataSegment.Keys)
             {
                 if (!other.dataSegment.ContainsKey(key))
                 {
@@ -150,11 +150,11 @@ namespace bugreport
 
         public override Int32 GetHashCode()
         {
-            Int32 hashCode = instructionPointer.GetHashCode() ^
-                             registers.GetHashCode() ^
-                             zeroFlag.GetHashCode();
+            var hashCode = instructionPointer.GetHashCode() ^
+                           registers.GetHashCode() ^
+                           zeroFlag.GetHashCode();
 
-            foreach (UInt32 key in dataSegment.Keys)
+            foreach (var key in dataSegment.Keys)
             {
                 hashCode ^= dataSegment[key].GetHashCode();
             }
@@ -164,7 +164,7 @@ namespace bugreport
 
         public MachineState PushOntoStack(AbstractValue value)
         {
-            MachineState newState = DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x4));
+            var newState = DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x4));
             newState.TopOfStack = new AbstractValue(value);
             return newState;
         }
@@ -195,7 +195,7 @@ namespace bugreport
                         String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
                 }
             }
-            
+
             return newState;
         }
 
@@ -208,11 +208,11 @@ namespace bugreport
                 case OperatorEffect.Assignment:
                 {
                     newState.dataSegment[offset] =
-                        newState.DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
+                        DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
                     break;
                 }
             }
-            
+
             return newState;
         }
 
@@ -225,7 +225,7 @@ namespace bugreport
                 case OperatorEffect.Assignment:
                 case OperatorEffect.Cmp:
                 {
-                    OperationResult result = newState.DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
+                    var result = DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
                     newState.Registers[lhs].PointsTo[index] = result.Value;
                     newState.ZeroFlag = result.ZeroFlag;
                     break;
@@ -241,12 +241,12 @@ namespace bugreport
 
             if (Registers[lhs].IsPointer && _operatorEffect != OperatorEffect.Assignment)
             {
-                AbstractBuffer newBuffer = Registers[lhs].PointsTo.DoOperation(_operatorEffect, rhs);
+                var newBuffer = Registers[lhs].PointsTo.DoOperation(_operatorEffect, rhs);
                 newState.Registers[lhs] = new AbstractValue(newBuffer);
             }
             else
             {
-                OperationResult result = newState.DoOperation(Registers[lhs], _operatorEffect, rhs);
+                var result = DoOperation(Registers[lhs], _operatorEffect, rhs);
                 newState.Registers[lhs] = result.Value;
                 newState.ZeroFlag = result.ZeroFlag;
             }
@@ -257,13 +257,13 @@ namespace bugreport
         public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, RegisterName rhs)
         {
             var newState = new MachineState(this);
-            OperationResult result = newState.DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
+            var result = DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
             newState.Registers[lhs] = result.Value;
             newState.ZeroFlag = result.ZeroFlag;
             return newState;
         }
 
-        public OperationResult DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+        private static OperationResult DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
         {
             if (rhs.IsPointer && _operatorEffect != OperatorEffect.Assignment)
             {
@@ -272,7 +272,6 @@ namespace bugreport
 
             var result = new OperationResult();
             AbstractValue totalValue;
-            UInt32 total;
 
             if (_operatorEffect == OperatorEffect.Assignment)
             {
@@ -289,14 +288,7 @@ namespace bugreport
 
             if (_operatorEffect == OperatorEffect.Cmp)
             {
-                if ((lhs.Value - rhs.Value) == 0)
-                {
-                    result.ZeroFlag = true;
-                }
-                else
-                {
-                    result.ZeroFlag = false;
-                }
+                result.ZeroFlag = (lhs.Value - rhs.Value) == 0;
 
                 totalValue = lhs;
                 result.Value = totalValue;
@@ -305,12 +297,12 @@ namespace bugreport
 
             if (lhs.IsPointer)
             {
-                AbstractBuffer newBuffer = lhs.PointsTo.DoOperation(_operatorEffect, rhs);
+                var newBuffer = lhs.PointsTo.DoOperation(_operatorEffect, rhs);
                 result.Value = new AbstractValue(newBuffer);
                 return result;
             }
 
-            total = getCalculatedValue(lhs.Value, _operatorEffect, rhs.Value);
+            var total = getCalculatedValue(lhs.Value, _operatorEffect, rhs.Value);
             totalValue = new AbstractValue(total);
 
             if (lhs.IsTainted || rhs.IsTainted)

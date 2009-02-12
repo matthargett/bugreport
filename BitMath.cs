@@ -22,7 +22,7 @@ namespace bugreport
 
             for (Byte i = 0; i < 4; ++i)
             {
-                result |= (UInt32)data[i + index] << (8 * i);
+                result |= (UInt32) data[i + index] << (8 * i);
             }
 
             return result;

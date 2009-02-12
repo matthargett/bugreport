@@ -19,11 +19,10 @@ namespace bugreport
         EBP,
         ESI,
         EDI,
-        Unknown,
         None
     }
 
-    public class RegisterCollection
+    public sealed class RegisterCollection
     {
         private readonly AbstractValue[] registers;
 
@@ -60,7 +59,7 @@ namespace bugreport
                 return false;
             }
 
-            for (Int32 i = 0; i < registers.Length; i++)
+            for (var i = 0; i < registers.Length; i++)
             {
                 if (!registers[i].Equals(other.registers[i]))
                 {
@@ -73,9 +72,9 @@ namespace bugreport
 
         public override Int32 GetHashCode()
         {
-            Int32 hashCode = 0;
+            var hashCode = 0;
 
-            for (Int32 i = 0; i < registers.Length; i++)
+            for (var i = 0; i < registers.Length; i++)
             {
                 hashCode ^= registers[i].GetHashCode();
             }
@@ -88,8 +87,8 @@ namespace bugreport
             var result = new StringBuilder(String.Empty);
             for (UInt32 i = 0; i < registers.Length; ++i)
             {
-                AbstractValue value = registers[i];
-                result.Append(Enum.GetName(typeof(RegisterName), i) + "=" + value + "\t");
+                var value = registers[i];
+                result.Append(Enum.GetName(typeof (RegisterName), i) + "=" + value + "\t");
                 if (value.ToString().Length < 8)
                 {
                     result.Append("\t");
@@ -100,7 +99,7 @@ namespace bugreport
                     result.Append(Environment.NewLine);
                 }
             }
-            
+
             return result.ToString();
         }
     }

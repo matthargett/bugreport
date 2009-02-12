@@ -5,6 +5,7 @@
 // See LICENSE.txt for details.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace bugreport
@@ -15,9 +16,9 @@ namespace bugreport
 
         public static String GetInstructionName(Byte[] code)
         {
-            String instructionName = String.Empty;
+            var instructionName = String.Empty;
 
-            StackEffect stackEffect = opcode.GetStackEffect(code);
+            var stackEffect = opcode.GetStackEffect(code);
 
             if (stackEffect != StackEffect.None)
             {
@@ -25,25 +26,25 @@ namespace bugreport
             }
             else
             {
-                OperatorEffect effect = opcode.GetOperatorEffect(code);
-                if (OperatorEffect.Assignment == effect)
+                var effect = opcode.GetOperatorEffect(code);
+                switch (effect)
                 {
-                    if (code[0] == 0x8d)
-                    {
-                        instructionName += "lea";
-                    }
-                    else
-                    {
-                        instructionName += "mov";
-                    }
-                }
-                else if (OperatorEffect.None == effect)
-                {
-                    instructionName += "nop";
-                }
-                else
-                {
-                    instructionName += effect.ToString().ToLower();
+                    case OperatorEffect.Assignment:
+                        if (code[0] == 0x8d)
+                        {
+                            instructionName += "lea";
+                        }
+                        else
+                        {
+                            instructionName += "mov";
+                        }
+                        break;
+                    case OperatorEffect.None:
+                        instructionName += "nop";
+                        break;
+                    default:
+                        instructionName += effect.ToString().ToLower();
+                        break;
                 }
             }
 
@@ -52,7 +53,7 @@ namespace bugreport
 
         public static String GetOperands(Byte[] code, UInt32 instructionPointer)
         {
-            UInt32 operandCount = getOperandCount(code);
+            var operandCount = getOperandCount(code);
 
             switch (operandCount)
             {
@@ -68,8 +69,8 @@ namespace bugreport
 
                 case 2:
                 {
-                    String destinationOperand = getDestinationOperand(code);
-                    String sourceOperand = getSourceOperand(code);
+                    var destinationOperand = getDestinationOperand(code);
+                    var sourceOperand = getSourceOperand(code);
 
                     return destinationOperand + ", " + sourceOperand;
                 }
@@ -83,7 +84,7 @@ namespace bugreport
 
         public static String GetEncoding(Byte[] code)
         {
-            String encoding = String.Empty;
+            var encoding = String.Empty;
 
             if (OpcodeEncoding.None != opcode.GetEncoding(code))
             {
@@ -92,7 +93,7 @@ namespace bugreport
 
             return encoding;
         }
-    
+
         private static UInt32 getOperandCount(Byte[] code)
         {
             UInt32 count = 0;
@@ -151,21 +152,21 @@ namespace bugreport
 
             if (opcode.HasOffset(code) && opcode.HasModRM(code))
             {
-                String offset = String.Format("0x{0:x}", ModRM.GetOffset(code));
+                var offset = String.Format("0x{0:x}", ModRM.GetOffset(code));
                 return encaseInSquareBrackets(offset);
             }
 
             String sourceOperand;
-            Boolean sourceIsEffectiveAddress =
+            var sourceIsEffectiveAddress =
                 opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
                 opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
                 opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
 
             if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
             {
-                String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
-                String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
-                UInt32 scaler = SIB.GetScaler(code);
+                var baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+                var scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+                var scaler = SIB.GetScaler(code);
 
                 if (SIB.GetScaledRegister(code) == RegisterName.None)
                 {
@@ -195,7 +196,7 @@ namespace bugreport
                         sourceOperand += "+" + ModRM.GetIndex(code);
                     }
 
-                    Boolean effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                    var effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
                     if (effectiveAddressIsDereferenced)
                     {
                         sourceOperand = encaseInSquareBrackets(sourceOperand);
@@ -210,10 +211,10 @@ namespace bugreport
                 );
         }
 
-        private static String formatCode(Byte[] code)
+        private static String formatCode(IEnumerable<byte> code)
         {
             var formattedCode = new StringBuilder();
-            foreach (Byte codeByte in code)
+            foreach (var codeByte in code)
             {
                 formattedCode.Append(String.Format("{0:x2} ", codeByte));
             }
@@ -223,16 +224,16 @@ namespace bugreport
 
         private static String getDestinationOperand(Byte[] code)
         {
-            String destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
-            Boolean destinationIsEffectiveAddress =
+            var destinationOperand = opcode.GetDestinationRegister(code).ToString().ToLower();
+            var destinationIsEffectiveAddress =
                 opcode.GetEncoding(code).ToString().StartsWith("Ev", StringComparison.Ordinal) ||
                 opcode.GetEncoding(code).ToString().StartsWith("Eb", StringComparison.Ordinal);
 
             if (destinationIsEffectiveAddress && ModRM.HasSIB(code))
             {
-                String baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
-                String scaled = SIB.GetScaledRegister(code).ToString().ToLower();
-                UInt32 scaler = SIB.GetScaler(code);
+                var baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+                var scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+                var scaler = SIB.GetScaler(code);
 
                 if (SIB.GetScaledRegister(code) == RegisterName.None)
                 {
@@ -256,7 +257,7 @@ namespace bugreport
                     destinationOperand += "+" + ModRM.GetIndex(code);
                 }
 
-                Boolean effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                var effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
                 if (effectiveAddressIsDereferenced)
                 {
                     destinationOperand = encaseInSquareBrackets(destinationOperand);

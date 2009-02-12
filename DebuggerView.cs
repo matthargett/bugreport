@@ -8,7 +8,7 @@ using System;
 
 namespace bugreport
 {
-    internal class DebuggerView
+    internal sealed class DebuggerView
     {
         private readonly Boolean interactive;
         private MachineState state;
@@ -20,11 +20,11 @@ namespace bugreport
 
         public void printInfo(object sender, EmulationEventArgs e)
         {
-            String address = getEffectiveAddressFor(e);
+            var address = getEffectiveAddressFor(e);
             Console.Write(address + ":");
             Console.Write("\t");
 
-            Byte[] code = getCodeFor(e);
+            var code = getCodeFor(e);
             printOpcodeInfo(code);
 
             Console.WriteLine(state.Registers);
@@ -33,56 +33,56 @@ namespace bugreport
             handleInputIfNecessary();
         }
 
-        protected void handleInputIfNecessary()
+        private void handleInputIfNecessary()
         {
-            // TODO: cover this with a system-level test
-            Boolean enterPressed = false;
-            if (interactive)
-            {
-                while (!enterPressed)
-                {
-                    string input = getInput();
-                    var command = new DebuggerCommand(input);
-                    if (command.IsEnter)
-                    {
-                        enterPressed = true;
-                        continue;
-                    }
-                    
-                    if (command.IsStackPrint)
-                    {
-                        printStackFor(state);
-                        continue;
-                    }
-                    
-                    if (command.IsDisassemble)
-                    {
-                        string hex = input.Substring("disasm".Length + 1);
-                        byte[] code = DumpFileParser.getByteArrayFromHexString(hex);
-                        printOpcodeInfo(code);
-                        continue;
-                    }
-                    
-                    if (command.IsQuit)
-                    {
-                        Environment.Exit(0);
-                    }
+            if (!interactive) return;
 
-                    Console.WriteLine("invalid command");
+            // TODO: cover this with a system-level test
+            var enterPressed = false;
+
+            while (!enterPressed)
+            {
+                var input = getInput();
+                var command = new DebuggerCommand(input);
+                if (command.IsEnter)
+                {
+                    enterPressed = true;
+                    continue;
                 }
+
+                if (command.IsStackPrint)
+                {
+                    printStackFor(state);
+                    continue;
+                }
+
+                if (command.IsDisassemble)
+                {
+                    var hex = input.Substring("disasm".Length + 1);
+                    var code = DumpFileParser.getByteArrayFromHexString(hex);
+                    printOpcodeInfo(code);
+                    continue;
+                }
+
+                if (command.IsQuit)
+                {
+                    Environment.Exit(0);
+                }
+
+                Console.WriteLine("invalid command");
             }
         }
 
         private void printOpcodeInfo(byte[] code)
         {
-            foreach (Byte codeByte in code)
+            foreach (var codeByte in code)
             {
                 Console.Write(String.Format("{0:x2}", codeByte) + " ");
             }
 
             // magic numbers that happen to look good :)
-            Int32 numberOfTabs = 3 - (code.Length / 3);
-            for (Int32 i = 0; i < numberOfTabs; i++)
+            var numberOfTabs = 3 - (code.Length / 3);
+            for (var i = 0; i < numberOfTabs; i++)
             {
                 Console.Write("\t");
             }
@@ -90,19 +90,19 @@ namespace bugreport
             Console.Write(OpcodeFormatter.GetInstructionName(code));
             Console.Write("\t");
 
-            String operands = OpcodeFormatter.GetOperands(code, state.InstructionPointer);
+            var operands = OpcodeFormatter.GetOperands(code, state.InstructionPointer);
             Console.Write(operands);
             if (operands.Length < 8)
             {
                 Console.Write("\t");
             }
 
-            String encoding = OpcodeFormatter.GetEncoding(code);
+            var encoding = OpcodeFormatter.GetEncoding(code);
             Console.Write("\t");
             Console.WriteLine(encoding);
         }
 
-        private Byte[] getCodeFor(EmulationEventArgs e)
+        private static Byte[] getCodeFor(EmulationEventArgs e)
         {
             var code = new Byte[e.Code.Count];
             e.Code.CopyTo(code, 0);
@@ -112,7 +112,7 @@ namespace bugreport
         private string getEffectiveAddressFor(EmulationEventArgs e)
         {
             state = e.MachineState;
-            String address = String.Format("{0:x8}", state.InstructionPointer);
+            var address = String.Format("{0:x8}", state.InstructionPointer);
             return address;
         }
 
@@ -122,9 +122,9 @@ namespace bugreport
             return Console.ReadLine();
         }
 
-        private void printStackFor(MachineState state)
+        private static void printStackFor(MachineState state)
         {
-            AbstractValue esp = state.Registers[RegisterName.ESP];
+            var esp = state.Registers[RegisterName.ESP];
 
             Console.WriteLine("Stack dump");
             Console.WriteLine("esp-8\t\t esp-4\t\t esp");

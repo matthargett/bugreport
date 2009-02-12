@@ -7,11 +7,12 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: ComVisible(false)]
+[assembly : ComVisible(false)]
 
 // The assembly version has following format :
 //
 // Major.Minor.Build.Revision
 //
 // You can specify all values by your own or you can build default build and revision
-[assembly: AssemblyVersion("0.1.*")]
+
+[assembly : AssemblyVersion("0.1.*")]

@@ -12,10 +12,7 @@ namespace bugreport
     [TestFixture]
     public class X86EmulatorTest
     {
-        private readonly AbstractValue one = new AbstractValue(1);
-        private MachineState state;
-        private Byte[] code;
-        private ReportCollection reportItems;
+        #region Setup/Teardown
 
         [SetUp]
         public void SetUp()
@@ -25,7 +22,34 @@ namespace bugreport
             var buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(0x200));
             var pointer = new AbstractValue(buffer);
             state.Registers[RegisterName.ESP] = pointer;
-            state.Registers[RegisterName.EBP] = state.Registers[RegisterName.ESP];
+            state = state.DoOperation(RegisterName.EBP, OperatorEffect.Assignment, RegisterName.ESP);
+        }
+
+        #endregion
+
+        private readonly AbstractValue one = new AbstractValue(1);
+        private MachineState state;
+        private Byte[] code;
+        private ReportCollection reportItems;
+
+        private void PrintStackAndBlock()
+        {
+            Console.WriteLine(
+                "EIP: {5:x8}\tESP-8: {0}\tESP-4: {1}\tESP: {2}\tESP+4: {3}\tESP+8: {4}\t",
+                state.Registers[RegisterName.ESP].PointsTo[-8],
+                state.Registers[RegisterName.ESP].PointsTo[-4],
+                state.Registers[RegisterName.ESP].PointsTo[0],
+                state.Registers[RegisterName.ESP].PointsTo[4],
+                state.Registers[RegisterName.ESP].PointsTo[8],
+                state.InstructionPointer);
+            Console.WriteLine(
+                "EIP: {5:x8}\tEBP-8: {0}\tEBP-4: {1}\tEBP: {2}\tEBP+4: {3}\tEBP+8: {4}\t",
+                state.Registers[RegisterName.EBP].PointsTo[-8],
+                state.Registers[RegisterName.EBP].PointsTo[-4],
+                state.Registers[RegisterName.EBP].PointsTo[0],
+                state.Registers[RegisterName.EBP].PointsTo[4],
+                state.Registers[RegisterName.EBP].PointsTo[8],
+                state.InstructionPointer);
         }
 
         [Test]
@@ -39,7 +63,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void AddImmediateNonPointerDeref()
         {
             // add    [eax], 0x00
@@ -53,12 +77,44 @@ namespace bugreport
         public void AddImmediateToEAX()
         {
             // add    eax,0xf
-            Byte immediate = 0x0f;
+            const byte immediate = 0x0f;
             code = new Byte[] {0x83, 0xc0, immediate};
-            UInt32 value = 1;
+            const uint value = 1;
             state.Registers[RegisterName.EAX] = new AbstractValue(value);
             state = X86Emulator.Run(reportItems, state, code);
             Assert.AreEqual(value + immediate, state.Registers[RegisterName.EAX].Value);
+        }
+
+        [Test]
+        public void BigComplicatedMuthafuqqa()
+        {
+            const byte value = 0xcd;
+            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(0x40));
+            state.InstructionPointer = 0x804839b;
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x55});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x89, 0xe5});
+            PrintStackAndBlock();
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x83, 0xec, 0x08});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x83, 0xe4, 0xf0});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0xb8, 0x00, 0x00, 0x00, 0x00});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x83, 0xc0, 0x0f});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x83, 0xc0, 0x0f});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0xc1, 0xe8, 0x04});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0xc1, 0xe0, 0x04});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x29, 0xc4});
+            state = X86Emulator.Run(reportItems, state, new byte[] {0xc7, 0x04, 0x24, value, 0, 0, 0});
+            Assert.AreEqual(value, state.TopOfStack.Value);
+            state = X86Emulator.Run(reportItems, state, new byte[] {0xe8, 0x10, 0, 0, 0});
+            PrintStackAndBlock();
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x55});
+            PrintStackAndBlock();
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x89, 0xe5});
+            PrintStackAndBlock();
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x83, 0xec, 0x18});
+            PrintStackAndBlock();
+            state = X86Emulator.Run(reportItems, state, new byte[] {0x8b, 0x45, 0x08});
+            PrintStackAndBlock();
+            Assert.AreEqual(value, state.Registers[RegisterName.EAX].Value);
         }
 
         [Test]
@@ -66,7 +122,7 @@ namespace bugreport
         {
             // cmp    DWORD PTR [ebp+8],0x0
             code = new Byte[] {0x83, 0x7d, 0x08, 0x0};
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+            var buffer = AbstractValue.GetNewBuffer(16);
 
             var pointer = new AbstractValue(buffer);
             state.Registers[RegisterName.EBP] = pointer;
@@ -118,7 +174,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void DereferenceRegisterWithNonPointer()
         {
             // mov    eax,DWORD PTR [eax]
@@ -147,7 +203,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof (ArgumentException))]
         public void EmptyCodeArray()
         {
             code = new Byte[] {};
@@ -157,8 +213,8 @@ namespace bugreport
         [Test]
         public void GetNewBufferReturnsUnallocatedValues()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
-            for (int i = 0; i < 16; i++)
+            var buffer = AbstractValue.GetNewBuffer(16);
+            for (var i = 0; i < 16; i++)
             {
                 Assert.IsFalse(buffer[i].IsInitialized);
             }
@@ -170,14 +226,14 @@ namespace bugreport
             var registers = new RegisterCollection();
             registers[RegisterName.EAX] = one;
             state = new MachineState(registers);
-            MachineState newState = X86Emulator.Run(reportItems, state, new byte[] {0x90});
+            var newState = X86Emulator.Run(reportItems, state, new byte[] {0x90});
             Assert.AreEqual(one, newState.Registers[RegisterName.EAX]);
             Assert.AreNotSame(state, newState);
             Assert.AreNotEqual(state, newState);
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOpcodeException))]
+        [ExpectedException(typeof (InvalidOpcodeException))]
         public void InvalidOpcode()
         {
             // int3 -- not really invalid, but we probably won't see it in any program we care about
@@ -193,9 +249,9 @@ namespace bugreport
             state.Registers[RegisterName.EAX] = new AbstractValue(0);
             state = X86Emulator.Run(reportItems, state, cmpCode);
 
-            Byte offset = 0x06;
+            const byte offset = 0x06;
             var jnzCode = new Byte[] {0x75, offset};
-            UInt32 oldEIP = state.InstructionPointer;
+            var oldEIP = state.InstructionPointer;
             state = X86Emulator.Run(reportItems, state, jnzCode);
 
             Assert.AreEqual(jnzCode.Length, state.InstructionPointer - oldEIP);
@@ -222,7 +278,7 @@ namespace bugreport
             state.Registers[RegisterName.EAX] = new AbstractValue(1);
 
             state = X86Emulator.Run(reportItems, state, code);
-            AbstractValue eax = state.Registers[RegisterName.EAX];
+            var eax = state.Registers[RegisterName.EAX];
             Assert.AreEqual(two.Value, eax.PointsTo[0].Value);
         }
 
@@ -230,7 +286,7 @@ namespace bugreport
         public void LeaEdxFromEaxPlus16()
         {
             // lea    edx,[eax+index]
-            Byte index = 0x1;
+            const byte index = 0x1;
             code = new Byte[] {0x8d, 0x50, index};
 
             var zero = new AbstractValue(0);
@@ -239,7 +295,7 @@ namespace bugreport
             state.Registers[RegisterName.EAX] = new AbstractValue(buffer);
 
             state = X86Emulator.Run(reportItems, state, code);
-            AbstractValue edx = state.Registers[RegisterName.EDX];
+            var edx = state.Registers[RegisterName.EDX];
             Assert.IsNotNull(edx);
             Assert.AreEqual(one, edx.PointsTo[0]);
         }
@@ -247,7 +303,7 @@ namespace bugreport
         [Test]
         public void MallocCall()
         {
-            UInt32 initialInstructionPointer = 0x804838f;
+            const uint initialInstructionPointer = 0x804838f;
 
             // TODO: need to reconcile with esp/ebp handling
             state = state.PushOntoStack(new AbstractValue(16));
@@ -262,8 +318,8 @@ namespace bugreport
         public void MovBytePtrEaxInBounds()
         {
             // mov    BYTE PTR [eax], value
-            Byte value = 0x01;
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+            const byte value = 0x01;
+            var buffer = AbstractValue.GetNewBuffer(16);
             var pointer = new AbstractValue(buffer);
             state.ReturnValue = pointer;
             code = new Byte[] {0xc6, 0x00, value};
@@ -275,9 +331,9 @@ namespace bugreport
         public void MovBytePtrEaxPlus16FromBl()
         {
             // mov    BYTE PTR [eax+16],bl
-            Byte offset = 0x10;
+            const byte offset = 0x10;
             state.Registers[RegisterName.EBX] = new AbstractValue(0x1);
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer((uint) offset + 1);
+            var buffer = AbstractValue.GetNewBuffer((uint) offset + 1);
             var pointer = new AbstractValue(buffer);
             state.ReturnValue = pointer;
 
@@ -291,9 +347,9 @@ namespace bugreport
         public void MovDwordPtrEaxPlus16FromEbx()
         {
             // mov    BYTE PTR [eax+16],bl
-            Byte offset = 0x10;
+            const byte offset = 0x10;
             state.Registers[RegisterName.EBX] = new AbstractValue(0x1);
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer((uint) offset + 1);
+            var buffer = AbstractValue.GetNewBuffer((uint) offset + 1);
             var pointer = new AbstractValue(buffer);
             state.Registers[RegisterName.EAX] = pointer;
 
@@ -316,12 +372,12 @@ namespace bugreport
         public void MovEax0x10()
         {
             // mov    DWORD PTR [eax],0x10
-            AbstractValue[] value = AbstractValue.GetNewBuffer(1);
+            var value = AbstractValue.GetNewBuffer(1);
             state.Registers[RegisterName.EAX] = new AbstractValue(value);
             code = new Byte[] {0xc7, 0x00, 0x10, 0x00, 0x00, 0x00};
             state = X86Emulator.Run(reportItems, state, code);
 
-            AbstractValue sixteen = state.Registers[RegisterName.EAX].PointsTo[0];
+            var sixteen = state.Registers[RegisterName.EAX].PointsTo[0];
             Assert.AreEqual(0x10, sixteen.Value);
         }
 
@@ -338,8 +394,8 @@ namespace bugreport
         public void MovEaxEaxFourByteValue()
         {
             // mov    eax,DWORD PTR [eax]
-            UInt32 value = 0x31337;
-            var buffer = new[] { new AbstractValue(value) };
+            const uint value = 0x31337;
+            var buffer = new[] {new AbstractValue(value)};
             var pointer = new AbstractValue(buffer);
             state.Registers[RegisterName.EAX] = pointer;
 
@@ -354,7 +410,7 @@ namespace bugreport
         public void MovEaxEaxPointerPointerValue()
         {
             // mov    eax,DWORD PTR [eax]
-            UInt32 value = 0x31337;
+            const uint value = 0x31337;
             var argv = new AbstractValue(value);
             var argvBuffer = new[] {argv};
             var argvPointer = new AbstractValue(argvBuffer);
@@ -370,7 +426,7 @@ namespace bugreport
         [Test]
         public void MovEaxEbpPlusTwelve()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+            var buffer = AbstractValue.GetNewBuffer(16);
             buffer[12] = new AbstractValue(1);
 
             var pointer = new AbstractValue(buffer);
@@ -388,22 +444,21 @@ namespace bugreport
         {
             // mov    ebp,esp
             code = new Byte[] {0x89, 0xe5};
-            UInt32 value = 0x31337;
-            var abstractValue = new AbstractValue(value);
-            state.Registers[RegisterName.ESP] = abstractValue;
+            var value = new AbstractValue(0x31337);
+            state = state.PushOntoStack(value);
             state = X86Emulator.Run(reportItems, state, code);
 
             Assert.AreEqual(0x2, state.InstructionPointer);
-            Assert.AreEqual(value, state.Registers[RegisterName.ESP].Value);
-            Assert.AreEqual(value, state.Registers[RegisterName.EBP].Value);
+            Assert.AreEqual(value, state.Registers[RegisterName.ESP].PointsTo[0]);
+            Assert.AreEqual(value, state.Registers[RegisterName.EBP].PointsTo[0]);
         }
 
         [Test]
         public void MovEbpMinus8()
         {
             // mov    DWORD PTR [ebp-8],0xf
-            Byte fifteen = 0x0f;
-            AbstractValue[] value = AbstractValue.GetNewBuffer(0x100);
+            const byte fifteen = 0x0f;
+            var value = AbstractValue.GetNewBuffer(0x100);
             state.Registers[RegisterName.EBP] = new AbstractValue(value);
             code = new Byte[] {0xc7, 0x45, 0xf8, fifteen, 0x00, 0x00, 0x00};
             state = X86Emulator.Run(reportItems, state, code);
@@ -434,8 +489,9 @@ namespace bugreport
         [Test]
         public void MovIntoAssignedEaxInBounds()
         {
-            Byte value = 0x01, index = 0xf;
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(16);
+            const Byte value = 0x01;
+            const byte index = 0xf;
+            var buffer = AbstractValue.GetNewBuffer(16);
             var pointer = new AbstractValue(buffer);
             state.ReturnValue = pointer;
             code = new Byte[] {0xc6, 0x40, index, value};
@@ -446,8 +502,9 @@ namespace bugreport
         [Test]
         public void MovIntoAssignedEaxOutOfBounds()
         {
-            Byte value = 0x01, index = 0x10;
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(index);
+            const byte value = 0x01;
+            const byte index = 0x10;
+            var buffer = AbstractValue.GetNewBuffer(index);
             var pointer = new AbstractValue(buffer);
             state.ReturnValue = pointer;
             var nopCode = new Byte[] {0x90};
@@ -463,7 +520,7 @@ namespace bugreport
         public void MovIntoEdxFromOffset()
         {
             // movzx  edx,BYTE PTR ds:0x80495e0
-            UInt32 value = 1;
+            const uint value = 1;
             var abstractValue = new AbstractValue(value);
             state.DataSegment[0x80495e0] = abstractValue;
             code = new Byte[] {0x0f, 0xb6, 0x15, 0xe0, 0x95, 0x04, 0x08};
@@ -475,8 +532,8 @@ namespace bugreport
         public void MovIntoOffsetFromAl()
         {
             // mov    ds:0x80495e0,al
-            UInt32 value = 1;
-            UInt32 offset = 0x80495e0;
+            const uint value = 1;
+            const uint offset = 0x80495e0;
             code = new Byte[] {0xa2, 0xe0, 0x95, 0x04, 0x08};
             state.Registers[RegisterName.EAX] = new AbstractValue(value);
             state = X86Emulator.Run(reportItems, state, code);
@@ -486,9 +543,9 @@ namespace bugreport
         [Test]
         public void MovPtrEsp0x10()
         {
-            Byte sixteen = 0x10;
+            const byte sixteen = 0x10;
             code = new Byte[] {0xc7, 0x04, 0x24, sixteen, 0x00, 0x00, 0x00};
-            MachineState newState = X86Emulator.Run(reportItems, state, code);
+            var newState = X86Emulator.Run(reportItems, state, code);
             Assert.AreNotSame(newState, state);
             Assert.AreNotEqual(newState, state);
             Assert.AreEqual(0x7, newState.InstructionPointer);
@@ -507,14 +564,14 @@ namespace bugreport
 
             state = X86Emulator.Run(reportItems, state, code);
 
-            AbstractBuffer espBuffer = state.Registers[RegisterName.ESP].PointsTo;
+            var espBuffer = state.Registers[RegisterName.ESP].PointsTo;
             Assert.AreEqual(0x10, espBuffer[0].Value);
         }
 
         [Test]
         public void NonMallocCall()
         {
-            UInt32 initialInstructionPointer = 0x80483b8;
+            const uint initialInstructionPointer = 0x80483b8;
             state.InstructionPointer = initialInstructionPointer;
             code = new Byte[] {0xe8, 0xbf, 0xff, 0xff, 0xff};
             state = X86Emulator.Run(reportItems, state, code);
@@ -669,7 +726,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void SubNonPointerDeref()
         {
             // sub eax, [eax]

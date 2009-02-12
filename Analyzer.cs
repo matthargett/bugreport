@@ -9,12 +9,12 @@ using System.Collections.ObjectModel;
 
 namespace bugreport
 {
-    public class EmulationEventArgs : EventArgs
+    public sealed class EmulationEventArgs : EventArgs
     {
         private readonly ReadOnlyCollection<Byte> code;
         private readonly MachineState state;
 
-        public EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code)
+        internal EmulationEventArgs(MachineState state, ReadOnlyCollection<Byte> code)
         {
             this.state = state;
             this.code = code;
@@ -31,7 +31,7 @@ namespace bugreport
         }
     }
 
-    public class ReportEventArgs : EventArgs
+    public sealed class ReportEventArgs : EventArgs
     {
         private readonly ReportItem reportItem;
 
@@ -46,7 +46,7 @@ namespace bugreport
         }
     }
 
-    public class ReportCollection : Collection<ReportItem>
+    public sealed class ReportCollection : Collection<ReportItem>
     {
         public EventHandler<ReportEventArgs> OnReport;
 
@@ -63,10 +63,10 @@ namespace bugreport
 
     public class Analyzer
     {
-        public EventHandler<EmulationEventArgs> OnEmulationComplete;
         private readonly Opcode opcode = new X86Opcode();
         private readonly IParsable parser;
-        private ReportCollection reportItems;
+        private readonly ReportCollection reportItems;
+        public EventHandler<EmulationEventArgs> OnEmulationComplete;
 
         public Analyzer(IParsable parser)
         {
@@ -79,7 +79,7 @@ namespace bugreport
 
             reportItems = new ReportCollection();
         }
-        
+
         public ReadOnlyCollection<ReportItem> ActualReportItems
         {
             get { return new ReadOnlyCollection<ReportItem>(reportItems); }
@@ -105,13 +105,13 @@ namespace bugreport
         {
             var machineState = new MachineState(getRegistersForLinuxStart());
             machineState.InstructionPointer = parser.EntryPointAddress;
-            Byte[] instructions = parser.GetBytes();
-            UInt32 index = machineState.InstructionPointer - parser.BaseAddress;
+            var instructions = parser.GetBytes();
+            var index = machineState.InstructionPointer - parser.BaseAddress;
 
             while (index < instructions.Length)
             {
-                MachineState savedState = machineState;
-                Byte[] instruction = extractInstruction(instructions, index);
+                var savedState = machineState;
+                var instruction = extractInstruction(instructions, index);
 
                 machineState = runCode(machineState, instruction);
                 if (null != OnEmulationComplete)
@@ -138,16 +138,16 @@ namespace bugreport
         {
             var linuxMainDefaultValues = new RegisterCollection();
 
-            AbstractValue arg0 = new AbstractValue(1).AddTaint();
+            var arg0 = new AbstractValue(1).AddTaint();
 
             var argvBuffer = new[] {arg0};
             var argvPointer = new AbstractValue(argvBuffer);
             var argvPointerBuffer = new[] {argvPointer};
             var argvPointerPointer = new AbstractValue(argvPointerBuffer);
-            AbstractValue[] stackBuffer = AbstractValue.GetNewBuffer(0x200);
+            var stackBuffer = AbstractValue.GetNewBuffer(0x200);
 
             var buffer = new AbstractBuffer(stackBuffer);
-            AbstractBuffer modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
+            var modifiedBuffer = buffer.DoOperation(OperatorEffect.Add, new AbstractValue(0x100));
 
             // linux ABI dictates
             modifiedBuffer[5] = argvPointerPointer;
@@ -163,9 +163,9 @@ namespace bugreport
 
         private Byte[] extractInstruction(Byte[] instructions, UInt32 index)
         {
-            Byte instructionLength = opcode.GetInstructionLength(instructions, index);
+            var instructionLength = opcode.GetInstructionLength(instructions, index);
             var instruction = new Byte[instructionLength];
-            for (UInt32 count = index; count < index + instructionLength; count++)
+            for (var count = index; count < index + instructionLength; count++)
             {
                 instruction[count - index] = instructions[count];
             }

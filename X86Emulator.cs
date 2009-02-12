@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 
 namespace bugreport
 {
@@ -15,7 +14,7 @@ namespace bugreport
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        public static MachineState Run(Collection<ReportItem> reportItemCollector, 
+        public static MachineState Run(Collection<ReportItem> reportItemCollector,
                                        MachineState machineState,
                                        Byte[] code)
         {
@@ -24,13 +23,13 @@ namespace bugreport
                 throw new ArgumentException("Empty array not allowed.", "code");
             }
 
-            MachineState afterState = emulateOpcode(reportItemCollector, machineState, code);
+            var afterState = emulateOpcode(reportItemCollector, machineState, code);
 
             if (!branchTaken(machineState, afterState))
             {
                 afterState.InstructionPointer += opcode.GetInstructionLength(code);
             }
-            
+
             return afterState;
         }
 
@@ -39,17 +38,17 @@ namespace bugreport
             return before.InstructionPointer != after.InstructionPointer;
         }
 
-        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems, 
-                                                  MachineState machineState, 
+        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems,
+                                                  MachineState machineState,
                                                   Byte[] code)
         {
-            MachineState state = machineState;
+            var state = machineState;
             RegisterName sourceRegister, destinationRegister;
             AbstractValue sourceValue;
             Int32 index;
 
-            OpcodeEncoding encoding = opcode.GetEncoding(code);
-            OperatorEffect op = opcode.GetOperatorEffect(code);
+            var encoding = opcode.GetEncoding(code);
+            var op = opcode.GetOperatorEffect(code);
 
             switch (encoding)
             {
@@ -57,7 +56,7 @@ namespace bugreport
                 case OpcodeEncoding.rAxIz:
                 {
                     destinationRegister = opcode.GetDestinationRegister(code);
-                    UInt32 immediate = opcode.GetImmediate(code);
+                    var immediate = opcode.GetImmediate(code);
                     state = state.DoOperation(destinationRegister, op, new AbstractValue(immediate));
                     return state;
                 }
@@ -186,7 +185,7 @@ namespace bugreport
 
                     if (ModRM.HasOffset(code))
                     {
-                        UInt32 offset = ModRM.GetOffset(code);
+                        var offset = ModRM.GetOffset(code);
                         sourceValue = state.DataSegment[offset];
                     }
                     else if (ModRM.IsEffectiveAddressDereferenced(code))
@@ -205,7 +204,7 @@ namespace bugreport
                         }
 
                         sourceValue = sourceValue.PointsTo[index];
-                        
+
                         if (sourceValue.IsOOB)
                         {
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
@@ -231,10 +230,10 @@ namespace bugreport
                     // TODO: handle the [dword] special case
                     if (ModRM.HasSIB(code))
                     {
-                        UInt32 scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
-                        UInt32 scaler = SIB.GetScaler(code);
+                        var scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
+                        var scaler = SIB.GetScaler(code);
                         baseRegisterValue = state.Registers[SIB.GetBaseRegister(code)];
-                        index = (Int32)(scaledRegisterValue * scaler);
+                        index = (Int32) (scaledRegisterValue * scaler);
                     }
                     else
                     {
@@ -267,12 +266,9 @@ namespace bugreport
 
                 case OpcodeEncoding.ObAL:
                 {
-                    UInt32 offset;
-
-                    AbstractValue dwordValue = state.Registers[RegisterName.EAX];
-                    AbstractValue byteValue = dwordValue.TruncateValueToByte();
-
-                    offset = BitMath.BytesToDword(code, 1); // This is 1 for ObAL
+                    var dwordValue = state.Registers[RegisterName.EAX];
+                    var byteValue = dwordValue.TruncateValueToByte();
+                    var offset = BitMath.BytesToDword(code, 1);
 
                     if (!state.DataSegment.ContainsKey(offset))
                     {
@@ -286,14 +282,12 @@ namespace bugreport
                 case OpcodeEncoding.Jz:
                 {
                     // TODO: should push EIP + code.Length onto stack
-                    Boolean contractSatisfied = false;
+                    var contractSatisfied = false;
                     var mallocContract = new MallocContract();
                     var glibcStartMainContract = new GLibcStartMainContract();
-                    var contracts = new List<Contract>();
-                    contracts.Add(mallocContract);
-                    contracts.Add(glibcStartMainContract);
+                    var contracts = new List<Contract> {mallocContract, glibcStartMainContract};
 
-                    foreach (Contract contract in contracts)
+                    foreach (var contract in contracts)
                     {
                         if (contract.IsSatisfiedBy(state, code))
                         {
@@ -304,7 +298,7 @@ namespace bugreport
 
                     if (!contractSatisfied)
                     {
-                        UInt32 returnAddress = state.InstructionPointer + (UInt32) code.Length;
+                        var returnAddress = state.InstructionPointer + (UInt32) code.Length;
                         state = state.PushOntoStack(new AbstractValue(returnAddress));
                         state.InstructionPointer = opcode.GetEffectiveAddress(code, state.InstructionPointer);
                     }
@@ -314,8 +308,7 @@ namespace bugreport
 
                 case OpcodeEncoding.Jb:
                 {
-                    UInt32 offset;
-                    offset = code[1];
+                    var offset = code[1];
 
                     state = state.DoOperation(op, new AbstractValue(offset));
                     state.InstructionPointer += opcode.GetInstructionLength(code);
@@ -334,5 +327,5 @@ namespace bugreport
                 }
             }
         }
-    }    
+    }
 }

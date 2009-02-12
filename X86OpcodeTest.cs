@@ -25,7 +25,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.GvM, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
             Assert.AreEqual(RegisterName.EAX, opcode.GetDestinationRegister(code));
         }
@@ -39,7 +39,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EbGb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
             Assert.AreEqual(RegisterName.EBX, opcode.GetSourceRegister(code));
         }
@@ -47,7 +47,7 @@ namespace bugreport
         [Test]
         public void EbIb()
         {
-            Byte immediate = 0;
+            const byte immediate = 0;
             code = new Byte[] {0xc6, 0x40, 0x10, immediate};
             Assert.AreEqual(code.Length, opcode.GetInstructionLength(code));
             encoding = opcode.GetEncoding(code);
@@ -72,7 +72,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Sub, operatorEffect);
         }
 
@@ -85,7 +85,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvIb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Add, operatorEffect);
         }
 
@@ -97,7 +97,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvIb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.And, operatorEffect);
         }
 
@@ -109,7 +109,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvIb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Cmp, operatorEffect);
         }
 
@@ -121,7 +121,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvIb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Shl, operatorEffect);
         }
 
@@ -133,7 +133,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvIb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Shr, operatorEffect);
         }
 
@@ -145,7 +145,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.EvIb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Sub, operatorEffect);
         }
 
@@ -170,7 +170,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.GvEb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
         }
 
@@ -183,7 +183,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.GvEb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
             Assert.AreEqual(RegisterName.EAX, opcode.GetSourceRegister(code));
         }
@@ -235,7 +235,7 @@ namespace bugreport
             Assert.AreEqual(OpcodeEncoding.GvM, encoding);
             Assert.AreEqual(RegisterName.EAX, opcode.GetSourceRegister(code));
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
         }
 
@@ -251,7 +251,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof (InvalidOperationException))]
         public void InvalidGetImmediate()
         {
             code = new Byte[] {0x90};
@@ -267,7 +267,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.Jb, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Jnz, operatorEffect);
         }
 
@@ -315,7 +315,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.ObAL, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
         }
 
@@ -522,7 +522,7 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.rAxIz, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Add, operatorEffect);
         }
 
@@ -534,12 +534,12 @@ namespace bugreport
             encoding = opcode.GetEncoding(code);
             Assert.AreEqual(OpcodeEncoding.rAxOv, encoding);
 
-            OperatorEffect operatorEffect = opcode.GetOperatorEffect(code);
+            var operatorEffect = opcode.GetOperatorEffect(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOpcodeException))]
+        [ExpectedException(typeof (InvalidOpcodeException))]
         public void UnknownOpcode()
         {
             code = new Byte[] {0xf0, 0x00};
