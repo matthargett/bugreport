@@ -34,7 +34,7 @@ namespace bugreport
 
         public bool IsEnter
         {
-            get { return input == String.Empty; }
+            get { return input.Length == 0; }
         }
     }
 }

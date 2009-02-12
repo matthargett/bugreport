@@ -156,59 +156,68 @@ namespace bugreport
                 return encaseInSquareBrackets(offset);
             }
 
-            String sourceOperand;
-            var sourceIsEffectiveAddress =
-                opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
-                opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
-                opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
-
-            if (sourceIsEffectiveAddress && ModRM.HasSIB(code))
+            if (SourceIsEffectiveAddress(code) && ModRM.HasSIB(code))
             {
-                var baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
-                var scaled = SIB.GetScaledRegister(code).ToString().ToLower();
-                var scaler = SIB.GetScaler(code);
-
-                if (SIB.GetScaledRegister(code) == RegisterName.None)
-                {
-                    sourceOperand = baseRegister;
-                }
-                else if (scaler == 1)
-                {
-                    sourceOperand = baseRegister + "+" + scaled;
-                }
-                else
-                {
-                    sourceOperand = baseRegister + "+" + scaled + "*" + scaler;
-                }
-
-                sourceOperand = encaseInSquareBrackets(sourceOperand);
-                return sourceOperand;
+                return encaseInSquareBrackets(getSIB(code));
             }
 
             if (opcode.HasSourceRegister(code))
             {
-                sourceOperand = opcode.GetSourceRegister(code).ToString().ToLower();
-
-                if (opcode.HasModRM(code) && sourceIsEffectiveAddress)
-                {
-                    if (ModRM.HasIndex(code))
-                    {
-                        sourceOperand += "+" + ModRM.GetIndex(code);
-                    }
-
-                    var effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
-                    if (effectiveAddressIsDereferenced)
-                    {
-                        sourceOperand = encaseInSquareBrackets(sourceOperand);
-                    }
-                }
-
-                return sourceOperand;
+                return getSourceRegister(code);
             }
 
             throw new ArgumentException(
-                "don't know how to render this code's source operand: " + formatCode(code)
+                "don't know how to format this code's source operand: " + formatCode(code)
                 );
+        }
+
+        private static string getSourceRegister(byte[] code)
+        {
+            var sourceOperand = opcode.GetSourceRegister(code).ToString().ToLower();
+
+            if (SourceIsEffectiveAddress(code) && opcode.HasModRM(code))
+            {
+                if (ModRM.HasIndex(code))
+                {
+                    sourceOperand += "+" + ModRM.GetIndex(code);
+                }
+
+                var effectiveAddressIsDereferenced = ModRM.IsEffectiveAddressDereferenced(code);
+                if (effectiveAddressIsDereferenced)
+                {
+                    sourceOperand = encaseInSquareBrackets(sourceOperand);
+                }
+            }
+            return sourceOperand;
+        }
+
+        private static string getSIB(byte[] code)
+        {
+            string sourceOperand;
+            var baseRegister = SIB.GetBaseRegister(code).ToString().ToLower();
+            var scaled = SIB.GetScaledRegister(code).ToString().ToLower();
+            var scaler = SIB.GetScaler(code);
+
+            if (SIB.GetScaledRegister(code) == RegisterName.None)
+            {
+                sourceOperand = baseRegister;
+            }
+            else if (scaler == 1)
+            {
+                sourceOperand = baseRegister + "+" + scaled;
+            }
+            else
+            {
+                sourceOperand = baseRegister + "+" + scaled + "*" + scaler;
+            }
+            return sourceOperand;
+        }
+
+        private static bool SourceIsEffectiveAddress(byte[] code)
+        {
+            return opcode.GetEncoding(code).ToString().EndsWith("Ev", StringComparison.Ordinal) ||
+                   opcode.GetEncoding(code).ToString().EndsWith("Eb", StringComparison.Ordinal) ||
+                   opcode.GetEncoding(code).ToString().EndsWith("M", StringComparison.Ordinal);
         }
 
         private static String formatCode(IEnumerable<byte> code)
