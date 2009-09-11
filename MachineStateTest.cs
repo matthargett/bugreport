@@ -75,10 +75,13 @@ namespace bugreport
         [Test]
         public void AssignmentRetainsOOB()
         {
-            var oob = new AbstractValue(1) {IsOOB = true};
+            var oob = new AbstractValue(1)
+                      {
+                          IsOutOfBounds = true
+                      };
 
             state = state.DoOperation(RegisterName.EAX, OperatorEffect.Assignment, oob);
-            Assert.IsTrue(eax.IsOOB);
+            Assert.IsTrue(eax.IsOutOfBounds);
         }
 
         [Test]
@@ -249,6 +252,18 @@ namespace bugreport
         public void PushTwiceThenManuallyAdjustStack()
         {
             var buffer = AbstractValue.GetNewBuffer(0x20);
+            esp = new AbstractValue(buffer);
+            state = state.PushOntoStack(one);
+            state = state.PushOntoStack(two);
+
+            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(0x4));
+            Assert.AreEqual(one, state.TopOfStack);
+        }
+
+        [Test]
+        public void PushTwiceThenManuallyAdjustStackThenAssignToEbp()
+        {
+            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
             esp = new AbstractValue(buffer);
             state = state.PushOntoStack(one);
             state = state.PushOntoStack(two);

@@ -22,48 +22,48 @@ namespace bugreport
             storage = UNKNOWN;
         }
 
-        public AbstractValue(AbstractValue[] _willPointTo)
+        public AbstractValue(AbstractValue[] willPointTo)
         {
-            if (_willPointTo.Length == 0)
+            if (willPointTo.Length == 0)
             {
-                throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
+                throw new ArgumentException("Empty buffer is not allowed", "willPointTo");
             }
 
             storage = 0xdeadbeef;
-            pointsTo = new AbstractBuffer(_willPointTo);
+            pointsTo = new AbstractBuffer(willPointTo);
         }
 
-        public AbstractValue(AbstractBuffer _willPointTo)
+        public AbstractValue(AbstractBuffer willPointTo)
         {
-            if (_willPointTo.Length == 0)
+            if (willPointTo.Length == 0)
             {
-                throw new ArgumentException("Empty buffer is not allowed", "_willPointTo");
+                throw new ArgumentException("Empty buffer is not allowed", "willPointTo");
             }
 
             storage = 0xdeadbeef;
-            pointsTo = new AbstractBuffer(_willPointTo);
+            pointsTo = new AbstractBuffer(willPointTo);
         }
 
-        public AbstractValue(AbstractValue _copyMe)
+        public AbstractValue(AbstractValue other)
         {
-            if (_copyMe == null)
+            if (other == null)
             {
-                throw new ArgumentNullException("_copyMe");
+                throw new ArgumentNullException("other");
             }
 
-            storage = _copyMe.Value;
-            tainted = _copyMe.IsTainted;
-            IsOOB = _copyMe.IsOOB;
+            storage = other.Value;
+            tainted = other.IsTainted;
+            IsOutOfBounds = other.IsOutOfBounds;
 
-            if (_copyMe.PointsTo != null)
+            if (other.PointsTo != null)
             {
-                pointsTo = new AbstractBuffer(_copyMe.PointsTo);
+                pointsTo = new AbstractBuffer(other.PointsTo);
             }
         }
 
-        public AbstractValue(UInt32 _value)
+        public AbstractValue(UInt32 value)
         {
-            storage = _value;
+            storage = value;
         }
 
         public AbstractBuffer PointsTo
@@ -78,7 +78,7 @@ namespace bugreport
             private set { tainted = value; }
         }
 
-        public Boolean IsOOB { get; set; }
+        public Boolean IsOutOfBounds { get; set; }
 
         public Boolean IsInitialized
         {
@@ -122,14 +122,14 @@ namespace bugreport
             }
 
             return Value == other.Value &&
-                   IsOOB == other.IsOOB &&
+                   IsOutOfBounds == other.IsOutOfBounds &&
                    IsTainted == other.IsTainted &&
                    PointsTo == other.PointsTo;
         }
 
         public override Int32 GetHashCode()
         {
-            var hashCode = Value.GetHashCode() ^ IsOOB.GetHashCode() ^
+            var hashCode = Value.GetHashCode() ^ IsOutOfBounds.GetHashCode() ^
                            IsTainted.GetHashCode();
 
             if (PointsTo != null)
@@ -156,7 +156,10 @@ namespace bugreport
                 throw new InvalidOperationException("Cannot AddTaint to a pointer");
             }
 
-            var taintedValue = new AbstractValue(this) {IsTainted = true};
+            var taintedValue = new AbstractValue(this)
+                               {
+                                   IsTainted = true
+                               };
             return taintedValue;
         }
 
@@ -189,7 +192,8 @@ namespace bugreport
 
                 const Byte MAXIMUM_DISPLAYED_POINTER_DEPTH = 100;
                 Int32 count = MAXIMUM_DISPLAYED_POINTER_DEPTH;
-                while ((pointer != null) && (count-- > 0))
+                while ((pointer != null) &&
+                       (count-- > 0))
                 {
                     newResult.Append("*");
 

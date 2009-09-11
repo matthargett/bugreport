@@ -27,7 +27,7 @@ namespace bugreport
             }
         }
 
-        private IParsable createMockParser(UInt32 expectedReportItemCount)
+        private IParsable CreateMockParser(UInt32 expectedReportItemCount)
         {
             var control = new DynamicMock(typeof (IParsable));
             control.ExpectAndReturn("GetBytes", code, null);
@@ -44,7 +44,7 @@ namespace bugreport
             return control.MockInstance as IParsable;
         }
 
-        private class FakeAnalyzer : Analyzer
+        private sealed class FakeAnalyzer : Analyzer
         {
             private readonly UInt32 actualReportItemCount;
 
@@ -54,23 +54,23 @@ namespace bugreport
                 this.actualReportItemCount = actualReportItemCount;
             }
 
-            protected override MachineState runCode(MachineState _machineState, Byte[] _instructionBytes)
+            protected override MachineState RunCode(MachineState machineState, Byte[] instructionBytes)
             {
                 for (UInt32 i = 0; i < actualReportItemCount; i++)
                 {
                     ReportItems.Add(new ReportItem(i, false));
                 }
 
-                _machineState.InstructionPointer += (UInt32) _instructionBytes.Length;
+                machineState.InstructionPointer += (UInt32) instructionBytes.Length;
 
-                return _machineState;
+                return machineState;
             }
         }
 
         [Test]
         public void NoReportItems()
         {
-            analyzer = new Analyzer(createMockParser(0));
+            analyzer = new Analyzer(CreateMockParser(0));
             Assert.AreEqual(0, analyzer.ActualReportItems.Count);
             analyzer.Run();
             Assert.AreEqual(0, analyzer.ExpectedReportItems.Count);
@@ -87,11 +87,11 @@ namespace bugreport
         [Test]
         public void VerifyExpectedAndActualReports()
         {
-            analyzer = new FakeAnalyzer(createMockParser(2), 2);
+            analyzer = new FakeAnalyzer(CreateMockParser(2), 2);
             analyzer.Run();
             Assert.AreEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);
 
-            analyzer = new FakeAnalyzer(createMockParser(2), 3);
+            analyzer = new FakeAnalyzer(CreateMockParser(2), 3);
             analyzer.Run();
             Assert.AreNotEqual(analyzer.ActualReportItems.Count, analyzer.ExpectedReportItems.Count);
         }
@@ -101,7 +101,7 @@ namespace bugreport
         {
             var reportItems = new List<ReportItem>();
 
-            analyzer = new FakeAnalyzer(createMockParser(2), 2);
+            analyzer = new FakeAnalyzer(CreateMockParser(2), 2);
             analyzer.OnEmulationComplete +=
                 delegate(object sender, EmulationEventArgs e)
                 {
@@ -110,7 +110,7 @@ namespace bugreport
                 };
 
             analyzer.OnReport +=
-                delegate(object sender, ReportEventArgs e) { reportItems.Add(e.ReportItem); };
+                (sender, e) => reportItems.Add(e.ReportItem);
 
             analyzer.Run();
             Assert.AreEqual(2, analyzer.ActualReportItems.Count);

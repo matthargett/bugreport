@@ -22,7 +22,7 @@ namespace bugreport
         private readonly String testRoot = Directory.GetCurrentDirectory() + @"/../../tests/simple/heap/";
         private readonly String testDataFile = Directory.GetCurrentDirectory() + @"/../../systemTestsList.txt";
 
-        private static void waitForAnalysisToFinish(Process analysisProcess)
+        private static void WaitForAnalysisToFinish(Process analysisProcess)
         {
             var maximumTimeAllowed = TimeSpan.FromSeconds(10);
             while (!analysisProcess.HasExited && (DateTime.Now - analysisProcess.StartTime < maximumTimeAllowed))
@@ -31,7 +31,7 @@ namespace bugreport
             }
         }
 
-        private static List<String> getOutputFromAnalysis(Process analysisProcess)
+        private static List<String> GetOutputFrom(Process analysisProcess)
         {
             var messages = new List<String>();
 
@@ -46,26 +46,31 @@ namespace bugreport
             return messages;
         }
 
-        private static Process getAnalysisProcessForFileName(String fileName)
+        private static Process GetAnalysisProcessFor(String fileName)
         {
-            var analysisProcess = new Process();
-            analysisProcess.StartInfo.FileName = "bugreport.exe";
-            analysisProcess.StartInfo.Arguments = "\"" + fileName + "\"";
-            analysisProcess.StartInfo.RedirectStandardOutput = true;
-            analysisProcess.StartInfo.UseShellExecute = false;
-            analysisProcess.StartInfo.CreateNoWindow = false;
+            var analysisProcess = new Process
+                                  {
+                                      StartInfo =
+                                          {
+                                              FileName = "bugreport.exe",
+                                              Arguments = "\"" + fileName + "\"",
+                                              RedirectStandardOutput = true,
+                                              UseShellExecute = false,
+                                              CreateNoWindow = false
+                                          }
+                                  };
 
             return analysisProcess;
         }
 
-        private static List<String> getOutputForFilename(String fileName)
+        private static List<String> GetOutputFor(String fileName)
         {
-            var analysisProcess = getAnalysisProcessForFileName(fileName);
+            var analysisProcess = GetAnalysisProcessFor(fileName);
             analysisProcess.Start();
 
-            waitForAnalysisToFinish(analysisProcess);
+            WaitForAnalysisToFinish(analysisProcess);
 
-            return getOutputFromAnalysis(analysisProcess);
+            return GetOutputFrom(analysisProcess);
         }
 
         [Test]
@@ -88,7 +93,7 @@ namespace bugreport
 
                 Assert.IsTrue(File.Exists(fileName), fileName + " does not exist.  Fix paths in test data?");
 
-                var messages = getOutputForFilename(fileName);
+                var messages = GetOutputFor(fileName);
 
                 try
                 {

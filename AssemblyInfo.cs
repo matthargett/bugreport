@@ -8,7 +8,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly : ComVisible(false)]
+[assembly: ComVisible(false)]
 
 // The assembly version has following format :
 //
@@ -16,5 +16,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all values by your own or you can build default build and revision
 
-[assembly : AssemblyVersion("0.1.*")]
-[assembly : CLSCompliant(true)]
+[assembly: AssemblyVersion("0.1.*")]
+[assembly: CLSCompliant(true)]

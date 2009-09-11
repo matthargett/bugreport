@@ -169,21 +169,21 @@ namespace bugreport
             return newState;
         }
 
-        public MachineState DoOperation(OperatorEffect _operatorEffect, AbstractValue _offset)
+        public MachineState DoOperation(OperatorEffect operatorEffect, AbstractValue offset)
         {
-            if (_offset.IsPointer)
+            if (offset.IsPointer)
             {
                 throw new ArgumentException("_offset pointer not supported.");
             }
 
             var newState = new MachineState(this);
-            switch (_operatorEffect)
+            switch (operatorEffect)
             {
                 case OperatorEffect.Jnz:
                 {
                     if (!newState.zeroFlag)
                     {
-                        newState.instructionPointer += _offset.Value;
+                        newState.instructionPointer += offset.Value;
                     }
 
                     break;
@@ -192,23 +192,23 @@ namespace bugreport
                 default:
                 {
                     throw new ArgumentException(
-                        String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+                        String.Format("Unsupported OperatorEffect: {0}", operatorEffect), "operatorEffect");
                 }
             }
 
             return newState;
         }
 
-        public MachineState DoOperation(UInt32 offset, OperatorEffect _operatorEffect, AbstractValue rhs)
+        public MachineState DoOperation(UInt32 offset, OperatorEffect operatorEffect, AbstractValue rhs)
         {
             var newState = new MachineState(this);
 
-            switch (_operatorEffect)
+            switch (operatorEffect)
             {
                 case OperatorEffect.Assignment:
                 {
                     newState.dataSegment[offset] =
-                        DoOperation(newState.dataSegment[offset], _operatorEffect, rhs).Value;
+                        DoOperation(newState.dataSegment[offset], operatorEffect, rhs).Value;
                     break;
                 }
             }
@@ -216,16 +216,16 @@ namespace bugreport
             return newState;
         }
 
-        public MachineState DoOperation(RegisterName lhs, Int32 index, OperatorEffect _operatorEffect, AbstractValue rhs)
+        public MachineState DoOperation(RegisterName lhs, Int32 index, OperatorEffect operatorEffect, AbstractValue rhs)
         {
             var newState = new MachineState(this);
 
-            switch (_operatorEffect)
+            switch (operatorEffect)
             {
                 case OperatorEffect.Assignment:
                 case OperatorEffect.Cmp:
                 {
-                    var result = DoOperation(Registers[lhs].PointsTo[index], _operatorEffect, rhs);
+                    var result = DoOperation(Registers[lhs].PointsTo[index], operatorEffect, rhs);
                     newState.Registers[lhs].PointsTo[index] = result.Value;
                     newState.ZeroFlag = result.ZeroFlag;
                     break;
@@ -235,18 +235,19 @@ namespace bugreport
             return newState;
         }
 
-        public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+        public MachineState DoOperation(RegisterName lhs, OperatorEffect operatorEffect, AbstractValue rhs)
         {
             var newState = new MachineState(this);
 
-            if (Registers[lhs].IsPointer && _operatorEffect != OperatorEffect.Assignment)
+            if (Registers[lhs].IsPointer &&
+                operatorEffect != OperatorEffect.Assignment)
             {
-                var newBuffer = Registers[lhs].PointsTo.DoOperation(_operatorEffect, rhs);
+                var newBuffer = Registers[lhs].PointsTo.DoOperation(operatorEffect, rhs);
                 newState.Registers[lhs] = new AbstractValue(newBuffer);
             }
             else
             {
-                var result = DoOperation(Registers[lhs], _operatorEffect, rhs);
+                var result = DoOperation(Registers[lhs], operatorEffect, rhs);
                 newState.Registers[lhs] = result.Value;
                 newState.ZeroFlag = result.ZeroFlag;
             }
@@ -254,18 +255,19 @@ namespace bugreport
             return newState;
         }
 
-        public MachineState DoOperation(RegisterName lhs, OperatorEffect _operatorEffect, RegisterName rhs)
+        public MachineState DoOperation(RegisterName lhs, OperatorEffect operatorEffect, RegisterName rhs)
         {
             var newState = new MachineState(this);
-            var result = DoOperation(Registers[lhs], _operatorEffect, Registers[rhs]);
+            var result = DoOperation(Registers[lhs], operatorEffect, Registers[rhs]);
             newState.Registers[lhs] = result.Value;
             newState.ZeroFlag = result.ZeroFlag;
             return newState;
         }
 
-        private static OperationResult DoOperation(AbstractValue lhs, OperatorEffect _operatorEffect, AbstractValue rhs)
+        private static OperationResult DoOperation(AbstractValue lhs, OperatorEffect operatorEffect, AbstractValue rhs)
         {
-            if (rhs.IsPointer && _operatorEffect != OperatorEffect.Assignment)
+            if (rhs.IsPointer &&
+                operatorEffect != OperatorEffect.Assignment)
             {
                 throw new ArgumentException("rhs pointer only supported for OperatorEffect.Assignment.");
             }
@@ -273,12 +275,13 @@ namespace bugreport
             var result = new OperationResult();
             AbstractValue totalValue;
 
-            if (_operatorEffect == OperatorEffect.Assignment)
+            if (operatorEffect == OperatorEffect.Assignment)
             {
                 var newValue = new AbstractValue(rhs);
-                if (rhs.IsInitialized && rhs.IsOOB)
+                if (rhs.IsInitialized &&
+                    rhs.IsOutOfBounds)
                 {
-                    newValue.IsOOB = true;
+                    newValue.IsOutOfBounds = true;
                 }
 
                 result.Value = newValue;
@@ -286,7 +289,7 @@ namespace bugreport
                 return result;
             }
 
-            if (_operatorEffect == OperatorEffect.Cmp)
+            if (operatorEffect == OperatorEffect.Cmp)
             {
                 result.ZeroFlag = (lhs.Value - rhs.Value) == 0;
 
@@ -297,15 +300,16 @@ namespace bugreport
 
             if (lhs.IsPointer)
             {
-                var newBuffer = lhs.PointsTo.DoOperation(_operatorEffect, rhs);
+                var newBuffer = lhs.PointsTo.DoOperation(operatorEffect, rhs);
                 result.Value = new AbstractValue(newBuffer);
                 return result;
             }
 
-            var total = getCalculatedValue(lhs.Value, _operatorEffect, rhs.Value);
+            var total = CalculateValueFor(lhs.Value, operatorEffect, rhs.Value);
             totalValue = new AbstractValue(total);
 
-            if (lhs.IsTainted || rhs.IsTainted)
+            if (lhs.IsTainted ||
+                rhs.IsTainted)
             {
                 totalValue = totalValue.AddTaint();
             }
@@ -314,7 +318,7 @@ namespace bugreport
             return result;
         }
 
-        private static UInt32 getCalculatedValue(UInt32 lhs, OperatorEffect operatorEffect, UInt32 rhs)
+        private static UInt32 CalculateValueFor(UInt32 lhs, OperatorEffect operatorEffect, UInt32 rhs)
         {
             switch (operatorEffect)
             {

@@ -103,17 +103,19 @@ namespace bugreport
 
         public void Run()
         {
-            var machineState = new MachineState(getRegistersForLinuxStart());
-            machineState.InstructionPointer = parser.EntryPointAddress;
+            var machineState = new MachineState(GetRegistersForLinuxStart())
+                               {
+                                   InstructionPointer = parser.EntryPointAddress
+                               };
             var instructions = parser.GetBytes();
             var index = machineState.InstructionPointer - parser.BaseAddress;
 
             while (index < instructions.Length)
             {
                 var savedState = machineState;
-                var instruction = extractInstruction(instructions, index);
+                var instruction = GetInstructionFor(instructions, index);
 
-                machineState = runCode(machineState, instruction);
+                machineState = RunCode(machineState, instruction);
                 if (null != OnEmulationComplete)
                 {
                     OnEmulationComplete(
@@ -129,12 +131,12 @@ namespace bugreport
             }
         }
 
-        protected virtual MachineState runCode(MachineState _machineState, Byte[] code)
+        protected virtual MachineState RunCode(MachineState _machineState, Byte[] code)
         {
             return X86Emulator.Run(reportItems, _machineState, code);
         }
 
-        private static RegisterCollection getRegistersForLinuxStart()
+        private static RegisterCollection GetRegistersForLinuxStart()
         {
             var linuxMainDefaultValues = new RegisterCollection();
 
@@ -161,9 +163,9 @@ namespace bugreport
             return linuxMainDefaultValues;
         }
 
-        private Byte[] extractInstruction(Byte[] instructions, UInt32 index)
+        private Byte[] GetInstructionFor(Byte[] instructions, UInt32 index)
         {
-            var instructionLength = opcode.GetInstructionLength(instructions, index);
+            var instructionLength = opcode.GetInstructionLengthFor(instructions, index);
             var instruction = new Byte[instructionLength];
             for (var count = index; count < index + instructionLength; count++)
             {

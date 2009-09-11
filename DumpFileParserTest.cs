@@ -27,7 +27,10 @@ namespace bugreport
         [TearDown]
         public void TearDown()
         {
-            if (parser == null) return;
+            if (parser == null)
+            {
+                return;
+            }
 
             parser.Dispose();
             parser = null;
@@ -37,15 +40,11 @@ namespace bugreport
     [TestFixture]
     public class WithNothingElseTest : DumpFileParserFixture
     {
-        #region Setup/Teardown
-
         [SetUp]
         public override void SetUp()
         {
             base.SetUp();
         }
-
-        #endregion
 
         [Test]
         public void EmptyLine()
