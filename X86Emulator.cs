@@ -23,22 +23,22 @@ namespace bugreport
                 throw new ArgumentException("Empty array not allowed.", "code");
             }
 
-            var afterState = emulateOpcode(reportItemCollector, machineState, code);
+            var afterState = EmulateOpcode(reportItemCollector, machineState, code);
 
-            if (!branchTaken(machineState, afterState))
+            if (!BranchTaken(machineState, afterState))
             {
-                afterState.InstructionPointer += opcode.GetInstructionLength(code);
+                afterState.InstructionPointer += opcode.GetInstructionLengthFor(code);
             }
 
             return afterState;
         }
 
-        private static Boolean branchTaken(MachineState before, MachineState after)
+        private static Boolean BranchTaken(MachineState before, MachineState after)
         {
             return before.InstructionPointer != after.InstructionPointer;
         }
 
-        private static MachineState emulateOpcode(ICollection<ReportItem> reportItems,
+        private static MachineState EmulateOpcode(ICollection<ReportItem> reportItems,
                                                   MachineState machineState,
                                                   Byte[] code)
         {
@@ -47,16 +47,16 @@ namespace bugreport
             AbstractValue sourceValue;
             Int32 index;
 
-            var encoding = opcode.GetEncoding(code);
-            var op = opcode.GetOperatorEffect(code);
+            var encoding = opcode.GetEncodingFor(code);
+            var op = opcode.GetOperatorEffectFor(code);
 
             switch (encoding)
             {
                 case OpcodeEncoding.rAxIv:
                 case OpcodeEncoding.rAxIz:
                 {
-                    destinationRegister = opcode.GetDestinationRegister(code);
-                    var immediate = opcode.GetImmediate(code);
+                    destinationRegister = opcode.GetDestinationRegisterFor(code);
+                    var immediate = opcode.GetImmediateFor(code);
                     state = state.DoOperation(destinationRegister, op, new AbstractValue(immediate));
                     return state;
                 }
@@ -76,11 +76,11 @@ namespace bugreport
                 case OpcodeEncoding.rDX:
                 case OpcodeEncoding.Iz:
                 {
-                    switch (opcode.GetStackEffect(code))
+                    switch (opcode.GetStackEffectFor(code))
                     {
                         case StackEffect.Pop:
                         {
-                            destinationRegister = opcode.GetDestinationRegister(code);
+                            destinationRegister = opcode.GetDestinationRegisterFor(code);
                             state.Registers[destinationRegister] = state.Registers[RegisterName.ESP].PointsTo[0];
                             state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));
                             break;
@@ -92,12 +92,12 @@ namespace bugreport
 
                             if (opcode.HasSourceRegister(code))
                             {
-                                sourceRegister = opcode.GetSourceRegister(code);
+                                sourceRegister = opcode.GetSourceRegisterFor(code);
                                 sourceValue = state.Registers[sourceRegister];
                             }
                             else if (opcode.HasImmediate(code))
                             {
-                                sourceValue = new AbstractValue(opcode.GetImmediate(code));
+                                sourceValue = new AbstractValue(opcode.GetImmediateFor(code));
                             }
                             else
                             {
@@ -124,27 +124,27 @@ namespace bugreport
                 case OpcodeEncoding.EvGv:
                 case OpcodeEncoding.EbGb:
                 {
-                    destinationRegister = opcode.GetDestinationRegister(code);
+                    destinationRegister = opcode.GetDestinationRegisterFor(code);
                     index = 0;
 
                     if (ModRM.HasIndex(code))
                     {
-                        index = ModRM.GetIndex(code);
+                        index = ModRM.GetIndexFor(code);
                     }
 
                     if (opcode.HasImmediate(code))
                     {
-                        sourceValue = new AbstractValue(opcode.GetImmediate(code));
+                        sourceValue = new AbstractValue(opcode.GetImmediateFor(code));
                     }
                     else
                     {
-                        sourceRegister = ModRM.GetGv(code);
+                        sourceRegister = ModRM.GetGvFor(code);
                         sourceValue = state.Registers[sourceRegister];
                     }
 
                     ////if (ModRM.HasOffset(code))
                     ////{
-                    ////    UInt32 offset = ModRM.GetOffset(code);
+                    ////    UInt32 offset = ModRM.GetOffsetFor(code);
                     ////    state.DataSegment[offset] = sourceValue;
                     ////    return state;
                     ////}
@@ -159,7 +159,7 @@ namespace bugreport
                         }
 
                         state = state.DoOperation(destinationRegister, index, op, sourceValue);
-                        if (state.Registers[destinationRegister].PointsTo[index].IsOOB)
+                        if (state.Registers[destinationRegister].PointsTo[index].IsOutOfBounds)
                         {
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
                         }
@@ -167,7 +167,7 @@ namespace bugreport
                     else
                     {
                         state = state.DoOperation(destinationRegister, op, sourceValue);
-                        if (state.Registers[destinationRegister].IsOOB)
+                        if (state.Registers[destinationRegister].IsOutOfBounds)
                         {
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
                         }
@@ -179,13 +179,13 @@ namespace bugreport
                 case OpcodeEncoding.GvEv:
                 case OpcodeEncoding.GvEb:
                 {
-                    sourceRegister = ModRM.GetEv(code);
-                    destinationRegister = ModRM.GetGv(code);
+                    sourceRegister = ModRM.GetEvFor(code);
+                    destinationRegister = ModRM.GetGvFor(code);
                     sourceValue = state.Registers[sourceRegister];
 
                     if (ModRM.HasOffset(code))
                     {
-                        var offset = ModRM.GetOffset(code);
+                        var offset = ModRM.GetOffsetFor(code);
                         sourceValue = state.DataSegment[offset];
                     }
                     else if (ModRM.IsEffectiveAddressDereferenced(code))
@@ -200,12 +200,12 @@ namespace bugreport
 
                         if (ModRM.HasIndex(code))
                         {
-                            index = ModRM.GetIndex(code);
+                            index = ModRM.GetIndexFor(code);
                         }
 
                         sourceValue = sourceValue.PointsTo[index];
 
-                        if (sourceValue.IsOOB)
+                        if (sourceValue.IsOutOfBounds)
                         {
                             reportItems.Add(new ReportItem(state.InstructionPointer, sourceValue.IsTainted));
                         }
@@ -223,7 +223,7 @@ namespace bugreport
                         throw new InvalidOperationException("GvM must be dereferenced");
                     }
 
-                    destinationRegister = opcode.GetDestinationRegister(code);
+                    destinationRegister = opcode.GetDestinationRegisterFor(code);
                     AbstractValue baseRegisterValue;
                     index = 0;
 
@@ -237,10 +237,10 @@ namespace bugreport
                     }
                     else
                     {
-                        sourceRegister = ModRM.GetEv(code);
+                        sourceRegister = ModRM.GetEvFor(code);
                         if (ModRM.HasIndex(code))
                         {
-                            index = ModRM.GetIndex(code);
+                            index = ModRM.GetIndexFor(code);
                         }
 
                         baseRegisterValue = state.Registers[sourceRegister];
@@ -255,7 +255,7 @@ namespace bugreport
                         );
 
                     state = state.DoOperation(destinationRegister, OperatorEffect.Assignment, sourceValue);
-                    if (state.Registers[destinationRegister].IsOOB)
+                    if (state.Registers[destinationRegister].IsOutOfBounds)
                     {
                         var reportItem = new ReportItem(state.InstructionPointer, sourceValue.IsTainted);
                         reportItems.Add(reportItem);
@@ -285,7 +285,11 @@ namespace bugreport
                     var contractSatisfied = false;
                     var mallocContract = new MallocContract();
                     var glibcStartMainContract = new GLibcStartMainContract();
-                    var contracts = new List<Contract> {mallocContract, glibcStartMainContract};
+                    var contracts = new List<Contract>
+                                    {
+                                        mallocContract,
+                                        glibcStartMainContract
+                                    };
 
                     foreach (var contract in contracts)
                     {
@@ -311,7 +315,7 @@ namespace bugreport
                     var offset = code[1];
 
                     state = state.DoOperation(op, new AbstractValue(offset));
-                    state.InstructionPointer += opcode.GetInstructionLength(code);
+                    state.InstructionPointer += opcode.GetInstructionLengthFor(code);
 
                     return state;
                 }

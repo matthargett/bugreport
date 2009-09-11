@@ -18,22 +18,22 @@ namespace bugreport
             this.interactive = interactive;
         }
 
-        public void printInfo(object sender, EmulationEventArgs e)
+        public void PrintInfo(object sender, EmulationEventArgs emulationEvent)
         {
-            var address = getEffectiveAddressFor(e);
+            var address = GetEffectiveAddressFor(emulationEvent);
             Console.Write(address + ":");
             Console.Write("\t");
 
-            var code = getCodeFor(e);
-            printOpcodeInfo(code);
+            var code = GetCodeFor(emulationEvent);
+            PrintOpcodeInfoFor(code);
 
             Console.WriteLine(state.Registers);
             Console.WriteLine();
 
-            handleInputIfNecessary();
+            HandleInputIfNecessary();
         }
 
-        private void handleInputIfNecessary()
+        private void HandleInputIfNecessary()
         {
             if (!interactive) return;
 
@@ -42,7 +42,7 @@ namespace bugreport
 
             while (!enterPressed)
             {
-                var input = getInput();
+                var input = GetInput();
                 var command = new DebuggerCommand(input);
                 if (command.IsEnter)
                 {
@@ -52,15 +52,15 @@ namespace bugreport
 
                 if (command.IsStackPrint)
                 {
-                    printStackFor(state);
+                    PrintStackFor(state);
                     continue;
                 }
 
                 if (command.IsDisassemble)
                 {
                     var hex = input.Substring("disasm".Length + 1);
-                    var code = DumpFileParser.getByteArrayFromHexString(hex);
-                    printOpcodeInfo(code);
+                    var code = DumpFileParser.GetByteArrayFor(hex);
+                    PrintOpcodeInfoFor(code);
                     continue;
                 }
 
@@ -73,7 +73,7 @@ namespace bugreport
             }
         }
 
-        private void printOpcodeInfo(byte[] code)
+        private void PrintOpcodeInfoFor(byte[] code)
         {
             foreach (var codeByte in code)
             {
@@ -97,32 +97,32 @@ namespace bugreport
                 Console.Write("\t");
             }
 
-            var encoding = OpcodeFormatter.GetEncoding(code);
+            var encoding = OpcodeFormatter.GetEncodingFor(code);
             Console.Write("\t");
             Console.WriteLine(encoding);
         }
 
-        private static Byte[] getCodeFor(EmulationEventArgs e)
+        private static Byte[] GetCodeFor(EmulationEventArgs e)
         {
             var code = new Byte[e.Code.Count];
             e.Code.CopyTo(code, 0);
             return code;
         }
 
-        private string getEffectiveAddressFor(EmulationEventArgs e)
+        private string GetEffectiveAddressFor(EmulationEventArgs e)
         {
             state = e.MachineState;
             var address = String.Format("{0:x8}", state.InstructionPointer);
             return address;
         }
 
-        private string getInput()
+        private string GetInput()
         {
             Console.Write("0x{0:x8} > ", state.InstructionPointer);
             return Console.ReadLine();
         }
 
-        private static void printStackFor(MachineState state)
+        private static void PrintStackFor(MachineState state)
         {
             var esp = state.Registers[RegisterName.ESP];
 

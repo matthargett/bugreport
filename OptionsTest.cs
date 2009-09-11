@@ -33,7 +33,8 @@ namespace bugreport
             [CoverageExclude]
             public override ReadOnlyCollection<String> GetFilesFromDirectory(String path, String fileName)
             {
-                if (path == expectedPath && fileName == expectedFileName)
+                if (path == expectedPath &&
+                    fileName == expectedFileName)
                 {
                     return new ReadOnlyCollection<String>(new String[numberOfFilesFound]);
                 }
@@ -64,7 +65,7 @@ namespace bugreport
                               "--debug",
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.IsTrue(Options.IsDebugging);
 
             commandLine = new[]
@@ -72,14 +73,14 @@ namespace bugreport
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump",
                               "--debug"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.IsTrue(Options.IsDebugging);
 
             commandLine = new[]
                           {
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.IsFalse(Options.IsDebugging);
         }
 
@@ -101,7 +102,7 @@ namespace bugreport
                               ,
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.AreEqual("nomain", Options.FunctionToAnalyze);
             Assert.AreEqual(2, Options.Filenames.Count);
 
@@ -109,7 +110,7 @@ namespace bugreport
                           {
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate_gcc403-02-g.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.AreEqual("_start", Options.FunctionToAnalyze);
         }
 
@@ -123,7 +124,7 @@ namespace bugreport
                               "alternatefuntionname",
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
         }
 
         [Test]
@@ -135,7 +136,7 @@ namespace bugreport
                               ,
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate2_gcc403-02-g.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.AreEqual(2, Options.Filenames.Count);
         }
 
@@ -153,7 +154,7 @@ namespace bugreport
                               "--trace",
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.IsTrue(Options.IsTracing);
 
             commandLine = new[]
@@ -161,14 +162,14 @@ namespace bugreport
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump",
                               "--trace"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.IsTrue(Options.IsTracing);
 
             commandLine = new[]
                           {
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.IsFalse(Options.IsTracing);
         }
 
@@ -185,7 +186,7 @@ namespace bugreport
                           {
                               @"/cygwin/home/steve/bugreport/tests/simple/heap/simple-malloc-via-immediate*.dump"
                           };
-            Options.ParseArguments(commandLine);
+            Options.ParseArgumentsFrom(commandLine);
             Assert.AreEqual(12, Options.Filenames.Count);
 
             commandLine = new[] {"simple-malloc-via-immediate*.dump"};
@@ -201,7 +202,7 @@ namespace bugreport
                     12
                     );
                 Options.FileResolver = fileResolver;
-                Options.ParseArguments(commandLine);
+                Options.ParseArgumentsFrom(commandLine);
                 Assert.AreEqual(12, Options.Filenames.Count);
             }
             finally

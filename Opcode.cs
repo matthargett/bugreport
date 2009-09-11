@@ -63,11 +63,11 @@ namespace bugreport
 
     public interface Opcode
     {
-        OpcodeEncoding GetEncoding(Byte[] code);
+        OpcodeEncoding GetEncodingFor(Byte[] code);
 
-        OperatorEffect GetOperatorEffect(Byte[] code);
+        OperatorEffect GetOperatorEffectFor(Byte[] code);
 
-        StackEffect GetStackEffect(Byte[] code);
+        StackEffect GetStackEffectFor(Byte[] code);
 
         Boolean HasModRM(Byte[] code);
 
@@ -75,17 +75,17 @@ namespace bugreport
 
         Boolean HasImmediate(Byte[] code);
 
-        UInt32 GetImmediate(Byte[] code);
+        UInt32 GetImmediateFor(Byte[] code);
 
-        Byte GetInstructionLength(Byte[] code);
+        Byte GetInstructionLengthFor(Byte[] code);
 
-        Byte GetInstructionLength(Byte[] code, UInt32 index);
+        Byte GetInstructionLengthFor(Byte[] code, UInt32 index);
 
-        Byte GetOpcodeLength(Byte[] code);
+        Byte GetOpcodeLengthFor(Byte[] code);
 
-        RegisterName GetSourceRegister(Byte[] code);
+        RegisterName GetSourceRegisterFor(Byte[] code);
 
-        RegisterName GetDestinationRegister(Byte[] code);
+        RegisterName GetDestinationRegisterFor(Byte[] code);
 
         Boolean HasSourceRegister(Byte[] code);
 

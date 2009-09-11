@@ -21,18 +21,18 @@ namespace bugreport
 
             if (arguments.Length < 1)
             {
-                printUsage();
+                PrintUsage();
                 return;
             }
 
             try
             {
-                Options.ParseArguments(arguments);
+                Options.ParseArgumentsFrom(arguments);
             }
             catch (ArgumentException e)
             {
                 Console.WriteLine(e.Message);
-                printUsage();
+                PrintUsage();
                 Environment.Exit(1);
             }
 
@@ -42,7 +42,7 @@ namespace bugreport
                 Environment.Exit(1);
             }
 
-            analyzeFiles(Options.Filenames, Options.IsTracing, Options.IsDebugging);
+            AnalyzeFiles(Options.Filenames, Options.IsTracing, Options.IsDebugging);
 
             if (analyzer.ExpectedReportItems.Count == 0 ||
                 (analyzer.ExpectedReportItems.Count == analyzer.ActualReportItems.Count))
@@ -56,9 +56,9 @@ namespace bugreport
             Environment.Exit(2);
         }
 
-        private static void analyzeFiles(IEnumerable<string> _fileNames, Boolean _isTracing, Boolean _isDebugging)
+        private static void AnalyzeFiles(IEnumerable<string> fileNames, Boolean withTracing, Boolean withDebugging)
         {
-            foreach (var fileName in _fileNames)
+            foreach (var fileName in fileNames)
             {
                 Console.WriteLine();
                 Console.WriteLine("Interpreting file: " + fileName);
@@ -80,18 +80,18 @@ namespace bugreport
                 IParsable parser = new ElfFileParser(fileStream);
 
                 analyzer = new Analyzer(parser);
-                analyzer.OnReport += printReportItem;
+                analyzer.OnReport += PrintReportItem;
 
-                if (_isTracing)
+                if (withTracing)
                 {
-                    analyzer.OnEmulationComplete += new DebuggerView(_isDebugging).printInfo;
+                    analyzer.OnEmulationComplete += new DebuggerView(withDebugging).PrintInfo;
                 }
 
                 analyzer.Run();
             }
         }
 
-        private static void printReportItem(object sender, ReportEventArgs e)
+        private static void PrintReportItem(object sender, ReportEventArgs e)
         {
             var item = e.ReportItem;
 
@@ -106,7 +106,7 @@ namespace bugreport
             Console.WriteLine();
         }
 
-        private static void printUsage()
+        private static void PrintUsage()
         {
             Console.WriteLine("Usage: bugreport.exe [--trace] file.test");
         }

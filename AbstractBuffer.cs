@@ -10,33 +10,25 @@ namespace bugreport
 {
     public sealed class AbstractBuffer
     {
-        private readonly Int32 allocatedLength;
-        private UInt32 baseIndex;
         private AbstractValue[] storage;
 
-        public AbstractBuffer(AbstractValue[] _buffer)
+        public AbstractBuffer(AbstractValue[] values)
         {
-            storage = _buffer;
-            allocatedLength = storage.Length;
+            storage = values;
+            Length = storage.Length;
         }
 
-        public AbstractBuffer(AbstractBuffer _copyMe)
+        public AbstractBuffer(AbstractBuffer other)
         {
-            baseIndex = _copyMe.BaseIndex;
-            allocatedLength = _copyMe.allocatedLength;
-            storage = new AbstractValue[_copyMe.storage.Length];
-            Array.Copy(_copyMe.storage, storage, _copyMe.storage.Length);
+            BaseIndex = other.BaseIndex;
+            Length = other.Length;
+            storage = new AbstractValue[other.storage.Length];
+            Array.Copy(other.storage, storage, other.storage.Length);
         }
 
-        private UInt32 BaseIndex
-        {
-            get { return baseIndex; }
-        }
+        private UInt32 BaseIndex { get; set; }
 
-        public Int32 Length
-        {
-            get { return allocatedLength; }
-        }
+        public int Length { get; private set; }
 
         public AbstractValue this[Int32 index]
         {
@@ -45,38 +37,38 @@ namespace bugreport
                 // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
                 if (IsIndexPastBounds(index))
                 {
-                    extend(baseIndex + (UInt32) index);
-                    return storage[baseIndex + index];
+                    Extend(BaseIndex + (UInt32) index);
+                    return storage[BaseIndex + index];
                 }
 
-                return storage[baseIndex + index];
+                return storage[BaseIndex + index];
             }
 
             set
             {
-                if ((baseIndex + index) >= allocatedLength)
+                if ((BaseIndex + index) >= Length)
                 {
-                    value.IsOOB = true;
+                    value.IsOutOfBounds = true;
                 }
 
                 if (IsIndexPastBounds(index))
                 {
-                    extend(baseIndex + (UInt32) index);
-                    storage[baseIndex + index] = value;
+                    Extend(BaseIndex + (UInt32) index);
+                    storage[BaseIndex + index] = value;
                 }
                 else
                 {
-                    storage[baseIndex + index] = value;
+                    storage[BaseIndex + index] = value;
                 }
             }
         }
 
-        public AbstractBuffer DoOperation(OperatorEffect _operatorEffect, AbstractValue _rhs)
+        public AbstractBuffer DoOperation(OperatorEffect operatorEffect, AbstractValue rhs)
         {
             var lhs = this;
 
-            // TODO: should have a guard for if _rhs isn't a pointer
-            switch (_operatorEffect)
+            // TODO: should have a guard for if rhs isn't a pointer
+            switch (operatorEffect)
             {
                 case OperatorEffect.Assignment:
                 {
@@ -88,7 +80,7 @@ namespace bugreport
                 case OperatorEffect.Add:
                 {
                     var result = new AbstractBuffer(lhs);
-                    result.baseIndex += _rhs.Value;
+                    result.BaseIndex += rhs.Value;
 
                     return result;
                 }
@@ -97,18 +89,19 @@ namespace bugreport
                 {
                     var result = new AbstractBuffer(lhs);
 
-                    if (result.baseIndex < _rhs.Value)
+                    if (result.BaseIndex <
+                        rhs.Value)
                     {
                         throw new ArgumentOutOfRangeException(
                             String.Format(
                                 "Attempting to set a negative baseindex, baseindex: {0:x4}, _subValue {1:x4}",
-                                result.baseIndex,
-                                _rhs.Value
+                                result.BaseIndex,
+                                rhs.Value
                                 )
                             );
                     }
 
-                    result.baseIndex -= _rhs.Value;
+                    result.BaseIndex -= rhs.Value;
                     return result;
                 }
 
@@ -116,41 +109,44 @@ namespace bugreport
                 {
                     var result = new AbstractBuffer(lhs);
 
-                    result.baseIndex &= _rhs.Value;
+                    result.BaseIndex &= rhs.Value;
                     return result;
                 }
 
                 default:
                     throw new ArgumentException(
-                        String.Format("Unsupported OperatorEffect: {0}", _operatorEffect), "_operatorEffect");
+                        String.Format("Unsupported OperatorEffect: {0}", operatorEffect), "operatorEffect");
             }
         }
 
         private Boolean IsIndexPastBounds(Int32 index)
         {
-            return ((baseIndex + index) >= allocatedLength) && ((baseIndex + index) >= storage.Length);
+            return ((BaseIndex + index) >= Length) && ((BaseIndex + index) >= storage.Length);
         }
 
-        private void extend(UInt32 _newLength)
+        private void Extend(UInt32 newLength)
         {
             // Account for element [0] of the array
-            _newLength = _newLength + 1;
-            if (_newLength >= Length)
+            newLength = newLength + 1;
+            if (newLength >= Length)
             {
-                var _copyTo = new AbstractValue[_newLength];
+                var extendedCopy = new AbstractValue[newLength];
 
                 Int32 i;
                 for (i = 0; i < storage.Length; i++)
                 {
-                    _copyTo[i] = storage[i];
+                    extendedCopy[i] = storage[i];
                 }
 
-                for (; i < _newLength; i++)
+                for (; i < newLength; i++)
                 {
-                    _copyTo[i] = new AbstractValue(AbstractValue.UNKNOWN) {IsOOB = true};
+                    extendedCopy[i] = new AbstractValue(AbstractValue.UNKNOWN)
+                                      {
+                                          IsOutOfBounds = true
+                                      };
                 }
 
-                storage = _copyTo;
+                storage = extendedCopy;
             }
 
             return;

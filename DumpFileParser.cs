@@ -23,15 +23,14 @@ namespace bugreport
         Byte[] GetBytes();
     }
 
-    public sealed class DumpFileParser : IParsable, IDisposable
+    public sealed class DumpFileParser : IParsable,
+                                         IDisposable
     {
         private readonly List<ReportItem> expectedReportItems;
         private readonly String functionNameToParse = "main";
         private readonly List<Byte[]> opcodeList;
         private readonly StreamReader reader;
         private readonly Stream stream;
-        private UInt32 baseAddress;
-        private UInt32 entryPointAddress;
         private Boolean inTextSection;
 
         public DumpFileParser(Stream stream, String functionNameToParse)
@@ -41,7 +40,7 @@ namespace bugreport
             this.stream.Position = 0;
             reader = new StreamReader(this.stream);
             expectedReportItems = new List<ReportItem>();
-            opcodeList = parse();
+            opcodeList = Parse();
         }
 
         #region IDisposable Members
@@ -63,15 +62,9 @@ namespace bugreport
             get { return expectedReportItems.AsReadOnly(); }
         }
 
-        public UInt32 BaseAddress
-        {
-            get { return baseAddress; }
-        }
+        public UInt32 BaseAddress { get; private set; }
 
-        public UInt32 EntryPointAddress
-        {
-            get { return entryPointAddress; }
-        }
+        public UInt32 EntryPointAddress { get; private set; }
 
         public Byte[] GetBytes()
         {
@@ -103,7 +96,7 @@ namespace bugreport
 
         #endregion
 
-        public static Byte[] getByteArrayFromHexString(String hex)
+        public static Byte[] GetByteArrayFor(String hex)
         {
             var hexStrings = hex.Split(new[] {' '});
 
@@ -117,13 +110,13 @@ namespace bugreport
             return hexBytes;
         }
 
-        private static UInt32 getAddressForLine(String line)
+        private static UInt32 GetAddressFrom(String line)
         {
             var address = line.Substring(0, 8);
             return UInt32.Parse(address, NumberStyles.HexNumber);
         }
 
-        private static String getHexWithSpaces(String line)
+        private static String GetHexWithSpacesFrom(String line)
         {
             var colonIndex = line.IndexOf(':');
 
@@ -142,7 +135,8 @@ namespace bugreport
             var spaceTabIndex = afterColonToEnd.IndexOf(" \t", StringComparison.Ordinal);
             Int32 endOfHexIndex;
 
-            if (doubleSpaceIndex >= 0 && spaceTabIndex >= 0)
+            if (doubleSpaceIndex >= 0 &&
+                spaceTabIndex >= 0)
             {
                 endOfHexIndex = doubleSpaceIndex < spaceTabIndex ? doubleSpaceIndex : spaceTabIndex;
             }
@@ -161,31 +155,31 @@ namespace bugreport
             return hexString;
         }
 
-        private static Byte[] getHexFromString(String line)
+        private static Byte[] GetHexFrom(String line)
         {
             if (line.Trim().Length == 0)
             {
                 return null;
             }
 
-            var hex = getHexWithSpaces(line);
+            var hex = GetHexWithSpacesFrom(line);
 
             if (null == hex)
             {
                 return null;
             }
 
-            var hexBytes = getByteArrayFromHexString(hex);
+            var hexBytes = GetByteArrayFor(hex);
 
             return hexBytes;
         }
 
-        private static Boolean hasAnnotation(String line)
+        private static Boolean HasAnnotation(String line)
         {
             return line.Contains("//<OutOfBoundsMemoryAccess ");
         }
 
-        private static ReportItem getAnnotation(String line)
+        private static ReportItem GetAnnotationFrom(String line)
         {
             var locationIndex = line.IndexOf("=", StringComparison.Ordinal) + 1;
             var location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), NumberStyles.HexNumber);
@@ -195,43 +189,47 @@ namespace bugreport
             return new ReportItem(location, exploitable);
         }
 
-        private void updateMainInfo(String line)
+        private void UpdateMainInfoFrom(String line)
         {
-            if (String.IsNullOrEmpty(line) || line[0] < '0' || line[0] > '7') return;
+            if (String.IsNullOrEmpty(line) || line[0] < '0' ||
+                line[0] > '7')
+            {
+                return;
+            }
 
             if (line.Contains("<_start>:"))
             {
-                baseAddress = getAddressForLine(line);
+                BaseAddress = GetAddressFrom(line);
                 inTextSection = true;
             }
 
             if (line.Contains("<" + functionNameToParse + ">:"))
             {
-                entryPointAddress = getAddressForLine(line);
+                EntryPointAddress = GetAddressFrom(line);
             }
         }
 
-        private List<Byte[]> parse()
+        private List<Byte[]> Parse()
         {
             var opcodes = new List<Byte[]>();
 
             while (!reader.EndOfStream)
             {
                 var currentLine = reader.ReadLine();
-                if (hasAnnotation(currentLine))
+                if (HasAnnotation(currentLine))
                 {
-                    var item = getAnnotation(currentLine);
+                    var item = GetAnnotationFrom(currentLine);
                     expectedReportItems.Add(item);
                 }
 
-                updateMainInfo(currentLine);
+                UpdateMainInfoFrom(currentLine);
 
                 if (inTextSection)
                 {
-                    var opcode = getHexFromString(currentLine);
+                    var opcode = GetHexFrom(currentLine);
                     if (opcode != null)
                     {
-                        opcodes.Add(getHexFromString(currentLine));
+                        opcodes.Add(GetHexFrom(currentLine));
                     }
                 }
             }

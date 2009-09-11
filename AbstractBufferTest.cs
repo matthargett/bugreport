@@ -123,7 +123,7 @@ namespace bugreport
             var pointer = new AbstractBuffer(buffer);
 
             var value = pointer[16];
-            Assert.IsTrue(value.IsOOB);
+            Assert.IsTrue(value.IsOutOfBounds);
             Assert.IsFalse(value.IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, value.Value);
         }
@@ -141,13 +141,13 @@ namespace bugreport
             var pointer = new AbstractBuffer(buffer);
 
             // Accessing pointer[2] will cause the AbstractBuffer to extend..
-            Assert.IsTrue(pointer[2].IsOOB, " value is not out of bounds");
+            Assert.IsTrue(pointer[2].IsOutOfBounds, " value is not out of bounds");
             Assert.IsFalse(pointer[2].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[2].Value);
 
             // And then we make sure the in bounds values stay the same
-            Assert.IsFalse(pointer[0].IsOOB);
-            Assert.IsFalse(pointer[1].IsOOB);
+            Assert.IsFalse(pointer[0].IsOutOfBounds);
+            Assert.IsFalse(pointer[1].IsOutOfBounds);
 
             Assert.AreEqual(0x41, pointer[0].Value);
             Assert.AreEqual(0x42, pointer[1].Value);
@@ -160,19 +160,19 @@ namespace bugreport
             var pointer = new AbstractBuffer(buffer);
 
             // Access beyond buffer bounds forcing buffer to expand
-            Assert.IsTrue(pointer[17].IsOOB);
+            Assert.IsTrue(pointer[17].IsOutOfBounds);
             Assert.IsFalse(pointer[17].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[17].Value);
 
             pointer[17] = new AbstractValue(0x41414141);
 
             // Access beyond previously expanded bounds to force 2nd expand
-            Assert.IsTrue(pointer[64].IsOOB);
+            Assert.IsTrue(pointer[64].IsOutOfBounds);
             Assert.IsFalse(pointer[64].IsInitialized);
             Assert.AreEqual(AbstractValue.UNKNOWN, pointer[64].Value);
 
             // check that value set outside of bounds is still the same as well
-            Assert.IsTrue(pointer[17].IsOOB);
+            Assert.IsTrue(pointer[17].IsOutOfBounds);
             Assert.AreEqual(0x41414141, pointer[17].Value);
         }
 

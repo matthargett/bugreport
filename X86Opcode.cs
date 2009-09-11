@@ -13,7 +13,7 @@ namespace bugreport
     /// </summary>
     public sealed class X86Opcode : Opcode
     {
-        public OpcodeEncoding GetEncoding(Byte[] code)
+        public OpcodeEncoding GetEncodingFor(Byte[] code)
         {
             switch (code[0])
             {
@@ -85,7 +85,7 @@ namespace bugreport
 
         public Boolean HasModRM(Byte[] code)
         {
-            switch (GetEncoding(code))
+            switch (GetEncodingFor(code))
             {
                 case OpcodeEncoding.GvEb:
                 case OpcodeEncoding.GvEv:
@@ -103,7 +103,7 @@ namespace bugreport
 
         public Boolean HasImmediate(Byte[] code)
         {
-            switch (GetEncoding(code))
+            switch (GetEncodingFor(code))
             {
                 case OpcodeEncoding.EvIb:
                 case OpcodeEncoding.EbIb:
@@ -119,7 +119,7 @@ namespace bugreport
             }
         }
 
-        public UInt32 GetImmediate(Byte[] code)
+        public UInt32 GetImmediateFor(Byte[] code)
         {
             if (!HasImmediate(code))
             {
@@ -142,7 +142,7 @@ namespace bugreport
                 }
             }
 
-            switch (GetEncoding(code))
+            switch (GetEncodingFor(code))
             {
                 case OpcodeEncoding.EvIb:
                 case OpcodeEncoding.EbIb:
@@ -167,7 +167,7 @@ namespace bugreport
             }
         }
 
-        public StackEffect GetStackEffect(Byte[] code)
+        public StackEffect GetStackEffectFor(Byte[] code)
         {
             switch (code[0])
             {
@@ -196,19 +196,20 @@ namespace bugreport
 
         public Boolean HasSourceRegister(Byte[] code)
         {
-            return GetSourceRegister(code) != RegisterName.None;
+            return GetSourceRegisterFor(code) != RegisterName.None;
         }
 
         public Boolean HasDestinationRegister(Byte[] code)
         {
-            return GetDestinationRegister(code) != RegisterName.None;
+            return GetDestinationRegisterFor(code) != RegisterName.None;
         }
 
-        public RegisterName GetSourceRegister(Byte[] code)
+        public RegisterName GetSourceRegisterFor(Byte[] code)
         {
-            var opcodeEncoding = GetEncoding(code);
+            var opcodeEncoding = GetEncodingFor(code);
 
-            if (GetStackEffect(code) == StackEffect.Push)
+            if (GetStackEffectFor(code) ==
+                StackEffect.Push)
             {
                 switch (opcodeEncoding)
                 {
@@ -254,7 +255,7 @@ namespace bugreport
                 case OpcodeEncoding.EbGb:
                 case OpcodeEncoding.EvGv:
                 {
-                    return ModRM.GetGv(code);
+                    return ModRM.GetGvFor(code);
                 }
 
                 case OpcodeEncoding.GvEb:
@@ -274,7 +275,7 @@ namespace bugreport
                         return RegisterName.None;
                     }
 
-                    return ModRM.GetEv(code);
+                    return ModRM.GetEvFor(code);
                 }
 
                 default:
@@ -284,11 +285,12 @@ namespace bugreport
             }
         }
 
-        public RegisterName GetDestinationRegister(Byte[] code)
+        public RegisterName GetDestinationRegisterFor(Byte[] code)
         {
-            var opcodeEncoding = GetEncoding(code);
+            var opcodeEncoding = GetEncodingFor(code);
 
-            if (GetStackEffect(code) == StackEffect.Pop)
+            if (GetStackEffectFor(code) ==
+                StackEffect.Pop)
             {
                 switch (opcodeEncoding)
                 {
@@ -335,7 +337,7 @@ namespace bugreport
                 case OpcodeEncoding.GvEv:
                 case OpcodeEncoding.GvEb:
                 {
-                    return ModRM.GetGv(code);
+                    return ModRM.GetGvFor(code);
                 }
 
                 case OpcodeEncoding.rAxIv:
@@ -355,7 +357,7 @@ namespace bugreport
                         return SIB.GetBaseRegister(code);
                     }
 
-                    return ModRM.GetEv(code);
+                    return ModRM.GetEvFor(code);
                 }
 
                 default:
@@ -365,7 +367,7 @@ namespace bugreport
             }
         }
 
-        public OperatorEffect GetOperatorEffect(Byte[] code)
+        public OperatorEffect GetOperatorEffectFor(Byte[] code)
         {
             switch (code[0])
             {
@@ -383,7 +385,7 @@ namespace bugreport
 
                 case 0x83:
                 {
-                    var rm = ModRM.GetOpcodeGroupIndex(code);
+                    var rm = ModRM.GetOpcodeGroupIndexFor(code);
 
                     switch (rm)
                     {
@@ -411,7 +413,7 @@ namespace bugreport
 
                 case 0xc1:
                 {
-                    var rm = ModRM.GetOpcodeGroupIndex(code);
+                    var rm = ModRM.GetOpcodeGroupIndexFor(code);
 
                     switch (rm)
                     {
@@ -432,7 +434,7 @@ namespace bugreport
             }
         }
 
-        public Byte GetOpcodeLength(Byte[] code)
+        public Byte GetOpcodeLengthFor(Byte[] code)
         {
             Byte opcodeLength = 1;
             if (code[0] == 0x0f)
@@ -443,9 +445,9 @@ namespace bugreport
             return opcodeLength;
         }
 
-        public Byte GetInstructionLength(Byte[] code)
+        public Byte GetInstructionLengthFor(Byte[] code)
         {
-            var instructionLength = GetOpcodeLength(code);
+            var instructionLength = GetOpcodeLengthFor(code);
 
             if (HasModRM(code))
             {
@@ -469,7 +471,7 @@ namespace bugreport
 
             if (HasImmediate(code))
             {
-                switch (GetEncoding(code))
+                switch (GetEncodingFor(code))
                 {
                     case OpcodeEncoding.EbIb:
                     case OpcodeEncoding.EvIb:
@@ -485,19 +487,19 @@ namespace bugreport
             return instructionLength;
         }
 
-        public Byte GetInstructionLength(Byte[] code, UInt32 index)
+        public Byte GetInstructionLengthFor(Byte[] code, UInt32 index)
         {
             var shortCode = new Byte[15];
 
             var minLength = (Int32) Math.Min(15, code.Length - index);
             Array.ConstrainedCopy(code, (Int32) index, shortCode, 0, minLength);
 
-            return GetInstructionLength(shortCode);
+            return GetInstructionLengthFor(shortCode);
         }
 
         public Boolean HasOffset(Byte[] code)
         {
-            var encoding = GetEncoding(code);
+            var encoding = GetEncodingFor(code);
 
             if (encoding == OpcodeEncoding.ObAL ||
                 encoding == OpcodeEncoding.rAxOv)
@@ -523,7 +525,7 @@ namespace bugreport
 
         public UInt32 GetEffectiveAddress(Byte[] code, UInt32 instructionPointer)
         {
-            var offset = GetImmediate(code);
+            var offset = GetImmediateFor(code);
 
             unchecked
             {

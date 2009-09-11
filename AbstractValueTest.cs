@@ -115,12 +115,15 @@ namespace bugreport
         }
 
         [Test]
-        public void OOBSurvivesCopy()
+        public void OutOfBoundsPropertySurvivesCopy()
         {
-            var src = new AbstractValue(0x31337) {IsOOB = true};
+            var src = new AbstractValue(0x31337)
+                      {
+                          IsOutOfBounds = true
+                      };
             var dest = new AbstractValue(src);
 
-            Assert.IsTrue(dest.IsOOB);
+            Assert.IsTrue(dest.IsOutOfBounds);
         }
 
         [Test]
@@ -164,12 +167,15 @@ namespace bugreport
         }
 
         [Test]
-        public void PreserveIsOOBAfterCopy()
+        public void IsOutOfBoundsPropertySurviviesCopy()
         {
-            var src = new AbstractValue(0x31337) {IsOOB = true};
+            var src = new AbstractValue(0x31337)
+                      {
+                          IsOutOfBounds = true
+                      };
             var dest = new AbstractValue(src);
 
-            Assert.IsTrue(dest.IsOOB);
+            Assert.IsTrue(dest.IsOutOfBounds);
         }
 
         [Test]

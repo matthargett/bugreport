@@ -13,14 +13,17 @@ namespace bugreport
         public static UInt32 BytesToDword(Byte[] data, Byte index)
         {
             UInt32 result = 0;
+            const int DWORD_SIZE = 4;
 
-            if (data.Length < index + 4)
+            if (data.Length < index + DWORD_SIZE)
             {
                 throw new ArgumentException(
-                    String.Format("Not enough bytes for DWORD: need {0}, got {1}", index + 4, data.Length), "data");
+                    String.Format("Not enough bytes for DWORD: need {0}, got {1}", index + DWORD_SIZE, data.Length),
+                    "data"
+                    );
             }
 
-            for (Byte i = 0; i < 4; ++i)
+            for (var i = 0; i < DWORD_SIZE; ++i)
             {
                 result |= (UInt32) data[i + index] << (8 * i);
             }

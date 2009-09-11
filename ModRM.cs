@@ -12,60 +12,60 @@ namespace bugreport
     {
         private static readonly Opcode opcode = new X86Opcode();
 
-        private static Byte GetRM(Byte modrm)
+        private static Byte GetRMFor(Byte modrm)
         {
             return (Byte) (modrm & 7);
         }
 
-        public static RegisterName GetEv(Byte[] code)
+        public static RegisterName GetEvFor(Byte[] code)
         {
             if (HasSIB(code))
             {
                 throw new InvalidOperationException("For ModRM that specifies SIB byte, usage of GetEv is invalid.");
             }
 
-            var modRM = getModRM(code);
+            var modRM = GetModRMFor(code);
             return (RegisterName) (modRM & 7);
         }
 
-        internal static RegisterName GetGv(Byte[] code)
+        internal static RegisterName GetGvFor(Byte[] code)
         {
-            var modRM = getModRM(code);
+            var modRM = GetModRMFor(code);
             return (RegisterName) ((modRM >> 3) & 7);
         }
 
-        internal static Byte GetOpcodeGroupIndex(Byte[] _code)
+        internal static Byte GetOpcodeGroupIndexFor(Byte[] code)
         {
-            var modRM = getModRM(_code);
+            var modRM = GetModRMFor(code);
             return (Byte) ((modRM >> 3) & 7);
         }
 
-        public static Boolean HasIndex(Byte[] _code)
+        public static Boolean HasIndex(Byte[] code)
         {
-            var modRM = getModRM(_code);
-            var mod = getMod(modRM);
+            var modRM = GetModRMFor(code);
+            var mod = GetModFor(modRM);
 
             return mod == 1 || mod == 2;
         }
 
-        public static Byte GetIndex(Byte[] _code)
+        public static Byte GetIndexFor(Byte[] code)
         {
-            if (!HasIndex(_code))
+            if (!HasIndex(code))
             {
                 throw new InvalidOperationException(
-                    "For ModRM that does not specify an index, usage of GetIndex is invalid."
+                    "For ModRM that does not specify an index, usage of GetIndexFor is invalid."
                     );
             }
 
-            UInt32 modRMIndex = opcode.GetOpcodeLength(_code);
-            var modRM = getModRM(_code);
-            var mod = getMod(modRM);
+            UInt32 modRMIndex = opcode.GetOpcodeLengthFor(code);
+            var modRM = GetModRMFor(code);
+            var mod = GetModFor(modRM);
 
             switch (mod)
             {
                 case 1:
                 {
-                    return _code[modRMIndex + 1];
+                    return code[modRMIndex + 1];
                 }
 
                 default:
@@ -75,43 +75,44 @@ namespace bugreport
             }
         }
 
-        public static Boolean IsEffectiveAddressDereferenced(Byte[] _code)
+        public static Boolean IsEffectiveAddressDereferenced(Byte[] code)
         {
-            var modRM = getModRM(_code);
+            var modRM = GetModRMFor(code);
 
-            return !(getMod(modRM) == 3);
+            return !(GetModFor(modRM) == 3);
         }
 
-        public static Boolean HasOffset(Byte[] _code)
+        public static Boolean HasOffset(Byte[] code)
         {
-            if (HasSIB(_code))
+            if (HasSIB(code))
             {
                 return false;
             }
 
-            var modRM = getModRM(_code);
-            return GetRM(modRM) == 5 && getMod(modRM) == 0;
+            var modRM = GetModRMFor(code);
+            return GetRMFor(modRM) == 5 && GetModFor(modRM) == 0;
         }
 
-        public static UInt32 GetOffset(Byte[] code)
+        public static UInt32 GetOffsetFor(Byte[] code)
         {
-            var offsetBeginsAt = opcode.GetOpcodeLength(code);
+            var offsetBeginsAt = opcode.GetOpcodeLengthFor(code);
             offsetBeginsAt++; // for modRM byte
 
             return BitMath.BytesToDword(code, offsetBeginsAt);
         }
 
-        public static Boolean HasSIB(Byte[] _code)
+        public static Boolean HasSIB(Byte[] code)
         {
-            var modRM = getModRM(_code);
+            var modRM = GetModRMFor(code);
 
-            return GetRM(modRM) == 4 && IsEffectiveAddressDereferenced(_code);
+            return GetRMFor(modRM) == 4 && IsEffectiveAddressDereferenced(code);
         }
 
         public static Boolean IsEvDword(Byte[] code)
         {
-            var modRM = getModRM(code);
-            if ((getMod(modRM) == 0) && (GetRM(modRM) == 5))
+            var modRM = GetModRMFor(code);
+            if ((GetModFor(modRM) == 0) &&
+                (GetRMFor(modRM) == 5))
             {
                 return true;
             }
@@ -119,19 +120,19 @@ namespace bugreport
             return false;
         }
 
-        private static Byte getModRM(Byte[] _code)
+        private static Byte GetModRMFor(Byte[] code)
         {
-            Int32 modRMIndex = opcode.GetOpcodeLength(_code);
+            Int32 modRMIndex = opcode.GetOpcodeLengthFor(code);
 
-            if (modRMIndex > _code.Length - 1)
+            if (modRMIndex > code.Length - 1)
             {
-                throw new InvalidOperationException("No ModRM present: " + _code[0]);
+                throw new InvalidOperationException("No ModRM present: " + code[0]);
             }
 
-            return _code[modRMIndex];
+            return code[modRMIndex];
         }
 
-        private static Byte getMod(Byte modrm)
+        private static Byte GetModFor(Byte modrm)
         {
             return (Byte) ((modrm >> 6) & 3);
         }

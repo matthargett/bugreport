@@ -13,55 +13,41 @@ namespace bugreport
 {
     public static class Options
     {
-        private static ReadOnlyCollection<String> filenames;
         private static FileResolver fileResolver = new FileResolver();
 
-        private static String functionToAnalyze;
-        private static Boolean isDebugging;
-        private static Boolean isTracing;
+        public static String FunctionToAnalyze { get; private set; }
 
-        public static String FunctionToAnalyze
-        {
-            get { return functionToAnalyze; }
-        }
+        public static ReadOnlyCollection<String> Filenames { get; private set; }
 
-        public static ReadOnlyCollection<String> Filenames
-        {
-            get { return filenames; }
-        }
+        public static Boolean IsTracing { get; private set; }
 
-        public static Boolean IsTracing
-        {
-            get { return isTracing; }
-        }
-
-        public static Boolean IsDebugging
-        {
-            get { return isDebugging; }
-        }
+        public static Boolean IsDebugging { get; private set; }
 
         internal static FileResolver FileResolver
         {
             set { fileResolver = value; }
         }
 
-        public static void ParseArguments(String[] commandLine)
+        public static void ParseArgumentsFrom(String[] commandLine)
         {
-            functionToAnalyze = getFunctionToAnalyze(commandLine);
-            filenames = getFilenames(commandLine);
-            isTracing = getIsTracing(commandLine);
-            isDebugging = getIsDebugging(commandLine);
-            if (isDebugging)
+            FunctionToAnalyze = GetFunctionToAnalyzeFrom(commandLine);
+            Filenames = GetFilenamesFrom(commandLine);
+            IsTracing = GetIsTracingFrom(commandLine);
+            IsDebugging = GetIsDebuggingFrom(commandLine);
+            if (IsDebugging)
             {
-                isTracing = true;
+                IsTracing = true;
             }
         }
 
-        private static String getFunctionToAnalyze(String[] arguments)
+        private static String GetFunctionToAnalyzeFrom(String[] arguments)
         {
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (!arguments[i].StartsWith("--function")) continue;
+                if (!arguments[i].StartsWith("--function"))
+                {
+                    continue;
+                }
 
                 var indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
 
@@ -76,7 +62,7 @@ namespace bugreport
             return "_start";
         }
 
-        private static ReadOnlyCollection<String> getFilenames(String[] arguments)
+        private static ReadOnlyCollection<String> GetFilenamesFrom(String[] arguments)
         {
             var fileArgument = arguments[arguments.Length - 1];
 
@@ -117,7 +103,7 @@ namespace bugreport
             return fileNames.AsReadOnly();
         }
 
-        private static Boolean getIsTracing(IEnumerable<string> arguments)
+        private static Boolean GetIsTracingFrom(IEnumerable<string> arguments)
         {
             foreach (var argument in arguments)
             {
@@ -130,7 +116,7 @@ namespace bugreport
             return false;
         }
 
-        private static Boolean getIsDebugging(IEnumerable<string> arguments)
+        private static Boolean GetIsDebuggingFrom(IEnumerable<string> arguments)
         {
             foreach (var argument in arguments)
             {

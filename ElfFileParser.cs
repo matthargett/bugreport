@@ -11,7 +11,8 @@ using System.IO;
 
 namespace bugreport
 {
-    public sealed class ElfFileParser : IParsable, IDisposable
+    public sealed class ElfFileParser : IParsable,
+                                        IDisposable
     {
         private readonly Stream stream;
         private readonly Byte[] textData;
@@ -22,8 +23,6 @@ namespace bugreport
             textData = new Byte[stream.Length];
         }
 
-        #region IDisposable Members
-
         public void Dispose()
         {
             if (null != stream)
@@ -31,10 +30,6 @@ namespace bugreport
                 stream.Dispose();
             }
         }
-
-        #endregion
-
-        #region IParsable Members
 
         public UInt32 BaseAddress
         {
@@ -57,7 +52,5 @@ namespace bugreport
             stream.Read(textData, 0, (Int32) (stream.Length - stream.Position));
             return textData;
         }
-
-        #endregion
     }
 }
