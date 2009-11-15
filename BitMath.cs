@@ -25,7 +25,7 @@ namespace bugreport
 
             for (var i = 0; i < DWORD_SIZE; ++i)
             {
-                result |= (UInt32) data[i + index] << (8 * i);
+                result |= (UInt32)data[i + index] << (8*i);
             }
 
             return result;

@@ -26,7 +26,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (NotImplementedException))]
+        [ExpectedException(typeof(NotImplementedException))]
         public void EaxEbpPlusDword12()
         {
             const int INDEX = 0x0c;
@@ -99,7 +99,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void GetEvWithSIB()
         {
             code = new Byte[] {0xc7, 0x04, 0x24, 0x10, 0x00, 0x00, 0x00};
@@ -108,7 +108,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void GetIndexWithNoIndex()
         {
             code = new Byte[] {0x89, 0xe5};

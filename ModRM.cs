@@ -14,7 +14,7 @@ namespace bugreport
 
         private static Byte GetRMFor(Byte modrm)
         {
-            return (Byte) (modrm & 7);
+            return (Byte)(modrm & 7);
         }
 
         public static RegisterName GetEvFor(Byte[] code)
@@ -25,19 +25,19 @@ namespace bugreport
             }
 
             var modRM = GetModRMFor(code);
-            return (RegisterName) (modRM & 7);
+            return (RegisterName)(modRM & 7);
         }
 
         internal static RegisterName GetGvFor(Byte[] code)
         {
             var modRM = GetModRMFor(code);
-            return (RegisterName) ((modRM >> 3) & 7);
+            return (RegisterName)((modRM >> 3) & 7);
         }
 
         internal static Byte GetOpcodeGroupIndexFor(Byte[] code)
         {
             var modRM = GetModRMFor(code);
-            return (Byte) ((modRM >> 3) & 7);
+            return (Byte)((modRM >> 3) & 7);
         }
 
         public static Boolean HasIndex(Byte[] code)
@@ -79,7 +79,7 @@ namespace bugreport
         {
             var modRM = GetModRMFor(code);
 
-            return !(GetModFor(modRM) == 3);
+            return GetModFor(modRM) != 3;
         }
 
         public static Boolean HasOffset(Byte[] code)
@@ -134,7 +134,7 @@ namespace bugreport
 
         private static Byte GetModFor(Byte modrm)
         {
-            return (Byte) ((modrm >> 6) & 3);
+            return (Byte)((modrm >> 6) & 3);
         }
     }
 }

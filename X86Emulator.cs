@@ -76,46 +76,7 @@ namespace bugreport
                 case OpcodeEncoding.rDX:
                 case OpcodeEncoding.Iz:
                 {
-                    switch (opcode.GetStackEffectFor(code))
-                    {
-                        case StackEffect.Pop:
-                        {
-                            destinationRegister = opcode.GetDestinationRegisterFor(code);
-                            state.Registers[destinationRegister] = state.Registers[RegisterName.ESP].PointsTo[0];
-                            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));
-                            break;
-                        }
-
-                        case StackEffect.Push:
-                        {
-                            state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
-
-                            if (opcode.HasSourceRegister(code))
-                            {
-                                sourceRegister = opcode.GetSourceRegisterFor(code);
-                                sourceValue = state.Registers[sourceRegister];
-                            }
-                            else if (opcode.HasImmediate(code))
-                            {
-                                sourceValue = new AbstractValue(opcode.GetImmediateFor(code));
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException(
-                                    String.Format(
-                                        "tried to push something that wasn't a register or an immediate @ 0x{0:x8}",
-                                        state.InstructionPointer));
-                            }
-
-                            state.Registers[RegisterName.ESP].PointsTo[0] = sourceValue;
-
-                            // TODO(matt_hargett): next step in correct stack emulation,, but breaks PushESPPopESP test
-                            //                        state = state.PushOntoStack(sourceValue);
-                            break;
-                        }
-                    }
-
-                    return state;
+                    return emulateStackEffectFor(code, state);
                 }
 
                 case OpcodeEncoding.EvIz:
@@ -233,7 +194,7 @@ namespace bugreport
                         var scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
                         var scaler = SIB.GetScaler(code);
                         baseRegisterValue = state.Registers[SIB.GetBaseRegister(code)];
-                        index = (Int32) (scaledRegisterValue * scaler);
+                        index = (Int32)(scaledRegisterValue*scaler);
                     }
                     else
                     {
@@ -250,7 +211,7 @@ namespace bugreport
                     sourceValue = new AbstractValue(
                         baseRegisterValue.PointsTo.DoOperation(
                             OperatorEffect.Add,
-                            new AbstractValue((UInt32) index)
+                            new AbstractValue((UInt32)index)
                             )
                         );
 
@@ -302,7 +263,7 @@ namespace bugreport
 
                     if (!contractSatisfied)
                     {
-                        var returnAddress = state.InstructionPointer + (UInt32) code.Length;
+                        var returnAddress = state.InstructionPointer + (UInt32)code.Length;
                         state = state.PushOntoStack(new AbstractValue(returnAddress));
                         state.InstructionPointer = opcode.GetEffectiveAddress(code, state.InstructionPointer);
                     }
@@ -330,6 +291,58 @@ namespace bugreport
                     throw new InvalidOpcodeException(code);
                 }
             }
+        }
+
+        private static MachineState emulateStackEffectFor(byte[] code, MachineState state)
+        {
+            MachineState modifiedState;
+
+            switch (opcode.GetStackEffectFor(code))
+            {
+                case StackEffect.Pop:
+                {
+                    var destinationRegister = opcode.GetDestinationRegisterFor(code);
+                    state.Registers[destinationRegister] = state.Registers[RegisterName.ESP].PointsTo[0];
+                    modifiedState = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));
+                    break;
+                }
+
+                case StackEffect.Push:
+                {
+                    modifiedState = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
+
+                    AbstractValue sourceValue;
+                    if (opcode.HasSourceRegister(code))
+                    {
+                        var sourceRegister = opcode.GetSourceRegisterFor(code);
+                        sourceValue = state.Registers[sourceRegister];
+                    }
+                    else if (opcode.HasImmediate(code))
+                    {
+                        sourceValue = new AbstractValue(opcode.GetImmediateFor(code));
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            String.Format(
+                                "tried to push something that wasn't a register or an immediate @ 0x{0:x8}",
+                                state.InstructionPointer));
+                    }
+
+                    state.Registers[RegisterName.ESP].PointsTo[0] = sourceValue;
+
+                    // TODO(matt_hargett): next step in correct stack emulation,, but breaks PushESPPopESP test
+                    //                        state = state.PushOntoStack(sourceValue);
+                    break;
+                }
+
+                default:
+                {
+                    throw new InvalidOpcodeException(code);
+                }
+            }
+
+            return modifiedState;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace bugreport
     {
         public const UInt32 MAX_BUFFER_SIZE = 25600000;
         public const UInt32 UNKNOWN = 0xb4dc0d3d;
+        private static readonly AbstractValue zero = new AbstractValue(0);
         private readonly AbstractBuffer pointsTo;
         private readonly UInt32 storage;
         private Boolean tainted;
@@ -93,6 +94,11 @@ namespace bugreport
         public Boolean IsPointer
         {
             get { return pointsTo != null; }
+        }
+
+        public static AbstractValue Zero
+        {
+            get { return zero; }
         }
 
         public static AbstractValue[] GetNewBuffer(UInt32 size)

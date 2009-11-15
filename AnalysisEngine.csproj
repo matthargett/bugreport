@@ -1,4 +1,5 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <ProjectGuid>{8DC8856B-6FF9-4E39-BF0B-1C1B55115273}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -16,7 +17,24 @@
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -40,6 +58,16 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <CodeAnalysisRuleSet>Migrated rules for AnalysisEngine.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <CodeAnalysisRuleSet>Migrated rules for AnalysisEngine.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <Optimize>true</Optimize>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="nunit.framework">
@@ -61,13 +89,16 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="AnalyzerTest.cs" />
     <Compile Include="BitMathTest.cs" />
+    <Compile Include="Block.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="CoverageExcludeAttribute.cs" />
+    <Compile Include="DifferenceEngineTest.cs" />
     <Compile Include="DumpFileParserTest.cs" />
     <Compile Include="ElfFileParser.cs" />
     <Compile Include="ElfFileParserTest.cs" />
     <Compile Include="GLibcStartMainContract.cs" />
     <Compile Include="GLibcStartMainContractTest.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="InvalidOpcodeException.cs" />
     <Compile Include="MachineStateTest.cs" />
     <Compile Include="MallocContract.cs" />
@@ -80,6 +111,11 @@
     <Compile Include="MachineState.cs" />
     <Compile Include="ModRM.cs" />
     <Compile Include="Opcode.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="X86Emulator.cs" />
     <Compile Include="X86EmulatorTest.cs" />
     <Compile Include="X86OpcodeTest.cs" />
@@ -90,5 +126,29 @@
     <Compile Include="SIB.cs" />
     <Compile Include="SIBTests.cs" />
     <Compile Include="X86Opcode.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Migrated rules for AnalysisEngine.ruleset" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
   </ItemGroup>
 </Project>

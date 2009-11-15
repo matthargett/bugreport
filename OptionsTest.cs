@@ -115,7 +115,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void FunctionNameWithoutEquals()
         {
             commandLine = new[]

@@ -17,4 +17,4 @@ using System.Runtime.InteropServices;
 // You can specify all values by your own or you can build default build and revision
 
 [assembly: AssemblyVersion("0.1.*")]
-[assembly: CLSCompliant(true)]
+[assembly: CLSCompliant(false)]
