@@ -295,21 +295,19 @@ namespace bugreport
 
         private static MachineState emulateStackEffectFor(byte[] code, MachineState state)
         {
-            MachineState modifiedState;
-
             switch (opcode.GetStackEffectFor(code))
             {
                 case StackEffect.Pop:
                 {
                     var destinationRegister = opcode.GetDestinationRegisterFor(code);
                     state.Registers[destinationRegister] = state.Registers[RegisterName.ESP].PointsTo[0];
-                    modifiedState = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));
+                    state = state.DoOperation(RegisterName.ESP, OperatorEffect.Sub, new AbstractValue(1));
                     break;
                 }
 
                 case StackEffect.Push:
                 {
-                    modifiedState = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
+                    state = state.DoOperation(RegisterName.ESP, OperatorEffect.Add, new AbstractValue(1));
 
                     AbstractValue sourceValue;
                     if (opcode.HasSourceRegister(code))
@@ -342,7 +340,7 @@ namespace bugreport
                 }
             }
 
-            return modifiedState;
+            return state;
         }
     }
 }
