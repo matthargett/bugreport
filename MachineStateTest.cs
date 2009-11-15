@@ -12,11 +12,15 @@ namespace bugreport
     [TestFixture]
     public class MachineStateTest
     {
+        #region Setup/Teardown
+
         [SetUp]
         public void SetUp()
         {
             state = new MachineState(new RegisterCollection());
         }
+
+        #endregion
 
         private readonly AbstractValue one = new AbstractValue(1);
         private readonly AbstractValue two = new AbstractValue(2).AddTaint();
@@ -158,7 +162,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void JnzPointerOffset()
         {
             var pointer = new AbstractValue(AbstractValue.GetNewBuffer(1));
@@ -166,7 +170,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void NonAssignmentOfPointer()
         {
             eax = one;
@@ -263,7 +267,7 @@ namespace bugreport
         [Test]
         public void PushTwiceThenManuallyAdjustStackThenAssignToEbp()
         {
-            AbstractValue[] buffer = AbstractValue.GetNewBuffer(0x20);
+            var buffer = AbstractValue.GetNewBuffer(0x20);
             esp = new AbstractValue(buffer);
             state = state.PushOntoStack(one);
             state = state.PushOntoStack(two);
@@ -295,7 +299,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void Unknown()
         {
             state.DoOperation(RegisterName.EAX, OperatorEffect.Unknown, RegisterName.EBX);

@@ -49,7 +49,7 @@ namespace bugreport
                     continue;
                 }
 
-                var indexOfEquals = arguments[i].IndexOf("=", StringComparison.Ordinal);
+                var indexOfEquals = arguments[i].IndexOf('=');
 
                 if (indexOfEquals == -1)
                 {

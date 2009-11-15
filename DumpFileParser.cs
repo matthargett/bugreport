@@ -181,9 +181,9 @@ namespace bugreport
 
         private static ReportItem GetAnnotationFrom(String line)
         {
-            var locationIndex = line.IndexOf("=", StringComparison.Ordinal) + 1;
+            var locationIndex = line.IndexOf('=') + 1;
             var location = UInt32.Parse(line.Substring(locationIndex + "/>".Length, 8), NumberStyles.HexNumber);
-            var exploitableIndex = line.IndexOf("=", locationIndex + 1, StringComparison.Ordinal) + 1;
+            var exploitableIndex = line.IndexOf('=', locationIndex + 1) + 1;
             var exploitable =
                 Boolean.Parse(line.Substring(exploitableIndex, (line.Length - exploitableIndex) - "/>".Length));
             return new ReportItem(location, exploitable);

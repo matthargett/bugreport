@@ -27,11 +27,13 @@ namespace bugreport
         [TearDown]
         public void TearDown()
         {
-            if (parser != null)
+            if (parser == null)
             {
-                parser.Dispose();
-                parser = null;
+                return;
             }
+
+            parser.Dispose();
+            parser = null;
         }
     }
 

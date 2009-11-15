@@ -13,6 +13,8 @@ namespace bugreport
     /// </summary>
     public sealed class X86Opcode : Opcode
     {
+        #region Opcode Members
+
         public OpcodeEncoding GetEncodingFor(Byte[] code)
         {
             switch (code[0])
@@ -491,8 +493,8 @@ namespace bugreport
         {
             var shortCode = new Byte[15];
 
-            var minLength = (Int32) Math.Min(15, code.Length - index);
-            Array.ConstrainedCopy(code, (Int32) index, shortCode, 0, minLength);
+            var minLength = (Int32)Math.Min(15, code.Length - index);
+            Array.ConstrainedCopy(code, (Int32)index, shortCode, 0, minLength);
 
             return GetInstructionLengthFor(shortCode);
         }
@@ -530,8 +532,10 @@ namespace bugreport
             unchecked
             {
                 // FIXME: find a way to do this without an unchecked operation
-                return instructionPointer + offset + (UInt32) code.Length;
+                return instructionPointer + offset + (UInt32)code.Length;
             }
         }
+
+        #endregion
     }
 }

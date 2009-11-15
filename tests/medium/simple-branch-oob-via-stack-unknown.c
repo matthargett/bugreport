@@ -7,5 +7,5 @@ int main(int argc, char **argv)
 	void *p = malloc(size + argc);
 
 	////<exploitable />
-	((char *)p)[size] = 0;
+	((char *)p)[size] = **argv;
 }

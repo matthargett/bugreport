@@ -12,13 +12,17 @@ namespace bugreport
     [TestFixture]
     public class RegisterCollectionTest
     {
-        private RegisterCollection registers;
+        #region Setup/Teardown
 
         [SetUp]
         public void SetUp()
         {
             registers = new RegisterCollection();
         }
+
+        #endregion
+
+        private RegisterCollection registers;
 
         [Test]
         public void Copy()
@@ -27,7 +31,7 @@ namespace bugreport
             var newRegisters = new RegisterCollection(registers);
             for (UInt32 i = 0; i < 7; i++)
             {
-                var register = (RegisterName) i;
+                var register = (RegisterName)i;
                 Assert.AreNotSame(newRegisters[register], registers[register]);
             }
 
@@ -39,7 +43,7 @@ namespace bugreport
         {
             for (UInt32 i = 0; i < 7; i++)
             {
-                var register = (RegisterName) i;
+                var register = (RegisterName)i;
                 Assert.IsFalse(registers[register].IsInitialized);
             }
         }

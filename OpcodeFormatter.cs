@@ -168,7 +168,7 @@ namespace bugreport
 
             throw new ArgumentException(
                 "don't know how to format this code's source operand: " + GetBytesFor(code)
-            );
+                );
         }
 
         private static string GetSourceRegisterFor(byte[] code)

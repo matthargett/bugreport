@@ -35,7 +35,10 @@ namespace bugreport
 
         private void HandleInputIfNecessary()
         {
-            if (!interactive) return;
+            if (!interactive)
+            {
+                return;
+            }
 
             // TODO: cover this with a system-level test
             var enterPressed = false;
@@ -81,7 +84,7 @@ namespace bugreport
             }
 
             // magic numbers that happen to look good :)
-            var numberOfTabs = 3 - (code.Length / 3);
+            var numberOfTabs = 3 - (code.Length/3);
             for (var i = 0; i < numberOfTabs; i++)
             {
                 Console.Write("\t");

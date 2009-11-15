@@ -40,7 +40,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void AddTaintOnPointer()
         {
             buffer = new AbstractBuffer(AbstractValue.GetNewBuffer(1));
@@ -68,7 +68,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void EmptyBuffer()
         {
             pointer = new AbstractValue(new AbstractBuffer(new AbstractValue[] {}));
@@ -86,6 +86,18 @@ namespace bugreport
             var uninit = new AbstractValue(0xabcdef);
             Assert.IsTrue(uninit.IsInitialized);
             Assert.AreEqual(0xabcdef, uninit.Value);
+        }
+
+        [Test]
+        public void IsOutOfBoundsPropertySurviviesCopy()
+        {
+            var src = new AbstractValue(0x31337)
+                      {
+                          IsOutOfBounds = true
+                      };
+            var dest = new AbstractValue(src);
+
+            Assert.IsTrue(dest.IsOutOfBounds);
         }
 
         [Test]
@@ -108,10 +120,10 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void NullCopyCtor()
         {
-            pointer = new AbstractValue((AbstractValue) null);
+            pointer = new AbstractValue((AbstractValue)null);
         }
 
         [Test]
@@ -167,19 +179,7 @@ namespace bugreport
         }
 
         [Test]
-        public void IsOutOfBoundsPropertySurviviesCopy()
-        {
-            var src = new AbstractValue(0x31337)
-                      {
-                          IsOutOfBounds = true
-                      };
-            var dest = new AbstractValue(src);
-
-            Assert.IsTrue(dest.IsOutOfBounds);
-        }
-
-        [Test]
-        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void RequestedBufferTooLarge()
         {
             AbstractValue.GetNewBuffer(AbstractValue.MAX_BUFFER_SIZE + 1);
@@ -194,7 +194,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void ZeroSizeBuffer()
         {
             pointer = new AbstractValue(new AbstractValue[] {});

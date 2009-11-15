@@ -14,12 +14,22 @@ namespace bugreport
 
         public AbstractBuffer(AbstractValue[] values)
         {
+            if (null == values)
+            {
+                throw new ArgumentNullException("values");
+            }
+
             storage = values;
             Length = storage.Length;
         }
 
         public AbstractBuffer(AbstractBuffer other)
         {
+            if (null == other)
+            {
+                throw new ArgumentNullException("other");
+            }
+
             BaseIndex = other.BaseIndex;
             Length = other.Length;
             storage = new AbstractValue[other.storage.Length];
@@ -37,7 +47,7 @@ namespace bugreport
                 // We check this.storage.Length as well so that we aren't calling Extend() when we dont need to.
                 if (IsIndexPastBounds(index))
                 {
-                    Extend(BaseIndex + (UInt32) index);
+                    Extend(BaseIndex + (UInt32)index);
                     return storage[BaseIndex + index];
                 }
 
@@ -46,6 +56,11 @@ namespace bugreport
 
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
                 if ((BaseIndex + index) >= Length)
                 {
                     value.IsOutOfBounds = true;
@@ -53,7 +68,7 @@ namespace bugreport
 
                 if (IsIndexPastBounds(index))
                 {
-                    Extend(BaseIndex + (UInt32) index);
+                    Extend(BaseIndex + (UInt32)index);
                     storage[BaseIndex + index] = value;
                 }
                 else
@@ -65,6 +80,11 @@ namespace bugreport
 
         public AbstractBuffer DoOperation(OperatorEffect operatorEffect, AbstractValue rhs)
         {
+            if (null == rhs)
+            {
+                throw new ArgumentNullException("rhs");
+            }
+
             var lhs = this;
 
             // TODO: should have a guard for if rhs isn't a pointer

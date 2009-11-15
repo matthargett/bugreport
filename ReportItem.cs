@@ -31,7 +31,7 @@ namespace bugreport
 
         public override Boolean Equals(object obj)
         {
-            var report = (ReportItem) obj;
+            var report = (ReportItem)obj;
             return InstructionPointer == report.InstructionPointer &&
                    IsTainted == report.IsTainted;
         }

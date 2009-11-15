@@ -27,7 +27,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void InvalidPointerAnd()
         {
             var one = new AbstractValue(0x1);
@@ -112,7 +112,7 @@ namespace bugreport
         {
             var values = AbstractValue.GetNewBuffer(4);
             var buffer = new AbstractBuffer(values);
-            var assignedBuffer = buffer.DoOperation(OperatorEffect.Assignment, null);
+            var assignedBuffer = buffer.DoOperation(OperatorEffect.Assignment, AbstractValue.Zero);
             Assert.AreNotSame(buffer, assignedBuffer);
         }
 
@@ -200,14 +200,14 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void PointerSubUnderflow()
         {
             new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Sub, new AbstractValue(1));
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void PointerUnknownOperation()
         {
             new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Unknown, null);

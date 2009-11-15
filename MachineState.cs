@@ -33,7 +33,7 @@ namespace bugreport
 
         public override Boolean Equals(object obj)
         {
-            var operationResult = (OperationResult) obj;
+            var operationResult = (OperationResult)obj;
             return Value.Equals(operationResult.Value) && ZeroFlag == operationResult.ZeroFlag;
         }
 
@@ -123,7 +123,7 @@ namespace bugreport
 
         public override Boolean Equals(object obj)
         {
-            var other = (MachineState) obj;
+            var other = (MachineState)obj;
 
             if (!(instructionPointer == other.instructionPointer &&
                   registers.Equals(other.registers) &&
@@ -344,12 +344,12 @@ namespace bugreport
 
                 case OperatorEffect.Shr:
                 {
-                    return lhs >> (Byte) rhs;
+                    return lhs >> (Byte)rhs;
                 }
 
                 case OperatorEffect.Shl:
                 {
-                    return lhs << (Byte) rhs;
+                    return lhs << (Byte)rhs;
                 }
 
                 default:

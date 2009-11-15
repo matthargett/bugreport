@@ -29,7 +29,7 @@ namespace bugreport
 
         private IParsable CreateMockParser(UInt32 expectedReportItemCount)
         {
-            var control = new DynamicMock(typeof (IParsable));
+            var control = new DynamicMock(typeof(IParsable));
             control.ExpectAndReturn("GetBytes", code, null);
 
             var reportItemList = new List<ReportItem>();
@@ -61,7 +61,7 @@ namespace bugreport
                     ReportItems.Add(new ReportItem(i, false));
                 }
 
-                machineState.InstructionPointer += (UInt32) instructionBytes.Length;
+                machineState.InstructionPointer += (UInt32)instructionBytes.Length;
 
                 return machineState;
             }
@@ -77,7 +77,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void NullStream()
         {
             analyzer = new Analyzer(null);

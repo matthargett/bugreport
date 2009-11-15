@@ -251,7 +251,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOperationException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void InvalidGetImmediate()
         {
             code = new Byte[] {0x90};
@@ -539,7 +539,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (InvalidOpcodeException))]
+        [ExpectedException(typeof(InvalidOpcodeException))]
         public void UnknownOpcode()
         {
             code = new Byte[] {0xf0, 0x00};

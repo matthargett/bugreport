@@ -46,8 +46,8 @@ namespace bugreport
 
         public AbstractValue this[RegisterName index]
         {
-            get { return registers[(Int32) index]; }
-            set { registers[(Int32) index] = value; }
+            get { return registers[(Int32)index]; }
+            set { registers[(Int32)index] = value; }
         }
 
         public override Boolean Equals(object obj)
@@ -88,13 +88,13 @@ namespace bugreport
             for (UInt32 i = 0; i < registers.Length; ++i)
             {
                 var value = registers[i];
-                result.Append(Enum.GetName(typeof (RegisterName), i) + "=" + value + "\t");
+                result.Append(Enum.GetName(typeof(RegisterName), i) + "=" + value + "\t");
                 if (value.ToString().Length < 8)
                 {
                     result.Append("\t");
                 }
 
-                if ((i + 1) % 4 == 0)
+                if ((i + 1)%4 == 0)
                 {
                     result.Append(Environment.NewLine);
                 }

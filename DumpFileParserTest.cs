@@ -40,11 +40,15 @@ namespace bugreport
     [TestFixture]
     public class WithNothingElseTest : DumpFileParserFixture
     {
+        #region Setup/Teardown
+
         [SetUp]
         public override void SetUp()
         {
             base.SetUp();
         }
+
+        #endregion
 
         [Test]
         public void EmptyLine()
@@ -112,7 +116,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof (FormatException))]
+        [ExpectedException(typeof(FormatException))]
         public void LineWithBadHex()
         {
             writer.WriteLine(" 8048385:       83 ej 10                sub    esp,0x10");

@@ -41,8 +41,7 @@ namespace bugreport
         public void IsSatisified()
         {
             var code = new Byte[] {0xe8, 0xb7, 0xff, 0xff, 0xff};
-            state = new MachineState();
-            state.InstructionPointer = 0x80482fc;
+            state = new MachineState {InstructionPointer = 0x80482fc};
             Assert.IsTrue(contract.IsSatisfiedBy(state, code));
 
             state.InstructionPointer = 0xdeadbeef;

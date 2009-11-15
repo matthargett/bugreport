@@ -103,7 +103,7 @@ namespace bugreport
 
         public void Run()
         {
-            var machineState = new MachineState(GetRegistersForLinuxStart())
+            var machineState = new MachineState(createRegistersForLinuxStart())
                                {
                                    InstructionPointer = parser.EntryPointAddress
                                };
@@ -136,7 +136,7 @@ namespace bugreport
             return X86Emulator.Run(reportItems, _machineState, code);
         }
 
-        private static RegisterCollection GetRegistersForLinuxStart()
+        private static RegisterCollection createRegistersForLinuxStart()
         {
             var linuxMainDefaultValues = new RegisterCollection();
 
