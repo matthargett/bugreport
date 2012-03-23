@@ -61,7 +61,7 @@
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <CodeAnalysisRuleSet>Migrated rules for AnalysisEngine.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>BasicCorrectnessRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <Optimize>true</Optimize>
   </PropertyGroup>
@@ -85,6 +85,7 @@
     <Compile Include="DebuggerCommand.cs" />
     <Compile Include="DebuggerView.cs" />
     <Compile Include="DebuggerCommandTest.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="MainTest.cs" />
     <Compile Include="OpcodeFormatter.cs" />
@@ -95,10 +96,6 @@
       <Project>{8DC8856B-6FF9-4E39-BF0B-1C1B55115273}</Project>
       <Name>AnalysisEngine</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Migrated rules for TextUI.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

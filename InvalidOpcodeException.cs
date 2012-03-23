@@ -3,6 +3,7 @@ using System.Text;
 
 namespace bugreport
 {
+    [Serializable]
     public sealed class InvalidOpcodeException : Exception
     {
         public InvalidOpcodeException(params Byte[] code)

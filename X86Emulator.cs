@@ -194,7 +194,7 @@ namespace bugreport
                         var scaledRegisterValue = state.Registers[SIB.GetScaledRegister(code)].Value;
                         var scaler = SIB.GetScaler(code);
                         baseRegisterValue = state.Registers[SIB.GetBaseRegister(code)];
-                        index = (Int32)(scaledRegisterValue*scaler);
+                        index = (Int32)(scaledRegisterValue * scaler);
                     }
                     else
                     {

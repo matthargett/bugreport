@@ -51,13 +51,13 @@ namespace bugreport
             var analysisProcess = new Process
                                   {
                                       StartInfo =
-                                          {
-                                              FileName = "bugreport.exe",
-                                              Arguments = "\"" + fileName + "\"",
-                                              RedirectStandardOutput = true,
-                                              UseShellExecute = false,
-                                              CreateNoWindow = false
-                                          }
+                                      {
+                                          FileName = "bugreport.exe",
+                                          Arguments = "\"" + fileName + "\"",
+                                          RedirectStandardOutput = true,
+                                          UseShellExecute = false,
+                                          CreateNoWindow = false
+                                      }
                                   };
 
             return analysisProcess;
