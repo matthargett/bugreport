@@ -42,21 +42,21 @@ namespace bugreport
 
         private static String GetFunctionToAnalyzeFrom(String[] arguments)
         {
-            for (var i = 0; i < arguments.Length; i++)
+            foreach (var argument in arguments)
             {
-                if (!arguments[i].StartsWith("--function"))
+                if (!argument.StartsWith("--function"))
                 {
                     continue;
                 }
 
-                var indexOfEquals = arguments[i].IndexOf('=');
+                var indexOfEquals = argument.IndexOf('=');
 
                 if (indexOfEquals == -1)
                 {
                     throw new ArgumentException("--function malformed, should be in the form of --function=name");
                 }
 
-                return arguments[i].Substring(indexOfEquals + 1);
+                return argument.Substring(indexOfEquals + 1);
             }
 
             return "_start";

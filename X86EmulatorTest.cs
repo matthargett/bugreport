@@ -597,6 +597,34 @@ namespace bugreport
         }
 
         [Test]
+        public void PushESIThenPopESI()
+        {
+            var pushCode = new Byte[] {0x56};
+            var popCode = new Byte[] {0x5e};
+
+            state.Registers[RegisterName.ESI] = one;
+            state = X86Emulator.Run(reportItems, state, pushCode);
+            Assert.AreEqual(0x1, state.InstructionPointer);
+            state.Registers[RegisterName.ESI] = null;
+            state = X86Emulator.Run(reportItems, state, popCode);
+            Assert.AreEqual(0x2, state.InstructionPointer);
+            Assert.AreEqual(one, state.Registers[RegisterName.ESI]);
+        }
+
+        [Test]
+        public void PushESPThenPopESP()
+        {
+            var pushCode = new Byte[] {0x54};
+            var popCode = new Byte[] {0x5c};
+            state = X86Emulator.Run(reportItems, state, pushCode);
+
+            Assert.AreEqual(0x1, state.InstructionPointer);
+            state = X86Emulator.Run(reportItems, state, popCode);
+            Assert.AreEqual(0x2, state.InstructionPointer);
+            Assert.AreEqual(state.Registers[RegisterName.ESP], state.Registers[RegisterName.ESP]);
+        }
+
+        [Test]
         public void PushEbpThenPopEbp()
         {
             var pushCode = new Byte[] {0x55};
@@ -664,34 +692,6 @@ namespace bugreport
             state = X86Emulator.Run(reportItems, state, popCode);
             Assert.AreEqual(0x2, state.InstructionPointer);
             Assert.AreEqual(one, state.Registers[RegisterName.EDX]);
-        }
-
-        [Test]
-        public void PushESIThenPopESI()
-        {
-            var pushCode = new Byte[] {0x56};
-            var popCode = new Byte[] {0x5e};
-
-            state.Registers[RegisterName.ESI] = one;
-            state = X86Emulator.Run(reportItems, state, pushCode);
-            Assert.AreEqual(0x1, state.InstructionPointer);
-            state.Registers[RegisterName.ESI] = null;
-            state = X86Emulator.Run(reportItems, state, popCode);
-            Assert.AreEqual(0x2, state.InstructionPointer);
-            Assert.AreEqual(one, state.Registers[RegisterName.ESI]);
-        }
-
-        [Test]
-        public void PushESPThenPopESP()
-        {
-            var pushCode = new Byte[] {0x54};
-            var popCode = new Byte[] {0x5c};
-            state = X86Emulator.Run(reportItems, state, pushCode);
-
-            Assert.AreEqual(0x1, state.InstructionPointer);
-            state = X86Emulator.Run(reportItems, state, popCode);
-            Assert.AreEqual(0x2, state.InstructionPointer);
-            Assert.AreEqual(state.Registers[RegisterName.ESP], state.Registers[RegisterName.ESP]);
         }
 
         [Test]

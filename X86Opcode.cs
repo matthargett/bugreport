@@ -9,7 +9,7 @@ using System;
 namespace bugreport
 {
     /// <summary>
-    /// Based on table at http://sandpile.org/ia32/opc_1.htm
+    ///   Based on table at http://sandpile.org/ia32/opc_1.htm
     /// </summary>
     public sealed class X86Opcode : Opcode
     {
@@ -164,7 +164,8 @@ namespace bugreport
 
                 default:
                 {
-                    throw new NotImplementedException("Don't know how to get the immediate for this opcode: " + code[0]);
+                    throw new NotImplementedException("Don't know how to get the immediate for this opcode: " +
+                                                      code[0]);
                 }
             }
         }

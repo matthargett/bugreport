@@ -207,7 +207,7 @@ namespace bugreport
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void PointerUnknownOperation()
         {
             new AbstractBuffer(new AbstractValue[] {}).DoOperation(OperatorEffect.Unknown, null);

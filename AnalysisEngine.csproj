@@ -59,14 +59,19 @@
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <CodeAnalysisRuleSet>Migrated rules for AnalysisEngine.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>BasicDesignGuidelineRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <Optimize>true</Optimize>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>send</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <CodeAnalysisRuleSet>Migrated rules for AnalysisEngine.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
@@ -89,16 +94,13 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="AnalyzerTest.cs" />
     <Compile Include="BitMathTest.cs" />
-    <Compile Include="Block.cs" />
     <Compile Include="Contract.cs" />
     <Compile Include="CoverageExcludeAttribute.cs" />
-    <Compile Include="DifferenceEngineTest.cs" />
     <Compile Include="DumpFileParserTest.cs" />
     <Compile Include="ElfFileParser.cs" />
     <Compile Include="ElfFileParserTest.cs" />
     <Compile Include="GLibcStartMainContract.cs" />
     <Compile Include="GLibcStartMainContractTest.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="InvalidOpcodeException.cs" />
     <Compile Include="MachineStateTest.cs" />
     <Compile Include="MallocContract.cs" />
@@ -128,13 +130,6 @@
     <Compile Include="X86Opcode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Migrated rules for AnalysisEngine.ruleset" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
@@ -150,5 +145,11 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 </Project>

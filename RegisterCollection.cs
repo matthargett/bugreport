@@ -94,7 +94,7 @@ namespace bugreport
                     result.Append("\t");
                 }
 
-                if ((i + 1)%4 == 0)
+                if ((i + 1) % 4 == 0)
                 {
                     result.Append(Environment.NewLine);
                 }

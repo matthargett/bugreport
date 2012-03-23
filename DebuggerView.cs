@@ -84,7 +84,7 @@ namespace bugreport
             }
 
             // magic numbers that happen to look good :)
-            var numberOfTabs = 3 - (code.Length/3);
+            var numberOfTabs = 3 - (code.Length / 3);
             for (var i = 0; i < numberOfTabs; i++)
             {
                 Console.Write("\t");

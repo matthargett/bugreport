@@ -505,6 +505,27 @@ namespace bugreport
         }
 
         [Test]
+        [ExpectedException(typeof(InvalidOpcodeException))]
+        public void UnknownOpcode()
+        {
+            code = new Byte[] {0xf0, 0x00};
+            opcode.GetEncodingFor(code);
+        }
+
+        [Test]
+        public void XorEvGv()
+        {
+            // xor EBP,EBP
+            code = new Byte[] {0x31, 0xed};
+            Assert.AreEqual(code.Length, opcode.GetInstructionLengthFor(code));
+            encoding = opcode.GetEncodingFor(code);
+            Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
+            Assert.AreEqual(OperatorEffect.Xor, opcode.GetOperatorEffectFor(code));
+            Assert.AreEqual(RegisterName.EBP, opcode.GetDestinationRegisterFor(code));
+            Assert.AreEqual(RegisterName.EBP, opcode.GetSourceRegisterFor(code));
+        }
+
+        [Test]
         public void rAxIv()
         {
             code = new Byte[] {0xb8, 0x00, 0x00, 0x00, 0x00};
@@ -536,27 +557,6 @@ namespace bugreport
 
             var operatorEffect = opcode.GetOperatorEffectFor(code);
             Assert.AreEqual(OperatorEffect.Assignment, operatorEffect);
-        }
-
-        [Test]
-        [ExpectedException(typeof(InvalidOpcodeException))]
-        public void UnknownOpcode()
-        {
-            code = new Byte[] {0xf0, 0x00};
-            opcode.GetEncodingFor(code);
-        }
-
-        [Test]
-        public void XorEvGv()
-        {
-            // xor EBP,EBP
-            code = new Byte[] {0x31, 0xed};
-            Assert.AreEqual(code.Length, opcode.GetInstructionLengthFor(code));
-            encoding = opcode.GetEncodingFor(code);
-            Assert.AreEqual(OpcodeEncoding.EvGv, encoding);
-            Assert.AreEqual(OperatorEffect.Xor, opcode.GetOperatorEffectFor(code));
-            Assert.AreEqual(RegisterName.EBP, opcode.GetDestinationRegisterFor(code));
-            Assert.AreEqual(RegisterName.EBP, opcode.GetSourceRegisterFor(code));
         }
     }
 }
